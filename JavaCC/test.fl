@@ -100,7 +100,7 @@ include {
     myEnum = {| SUCCESS, FAILED, PARTIAL_SUCCESS |};
 
     enumGuard = x -> match x
-        | myEnum.SUCCESS ->> true
+        | blah.blah.SUCCESS ->> true
         | myEnum.FAILED ->> false
         | myEnum.PARTIAL_SUCCESS ->> false
         | ->> false;

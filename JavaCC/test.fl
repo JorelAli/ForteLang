@@ -69,5 +69,7 @@ include {
     } in [x] ++ xs;
 
     guard = | x ->> y | ->> y;
+
+    a = import "./someFile.fl";
     
 } in {}

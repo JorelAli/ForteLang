@@ -660,6 +660,9 @@ public class ForteLang implements ForteLangConstants {
       case OPENSBRACKET:
         expression();
         break;
+      case GUARD:
+        guards();
+        break;
       default:
         jj_la1[2] = jj_gen;
         jj_consume_token(-1);
@@ -852,7 +855,7 @@ public class ForteLang implements ForteLangConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case CONCAT:
         jj_consume_token(CONCAT);
-        list();
+        expression();
         break;
       default:
         jj_la1[10] = jj_gen;
@@ -1225,7 +1228,7 @@ public class ForteLang implements ForteLangConstants {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x820,0x100,0x29b8,0x829b8,0x6b98,0x2b98,0x18,0x2b98,0x2b98,0x2b98,0x4,0x4,0x29b8,0x2998,0x80000,};
+      jj_la1_0 = new int[] {0x820,0x100,0x829b8,0x829b8,0x6b98,0x2b98,0x18,0x2b98,0x2b98,0x2b98,0x4,0x4,0x29b8,0x2998,0x80000,};
    }
   static final private JJCalls[] jj_2_rtns = new JJCalls[8];
   static private boolean jj_rescan = false;

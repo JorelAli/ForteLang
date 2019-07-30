@@ -672,7 +672,7 @@ void set() throws Exception : {} {
 }
 
 void functionResult() throws Exception : {} {
-	(LOOKAHEAD(2) lambda() | expression()) <SEMICOLON>
+	(LOOKAHEAD(2) lambda() | expression() | guards()) <SEMICOLON>
 }
 
 void lambda() throws Exception : {} {
@@ -700,7 +700,7 @@ void expression() throws Exception : {} {
 	)
 	| set() (LOOKAHEAD(2) <OPERATION> set())?
 	| includedSet() (LOOKAHEAD(2) <OPERATION> includedSet())?
-	| list() (<CONCAT> list())?
+	| list() (<CONCAT> expression())?
 	| number() (LOOKAHEAD(2) <OPERATION> number())?
 	| <STRING> (<CONCAT> <STRING>)?
 }

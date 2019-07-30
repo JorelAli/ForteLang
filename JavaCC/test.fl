@@ -88,6 +88,9 @@ include {
     # Booleans!
     blah = true || false;
 
-    a = -2;
+    # Impure sets
+    a = impure {
+        b = blah;
+    };
     
 } in 2

@@ -606,6 +606,7 @@ TOKEN : { < BOOLEAN : "true" | "false" > }
 TOKEN : { < INCLUDE : "include" > }
 TOKEN : { < IN : "in" > }
 TOKEN : { < IMPORT : "import" > }
+TOKEN : { < IMPURE : "impure" > }
 
 TOKEN : { < STRING : "\"" (~["\""])* "\"" >}
 
@@ -678,7 +679,7 @@ void includedSet() throws Exception : {} {
 }
 
 void set() throws Exception : {} {
-	<OPENCBRACKET>
+	(<IMPURE>)? <OPENCBRACKET>
 	(<VAR_NAME> <EQUALS> functionResult())*
 	<CLOSECBRACKET>
 }

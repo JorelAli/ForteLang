@@ -598,7 +598,7 @@ TOKEN : { < CONCAT : "++" > }
 TOKEN : { < SELECT : "." > }
 TOKEN : { < CONTAINS : "?" > }
 
-TOKEN : { < NUMBER : (["0"-"9"])+ > }
+TOKEN : { < NUMBER : ("-")? (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
 
 TOKEN : { < BOOLEAN : "true" | "false" > } 

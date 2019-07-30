@@ -106,4 +106,6 @@ include {
         | myEnum.PARTIAL_SUCCESS ->> false
         | ->> false;
 
+    print = x -> @print "hello";
+
 } in @exec "echo hi"

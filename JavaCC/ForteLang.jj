@@ -613,6 +613,7 @@ TOKEN : { < MATCH : "match" > }
 //Built-in functions
 TOKEN : { < IMPORT : "import" > }
 TOKEN : { < EXEC : "@exec" > }
+TOKEN : { < PRINT : "@print" > }
 
 //Brackets
 TOKEN : { < OPENBRACKET : "(" > }
@@ -749,6 +750,7 @@ void expression() throws Exception : {} {
 
 void builtinFunctions() throws Exception : {} {
 	<IMPORT> (<STRING> | <VAR_NAME>)
+    | <PRINT> (<STRING> | <VAR_NAME>)
 	| <EXEC> <STRING> 
 }
 

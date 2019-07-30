@@ -1,2 +1,0 @@
-DEF DEF x { x+3 } ;
-DEF MAIN { 3 } ;

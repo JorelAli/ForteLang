@@ -1,3 +1,0 @@
-DEF TEST x { x+3 } ;
-DEF TEST x { x+4 } ;
-DEF MAIN { TEST(3) } ;

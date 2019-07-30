@@ -33,5 +33,12 @@
         primes = [2, 3, 5, 7, 11];
         subtract = x -> y -> x - y;
     };
+
+    # Adds sets to scope
+    myFunctions = include {
+        myAdd = x -> y -> x + y;
+    } in {
+        add2 = myAdd;
+    };
     
 }

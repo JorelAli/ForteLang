@@ -672,7 +672,10 @@ TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<" | "/+" | "/-" | "//" |
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
 
-TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z", "0"-"9"])+ > }
+TOKEN : { < INCLUDE : "include" > }
+TOKEN : { < IN : "in" > }
+
+TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z", "0"-"9", "'"])+ > }
 
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
@@ -693,6 +696,8 @@ SKIP : { < "#" (~["\r", "\n"])* > }
 SKIP : { "\n" | "\r" | " " }
 
 SKIP : { < "###" (~["#"])* "###" > }
+
+
 
 /**
  * This parses the input from System.in
@@ -728,9 +733,9 @@ void eof() throws Exception : {} {
 	}
 }
 
-//void includedSet() throws Exception : { } {
-//
-//}
+void includedSet() throws Exception : { } {
+	<INCLUDE> set() <IN> set()
+}
 
 void set() throws Exception : {} {
 	<OPENCBRACKET> (
@@ -757,6 +762,7 @@ void list() throws Exception : {} {
 void expression() throws Exception : {} {
 	(<VAR_NAME> (<OPERATION> <VAR_NAME>)?)
 	| (set() (<OPERATION> set())?)
+	| (includedSet() (<OPERATION> includedSet())?)
 	| (list() (<OPERATION> list())?)
 	| (<NUMBER> (<OPERATION> <NUMBER>)?)
 }

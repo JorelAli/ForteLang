@@ -15,29 +15,33 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int FLOATING_POINT_NUMBER = 3;
   /** RegularExpression Id. */
-  int VAR_NAME = 4;
+  int INCLUDE = 4;
   /** RegularExpression Id. */
-  int OPENBRACKET = 5;
+  int IN = 5;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 6;
+  int VAR_NAME = 6;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 7;
+  int OPENBRACKET = 7;
   /** RegularExpression Id. */
-  int CLOSECBRACKET = 8;
+  int CLOSEBRACKET = 8;
   /** RegularExpression Id. */
-  int OPENSBRACKET = 9;
+  int OPENCBRACKET = 9;
   /** RegularExpression Id. */
-  int CLOSESBRACKET = 10;
+  int CLOSECBRACKET = 10;
   /** RegularExpression Id. */
-  int SEMICOLON = 11;
+  int OPENSBRACKET = 11;
   /** RegularExpression Id. */
-  int EQUALS = 12;
+  int CLOSESBRACKET = 12;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 13;
+  int SEMICOLON = 13;
   /** RegularExpression Id. */
-  int GUARD = 14;
+  int EQUALS = 14;
   /** RegularExpression Id. */
-  int GUARD_ARROW = 15;
+  int FUNCTION_ARROW = 15;
+  /** RegularExpression Id. */
+  int GUARD = 16;
+  /** RegularExpression Id. */
+  int GUARD_ARROW = 17;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -48,6 +52,8 @@ public interface ForteLangConstants {
     "<OPERATION>",
     "<NUMBER>",
     "<FLOATING_POINT_NUMBER>",
+    "\"include\"",
+    "\"in\"",
     "<VAR_NAME>",
     "\"(\"",
     "\")\"",
@@ -60,11 +66,11 @@ public interface ForteLangConstants {
     "\"->\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 16>",
+    "<token of kind 18>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",
-    "<token of kind 20>",
+    "<token of kind 22>",
     "\",\"",
   };
 

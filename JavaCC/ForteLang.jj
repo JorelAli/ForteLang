@@ -677,6 +677,10 @@ void lambda() throws Exception : {} {
 	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards())
 }
 
+void functionCall() throws Exception : {} {
+	<OPENBRACKET> <VAR_NAME> (LOOKAHEAD(2) expression())* <CLOSEBRACKET>
+}
+
 void list() throws Exception : {} {
   	<OPENSBRACKET>
   	(  	  LOOKAHEAD(3) <CLOSESBRACKET>
@@ -695,6 +699,7 @@ void expression() throws Exception : {} {
 	| (list() (<CONCAT> list())?)
 	| (number() (<OPERATION> number())?)
 	| (<STRING> (<CONCAT> <STRING>)?)
+	| functionCall()
 }
 
 void guards() throws Exception : {} {

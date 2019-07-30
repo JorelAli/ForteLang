@@ -14,7 +14,7 @@ x -> y -> x + y
 # Guards
 x -> y ->
 	| x > y ->> x
-	| ->> y
+	| ->> y;
 
 	# This doesn't require whitespace:
 	x -> y -> | x > y ->> x | ->> y

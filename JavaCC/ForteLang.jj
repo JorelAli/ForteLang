@@ -668,7 +668,7 @@ public class ForteLang {
 
 PARSER_END(ForteLang)
 
-TOKEN : { < OPERATION : "+" | "*" | "-" | "/" > }
+TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<"  > }
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
 
@@ -683,6 +683,9 @@ TOKEN : { < SEMICOLON : ";" > }
 
 TOKEN : { < EQUALS : "=" > }
 TOKEN : { < FUNCTION_ARROW : "->" > }
+
+TOKEN : { < GUARD : "|" > }
+TOKEN : { < GUARD_ARROW : "->>" > }
 
 SKIP : { < "#" (~["\r", "\n"])* > }
 SKIP : { "\n" | "\r" | " " }
@@ -729,9 +732,14 @@ void set() throws Exception : { } {
 }
 
 void lambda() throws Exception : {} {
-	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ expression() <SEMICOLON>
+	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards()) <SEMICOLON>
 }
 
 void expression() throws Exception : {} {
-	<VAR_NAME> <OPERATION> <VAR_NAME>
+	<VAR_NAME> (<OPERATION> <VAR_NAME>)?
+}
+
+void guards() throws Exception : {} {
+	(<GUARD> expression() <GUARD_ARROW> expression() <GUARD> )+
+	(<GUARD_ARROW> expression())
 }

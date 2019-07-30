@@ -30,6 +30,10 @@ public interface ForteLangConstants {
   int EQUALS = 10;
   /** RegularExpression Id. */
   int FUNCTION_ARROW = 11;
+  /** RegularExpression Id. */
+  int GUARD = 12;
+  /** RegularExpression Id. */
+  int GUARD_ARROW = 13;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -48,7 +52,9 @@ public interface ForteLangConstants {
     "\";\"",
     "\"=\"",
     "\"->\"",
-    "<token of kind 12>",
+    "\"|\"",
+    "\"->>\"",
+    "<token of kind 14>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",

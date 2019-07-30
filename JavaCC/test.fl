@@ -4,4 +4,9 @@
 
     # Square a number
     SQUARE = x -> x * x;
+
+    # Example with guards
+    max = x -> y -> 
+        | x > y ->> x
+        | ->> y;
 }

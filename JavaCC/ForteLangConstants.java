@@ -32,6 +32,10 @@ public interface ForteLangConstants {
   int CLOSECBRACKET = 11;
   /** RegularExpression Id. */
   int SEMICOLON = 12;
+  /** RegularExpression Id. */
+  int POTENTIAL_SPACE = 13;
+  /** RegularExpression Id. */
+  int FUNCTION_ARROW = 14;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -51,6 +55,8 @@ public interface ForteLangConstants {
     "\"{\"",
     "\"}\"",
     "\";\"",
+    "<POTENTIAL_SPACE>",
+    "\"->\"",
   };
 
 }

@@ -210,30 +210,34 @@ public class ForteLang {
 		try {
 		  	/* Run the parser */
 			new ForteLang(System.in).input();
+			System.out.println("PASS");
 		} catch(Exception e) {
-		  	/* Catch ParseExceptions (unexpected tokens) */
-			if(e instanceof ParseException) {
-				ParseException ex = (ParseException) e;
-				fail(getErrorMessage(getExpectedTokens(ex), ex.currentToken));
-			} else {
-			  	/* Catch Exceptions which are thrown by the program which
-			  	 * indicate more specific exceptions */
-				fail(e.getMessage());
-			}
-			return;
-		} catch(TokenMgrError error) {
-		  	/* Catch lexical errors (invalid characters) */
-			fail(parseLexicalError(error));
-			return;
+		  	e.printStackTrace();
+//		  	/* Catch ParseExceptions (unexpected tokens) */
+//			if(e instanceof ParseException) {
+//				ParseException ex = (ParseException) e;
+//				fail(getErrorMessage(getExpectedTokens(ex), ex.currentToken));
+//			} else {
+//			  	/* Catch Exceptions which are thrown by the program which
+//			  	 * indicate more specific exceptions */
+//				fail(e.getMessage());
+//			}
+//			return;
 		}
+//		catch(TokenMgrError error) {
+//		  	/* Catch lexical errors (invalid characters) */
+//			fail(parseLexicalError(error));
+//			return;
+//		}
 
-		/* Check whether the function diverges or not. If it does not diverge,
-		 * interpret the program and print the result. */
-		System.out.println("PASS");
-		System.out.println(doesProgramDiverge() 
-			? "DIVERGENCE"
-			: interpretProgram()
-		);
+
+//		/* Check whether the function diverges or not. If it does not diverge,
+//		 * interpret the program and print the result. */
+//		System.out.println("PASS");
+//		System.out.println(doesProgramDiverge() 
+//			? "DIVERGENCE"
+//			: interpretProgram()
+//		);
 	}
 
 	/**
@@ -664,7 +668,7 @@ public class ForteLang {
 
 PARSER_END(ForteLang)
 
-TOKEN : { < OPERATION : "+" | "*" > }
+TOKEN : { < OPERATION : "+" | "*" | "-" | "/" > }
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FUNCDEF : "DEF" > }
 TOKEN : { < FUNCNAME : (["A"-"Z"])+ > }
@@ -676,13 +680,30 @@ TOKEN : { < CLOSEBRACKET : ")" > }
 TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
 TOKEN : { < SEMICOLON : ";" > }
+TOKEN : { < POTENTIAL_SPACE : (" ")+ > }
+TOKEN : { < FUNCTION_ARROW : "->" > }
 
 /**
  * This parses the input from System.in
  * This accepts the program, which is 1 or more functions (denoted by the +
  * symbol), and the end of file character
  */
-void input() throws Exception : {} { (function())+ eof() }
+void input() throws Exception : {} {
+  (lambda())+ eof()
+
+  /*
+  Things it could be:
+  	Object
+  	Comment
+
+  	Objects are:
+  		Functions (lambdas)
+  		Sets
+  		Lists
+  		Expressions
+  		includes?
+  */
+}
 
 /**
  * Parses the end of file character. When this is run by the parser, two checks
@@ -696,17 +717,25 @@ void eof() throws Exception : {} {
   	<EOF>
 	{
 		/* Checks if the main function has been declared */
-		if(!definedFunctions.contains(MAIN_FUNCTION)) {
-			throw mkException(MAIN_FUNCTION + " function has not been defined");
-		}
-
-		/* Handle undeclared functions from other function declarations */
-		for(Token functionCall : functionCalls) {
-			if(!definedFunctions.contains(functionCall.image)) {
-				throw mkException("Function " + functionCall.image + " has not been declared " + printLoc(functionCall));
-			}
-		}
+//		if(!definedFunctions.contains(MAIN_FUNCTION)) {
+//			throw mkException(MAIN_FUNCTION + " function has not been defined");
+//		}
+//
+//		/* Handle undeclared functions from other function declarations */
+//		for(Token functionCall : functionCalls) {
+//			if(!definedFunctions.contains(functionCall.image)) {
+//				throw mkException("Function " + functionCall.image + " has not been declared " + printLoc(functionCall));
+//			}
+//		}
 	}
+}
+
+void lambda() throws Exception : {} {
+	(LOOKAHEAD(3) <PARAMNAME> <SP> <FUNCTION_ARROW> <SP>)+ ex() (<EOL>|<EOF>)
+}
+
+void ex() throws Exception : {} {
+	<PARAMNAME> <SP> <OPERATION> <SP> <PARAMNAME>
 }
 
 /**

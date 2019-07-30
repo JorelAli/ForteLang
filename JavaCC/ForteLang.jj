@@ -681,7 +681,7 @@ void lambda() throws Exception : {} {
 
 void list() throws Exception : {} {
   	<OPENSBRACKET> (  	 <CLOSESBRACKET>
-  	 | (LOOKAHEAD(2) enclosedExpression() <COMMA>)* enclosedExpression() <CLOSESBRACKET>
+  	 | enclosedExpression() (LOOKAHEAD(2) <COMMA> enclosedExpression())* <CLOSESBRACKET>
 	)
 }
 

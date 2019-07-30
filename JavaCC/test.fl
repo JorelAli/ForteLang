@@ -92,5 +92,5 @@ include {
     a = impure {
         @b = run "echo 'hi'";
     }.@b;
-    
-} in 2
+
+} in @exec "hello"

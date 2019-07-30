@@ -590,49 +590,57 @@ public class ForteLang {
 
 PARSER_END(ForteLang)
 
+//Operators
 TOKEN : { < BOOLEAN_OP : ">" | "<" | "<=" | ">=" | "==" | "!=" | "||" | "&&" > }
 TOKEN : { < SET_OP : "/+" | "/-" | "//" > }
 TOKEN : { < OP : "+" | "*" | "-" | "/" > }
 TOKEN : { < CONCAT : "++" > }
-
 TOKEN : { < SELECT : "." > }
 TOKEN : { < CONTAINS : "?" > }
 
+//Data types
 TOKEN : { < NUMBER : ("-")? (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
-
 TOKEN : { < BOOLEAN : "true" | "false" > } 
-
-TOKEN : { < INCLUDE : "include" > }
-TOKEN : { < IN : "in" > }
-TOKEN : { < IMPORT : "import" > }
-TOKEN : { < IMPURE : "impure" > }
-
 TOKEN : { < STRING : "\"" (~["\""])* "\"" >}
 
-TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
+//Keywords
+TOKEN : { < INCLUDE : "include" > }
+TOKEN : { < IN : "in" > }
+TOKEN : { < IMPURE : "impure" > }
 
+//Built-in functions
+TOKEN : { < IMPORT : "import" > }
+TOKEN : { < EXEC : "@exec" > }
+
+//Symbols
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
 TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
 
+//Lists
 TOKEN : { < OPENSBRACKET : "[" > }
 TOKEN : { < CLOSESBRACKET : "]" > }
 TOKEN : { < COMMA : "," > }
 
+//Set item declaration
+TOKEN : { < EQUALS : "=" > }
 TOKEN : { < SEMICOLON : ";" > }
 
-TOKEN : { < EQUALS : "=" > }
+//Functions
+TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
 TOKEN : { < FUNCTION_ARROW : "->" > }
-
 TOKEN : { < GUARD : "|" > }
 TOKEN : { < GUARD_ARROW : "->>" > }
 
+//Comments
 SKIP : { < "#" (~["\r", "\n"])* > }
+SKIP : { < "###" (~["#"])* "###" > }
+
+//Whitespace
 SKIP : { "\n" | "\r" | " " }
 
-SKIP : { < "###" (~["#"])* "###" > }
 
 
 
@@ -720,8 +728,15 @@ void expression() throws Exception : {} {
 	| list() (<CONCAT> expression())?
 	| number() (LOOKAHEAD(2) <OP> number())?
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (<CONCAT> <STRING>)?))
-	| <IMPORT> <STRING>
 	| <BOOLEAN> (<BOOLEAN_OP> <BOOLEAN>)?
+	| builtinFunctions()
+}
+
+void builtinFunctions() throws Exception : {} {
+	(
+	  <IMPORT>
+	  | <EXEC>
+	) <STRING>
 }
 
 void singleExpression() throws Exception : {} {

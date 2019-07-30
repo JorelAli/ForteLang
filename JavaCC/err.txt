@@ -1,0 +1,3 @@
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=lcd
+FAIL
+Expected <FUNCNAME> for function null on line 1, column 4.

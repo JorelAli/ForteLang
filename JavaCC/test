@@ -1,0 +1,3 @@
+#!/bin/sh
+java Assignment < test.txt
+java Assignment < test2.txt

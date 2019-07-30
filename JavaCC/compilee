@@ -1,0 +1,5 @@
+#!/bin/sh
+echo "=== Compiling with JavaCC ==="
+~/github/CS259FormalLanguagesCW/javacc-5.0/bin/javacc ~/github/CS259FormalLanguagesCW/Assignment.jj
+echo "=== Compiling with Javac ==="
+javac *.java

@@ -9,51 +9,57 @@ public interface ForteLangConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int OPERATION = 1;
+  int BOOLEAN_OP = 1;
   /** RegularExpression Id. */
-  int CONCAT = 2;
+  int SET_OP = 2;
   /** RegularExpression Id. */
-  int SELECT = 3;
+  int OP = 3;
   /** RegularExpression Id. */
-  int CONTAINS = 4;
+  int CONCAT = 4;
   /** RegularExpression Id. */
-  int NUMBER = 5;
+  int SELECT = 5;
   /** RegularExpression Id. */
-  int FLOATING_POINT_NUMBER = 6;
+  int CONTAINS = 6;
   /** RegularExpression Id. */
-  int INCLUDE = 7;
+  int NUMBER = 7;
   /** RegularExpression Id. */
-  int IN = 8;
+  int FLOATING_POINT_NUMBER = 8;
   /** RegularExpression Id. */
-  int IMPORT = 9;
+  int BOOLEAN = 9;
   /** RegularExpression Id. */
-  int STRING = 10;
+  int INCLUDE = 10;
   /** RegularExpression Id. */
-  int VAR_NAME = 11;
+  int IN = 11;
   /** RegularExpression Id. */
-  int OPENBRACKET = 12;
+  int IMPORT = 12;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 13;
+  int STRING = 13;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 14;
+  int VAR_NAME = 14;
   /** RegularExpression Id. */
-  int CLOSECBRACKET = 15;
+  int OPENBRACKET = 15;
   /** RegularExpression Id. */
-  int OPENSBRACKET = 16;
+  int CLOSEBRACKET = 16;
   /** RegularExpression Id. */
-  int CLOSESBRACKET = 17;
+  int OPENCBRACKET = 17;
   /** RegularExpression Id. */
-  int COMMA = 18;
+  int CLOSECBRACKET = 18;
   /** RegularExpression Id. */
-  int SEMICOLON = 19;
+  int OPENSBRACKET = 19;
   /** RegularExpression Id. */
-  int EQUALS = 20;
+  int CLOSESBRACKET = 20;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 21;
+  int COMMA = 21;
   /** RegularExpression Id. */
-  int GUARD = 22;
+  int SEMICOLON = 22;
   /** RegularExpression Id. */
-  int GUARD_ARROW = 23;
+  int EQUALS = 23;
+  /** RegularExpression Id. */
+  int FUNCTION_ARROW = 24;
+  /** RegularExpression Id. */
+  int GUARD = 25;
+  /** RegularExpression Id. */
+  int GUARD_ARROW = 26;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -61,12 +67,15 @@ public interface ForteLangConstants {
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
-    "<OPERATION>",
+    "<BOOLEAN_OP>",
+    "<SET_OP>",
+    "<OP>",
     "\"++\"",
     "\".\"",
     "\"?\"",
     "<NUMBER>",
     "<FLOATING_POINT_NUMBER>",
+    "<BOOLEAN>",
     "\"include\"",
     "\"in\"",
     "\"import\"",
@@ -84,11 +93,11 @@ public interface ForteLangConstants {
     "\"->\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 24>",
+    "<token of kind 27>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",
-    "<token of kind 28>",
+    "<token of kind 31>",
   };
 
 }

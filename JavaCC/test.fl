@@ -84,5 +84,8 @@ include {
     set = "hello" ? {
         hello = "hello";
     };
+
+    # Booleans!
+    blah = true || false;
     
 } in {}

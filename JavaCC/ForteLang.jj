@@ -590,7 +590,9 @@ public class ForteLang {
 
 PARSER_END(ForteLang)
 
-TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<" | "/+" | "/-" | "//" | "<=" | ">=" | "==" | "!=" | "||" | "&&"> }
+TOKEN : { < BOOLEAN_OP : ">" | "<" | "<=" | ">=" | "==" | "!=" | "||" | "&&" > }
+TOKEN : { < SET_OP : "/+" | "/-" | "//" > }
+TOKEN : { < OP : "+" | "*" | "-" | "/" > }
 TOKEN : { < CONCAT : "++" > }
 
 TOKEN : { < SELECT : "." > }
@@ -598,6 +600,8 @@ TOKEN : { < CONTAINS : "?" > }
 
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
+
+TOKEN : { < BOOLEAN : "true" | "false" > } 
 
 TOKEN : { < INCLUDE : "include" > }
 TOKEN : { < IN : "in" > }
@@ -665,7 +669,11 @@ void eof() throws Exception : {} {
 	}
 }
 
-void includedSet() throws Exception : { } {
+void anyOperator() throws Exception : {} {
+	<BOOLEAN_OP> | <OP> | <SET_OP>
+}
+
+void includedSet() throws Exception : {} {
 	<INCLUDE> set() <IN> expression()
 }
 
@@ -701,21 +709,22 @@ void expression() throws Exception : {} {
 	<VAR_NAME> (
 		(LOOKAHEAD(3) singleExpression() | enclosedExpression())+
 		| (<SELECT> <VAR_NAME>)+
-		| (LOOKAHEAD(2) <OPERATION> <VAR_NAME>)?
+		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)?
 	)
 	| set() (
 	  (<SELECT> <VAR_NAME>)+
-	  | (LOOKAHEAD(2) <OPERATION> set())?
+	  | (LOOKAHEAD(2) <SET_OP> set())?
 	)
-	| includedSet() (LOOKAHEAD(2) <OPERATION> includedSet())?
+	| includedSet() (LOOKAHEAD(2) <SET_OP> includedSet())?
 	| list() (<CONCAT> expression())?
-	| number() (LOOKAHEAD(2) <OPERATION> number())?
+	| number() (LOOKAHEAD(2) <OP> number())?
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (<CONCAT> <STRING>)?))
 	| <IMPORT> <STRING>
+	| <BOOLEAN> (<BOOLEAN_OP> <BOOLEAN>)?
 }
 
 void singleExpression() throws Exception : {} {
-	set() | <VAR_NAME> | list() | number() | <STRING>
+	set() | <VAR_NAME> | list() | number() | <STRING> | <BOOLEAN>
 }
 
 void guards() throws Exception : {} {

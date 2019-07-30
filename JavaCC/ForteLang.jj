@@ -668,16 +668,18 @@ public class ForteLang {
 
 PARSER_END(ForteLang)
 
-TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<"  > }
+TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<" | "/+" | "/-" | "//" | "++" > }
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
 
-TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z"])+ > }
+TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z", "0"-"9"])+ > }
 
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
 TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
+TOKEN : { < OPENSBRACKET : "[" > }
+TOKEN : { < CLOSESBRACKET : "]" > }
 
 TOKEN : { < SEMICOLON : ";" > }
 
@@ -724,19 +726,34 @@ void eof() throws Exception : {} {
 	}
 }
 
-void set() throws Exception : { } {
+void set() throws Exception : {} {
 	<OPENCBRACKET> (
 	  <VAR_NAME> <EQUALS>
-	  lambda()
+	  functionResult()
 	  )+ <CLOSECBRACKET>
 }
 
+void functionResult() throws Exception : {} {
+	(lambda() | list()) <SEMICOLON>
+}
+
 void lambda() throws Exception : {} {
-	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards()) <SEMICOLON>
+	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards())
+}
+
+void list() throws Exception : {} {
+  	<OPENSBRACKET>
+  	(  	  LOOKAHEAD(3) <CLOSESBRACKET>
+  	| LOOKAHEAD(3) expression() <CLOSESBRACKET>
+  	| (expression() "," expression())+ <CLOSESBRACKET> )
 }
 
 void expression() throws Exception : {} {
-	<VAR_NAME> (<OPERATION> <VAR_NAME>)?
+  	//varname
+  	//varname <op> varname
+	(<VAR_NAME> (<OPERATION> <VAR_NAME>)?)
+	| (set() (<OPERATION> set())?)
+	| (list() (<OPERATION> list())?)
 }
 
 void guards() throws Exception : {} {

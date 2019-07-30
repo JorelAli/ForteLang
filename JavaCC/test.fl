@@ -3,10 +3,21 @@
     add = x -> y -> x + y;
 
     # Square a number
-    SQUARE = x -> x * x;
+    square = x -> x * x;
+
+    # Lists
+    someList      = [x, y];
+    someOtherList = [x];
+    emptyList     = [];
 
     # Example with guards
     max = x -> y -> 
         | x > y ->> x
         | ->> y;
+    
+    # Set operations
+    union =      set1 -> set2 -> set1 /+ set2;
+    intersect =  set1 -> set2 -> set1 /- set2;
+    difference = set1 -> set2 -> set1 // set2;
+
 }

@@ -90,7 +90,7 @@ include {
 
     # Impure sets
     a = impure {
-        b = blah;
+        @b = blah;
     };
     
 } in 2

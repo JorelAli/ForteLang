@@ -610,7 +610,7 @@ TOKEN : { < IMPURE : "impure" > }
 
 TOKEN : { < STRING : "\"" (~["\""])* "\"" >}
 
-TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
+TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
 
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }

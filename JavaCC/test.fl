@@ -102,6 +102,7 @@ include {
     enumGuard = x -> match x
         | SUCCESS ->> true
         | FAILED ->> false
-        | PARTIAL_SUCCESS ->> false;
+        | PARTIAL_SUCCESS ->> false
+        | ->> false;
 
 } in @exec "echo hi"

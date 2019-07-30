@@ -727,7 +727,7 @@ void number() throws Exception : {} {
 void expression() throws Exception : {} {
   	(  	  LOOKAHEAD(2) lambda() 
 	  | <VAR_NAME> (
-		(LOOKAHEAD(3) singleExpression() | enclosedExpression())+
+		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+
 		| (<SELECT> <VAR_NAME>)+
 		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)?
 	  )
@@ -757,8 +757,9 @@ void singleExpression() throws Exception : {} {
 }
 
 void matches() throws Exception : {} {
-	<MATCH> <VAR_NAME>
+	<MATCH> <VAR_NAME> 
 	(LOOKAHEAD(2) <GUARD> expression() <GUARD_ARROW> expression())+
+	(LOOKAHEAD(2) <GUARD> <GUARD_ARROW> expression())?
 }
 
 void guards() throws Exception : {} {

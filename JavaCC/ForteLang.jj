@@ -608,6 +608,7 @@ TOKEN : { < STRING : "\"" (~["\""])* "\"" >}
 TOKEN : { < INCLUDE : "include" > }
 TOKEN : { < IN : "in" > }
 TOKEN : { < IMPURE : "impure" > }
+TOKEN : { < MATCH : "match" > }
 
 //Built-in functions
 TOKEN : { < IMPORT : "import" > }
@@ -702,11 +703,11 @@ void enumeration() throws Exception : {} {
 }
 
 void functionResult() throws Exception : {} {
-	(LOOKAHEAD(2) lambda() | expression() | guards() | enumeration()) <SEMICOLON>
+	(LOOKAHEAD(2) lambda() | expression() | guards() | enumeration() | matches()) <SEMICOLON>
 }
 
 void lambda() throws Exception : {} {
-	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards())
+	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards()|matches())
 }
 
 void list() throws Exception : {} {
@@ -729,7 +730,7 @@ void expression() throws Exception : {} {
 		(LOOKAHEAD(3) singleExpression() | enclosedExpression())+
 		| (<SELECT> <VAR_NAME>)+
 		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)?
-	)
+	  )
 	)
 	| set() (
 	  (<SELECT> <VAR_NAME>)+
@@ -741,6 +742,7 @@ void expression() throws Exception : {} {
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (<CONCAT> <STRING>)?))
 	| <BOOLEAN> (<BOOLEAN_OP> <BOOLEAN>)?
 	| builtinFunctions()
+	| <CAPS>
 }
 
 void builtinFunctions() throws Exception : {} {
@@ -755,7 +757,8 @@ void singleExpression() throws Exception : {} {
 }
 
 void matches() throws Exception : {} {
-
+	<MATCH> <VAR_NAME>
+	(LOOKAHEAD(2) <GUARD> expression() <GUARD_ARROW> expression())+
 }
 
 void guards() throws Exception : {} {

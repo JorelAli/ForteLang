@@ -5,6 +5,8 @@
     # Square a number
     square = x -> x * x;
 
+    numbers = 123.25 + 2;
+
     # Lists
     someList      = [x, y];
     someOtherList = [x];

@@ -578,84 +578,6 @@ public class ForteLang {
 	}
 
 	/**
-	 * Adds a function call to the list of function mappings. This uses the
-	 * currentFunction variable which keeps track of which function is being
-	 * parsed by the parser. If the current function is not mapped to anything,
-	 * a new set is created which contains the functionCall. If the current
-	 * function is mapped to a set, it adds the functionCall to that set.
-	 *
-	 * @param functionCall The function to add to the mapping of currentFunction 
-	 */
-	private static void addToFunctionMapping(String functionCall) {
-	  	/* Produces a new set if currentFunction is not mapped to anything */
-		Set<String> functions = functionMapping.containsKey(currentFunction)
-			? functionMapping.get(currentFunction)
-			: new HashSet<String>();
-		functions.add(functionCall);
-		functionMapping.put(currentFunction, functions);
-	}
-
-	/**
-	 * Checks to see if a program diverges. This happens by checking if the
-	 * MAIN function is "not safe" (if a function is declared safe, that means
-	 * it does not have any recursive loops)
-	 *
-	 * @return True if the program diverges, False if it does not diverge
-	 */
-	private static boolean doesProgramDiverge() {
-		return !isFunctionSafe(MAIN_FUNCTION, new ArrayList<String>());
-	}
-
-	/**
-	 * Checks if a function is "safe". If a function is safe, that means that it
-	 * does NOT enter a loop if you run that function.
-	 *
-	 * This function basically "follows" the mappings of functions as declared
-	 * in the functionMapping hashmap.
-	 *
-	 * For example:
-	 *   A -> [B, C]
-	 *   B -> [2]
-	 *   C -> [C]
-	 *
-	 *   As C maps to itself, the list of functions to check will have C, and
-	 *   then add C to the list. The list has duplicates and therefore will be
-	 *   an infinite loop. If the function is not in the function mapping, that
-	 *   means that the function does not call any other functions (for example,
-	 *   function B in the example above), therefore is a terminal function
-	 *   which is declared "safe"
-	 *
-	 * @param functionName The function to check for loops if run
-	 * @param functionsToCheck An accumulated list of functions to check for
-	 *   whether they produce loops. Initially, this is an empty list
-	 * @return True if the function does not make a loop when executed
-	 */
-	private static boolean isFunctionSafe(String functionName, List<String> functionsToCheck) {
-	  	/* If the list of functions to check has duplicates, it is unsafe */
-	  	if(new HashSet<String>(functionsToCheck).size() != functionsToCheck.size()) {
-	  	  return false;
-	  	}
-	  	/* If the function is terminal (doesn't call any other functions), it
-	  	 * is declared as "safe" */
-		if(!functionMapping.containsKey(functionName)) {
-		  return true;
-		} else {
-		  	/* "Follows" the mappings to determine if a function is safe
-		  	 * or not. If any function is unsafe, this returns false. If none
-		  	 * of them are found to be unsafe, the function given is declared
-		  	 * safe (by returning true) */
-		  	Set<String> set = functionMapping.get(functionName);
-			for(String innerFunctionName : set) {
-			  	functionsToCheck.add(innerFunctionName);
-				if(!isFunctionSafe(innerFunctionName, functionsToCheck)) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-
-	/**
 	 * Creates a generic exception with the given message
 	 *
 	 * @param message The message that the exception will produce
@@ -679,7 +601,7 @@ TOKEN : { < IN : "in" > }
 
 TOKEN : { < STRING : "\"" (~["\""])* "\"" >}
 
-TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z", "0"-"9", "'"])+ > }
+TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
 
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
@@ -762,12 +684,16 @@ void list() throws Exception : {} {
   	| (LOOKAHEAD(2) expression() ",")+ expression() <CLOSESBRACKET> )
 }
 
+void number() throws Exception : {} {
+	<NUMBER> | <FLOATING_POINT_NUMBER>
+}
+
 void expression() throws Exception : {} {
 	(<VAR_NAME> (<OPERATION> <VAR_NAME>)?)
 	| (set() (<OPERATION> set())?)
 	| (includedSet() (<OPERATION> includedSet())?)
 	| (list() (<CONCAT> list())?)
-	| (<NUMBER> (<OPERATION> <NUMBER>)?)
+	| (number() (<OPERATION> number())?)
 	| (<STRING> (<CONCAT> <STRING>)?)
 }
 

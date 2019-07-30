@@ -97,4 +97,11 @@ include {
 
     useMap = map (x -> y -> x + y);
 
+    myEnum = {| SUCCESS, FAILED, PARTIAL_SUCCESS |};
+
+    enumGuard = x -> x:
+        | SUCCESS ->>
+        | FAILED ->>
+        | PARTIAL_SUCCESS ->>
+
 } in @exec "echo hi"

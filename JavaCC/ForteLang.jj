@@ -613,20 +613,25 @@ TOKEN : { < IMPURE : "impure" > }
 TOKEN : { < IMPORT : "import" > }
 TOKEN : { < EXEC : "@exec" > }
 
-//Symbols
+//Brackets
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
-TOKEN : { < OPENCBRACKET : "{" > }
-TOKEN : { < CLOSECBRACKET : "}" > }
 
 //Lists
 TOKEN : { < OPENSBRACKET : "[" > }
 TOKEN : { < CLOSESBRACKET : "]" > }
 TOKEN : { < COMMA : "," > }
 
-//Set item declaration
+//Enums
+TOKEN : { < CAPS : (["A"-"Z", "_"])+ > }
+TOKEN : { < ENUM_OPEN : " {|" > }
+TOKEN : { < ENUM_CLOSE : "|}" > }
+
+//Sets
 TOKEN : { < EQUALS : "=" > }
 TOKEN : { < SEMICOLON : ";" > }
+TOKEN : { < OPENCBRACKET : "{" > }
+TOKEN : { < CLOSECBRACKET : "}" > }
 
 //Functions
 TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
@@ -692,8 +697,12 @@ void set() throws Exception : {} {
 	<CLOSECBRACKET>
 }
 
+void enumeration() throws Exception : {} {
+	<ENUM_OPEN> <CAPS> (<COMMA> <CAPS>)* <ENUM_CLOSE>
+}
+
 void functionResult() throws Exception : {} {
-	(LOOKAHEAD(2) lambda() | expression() | guards()) <SEMICOLON>
+	(LOOKAHEAD(2) lambda() | expression() | guards() | enumeration()) <SEMICOLON>
 }
 
 void lambda() throws Exception : {} {
@@ -743,6 +752,10 @@ void builtinFunctions() throws Exception : {} {
 
 void singleExpression() throws Exception : {} {
 	set() | <VAR_NAME> | list() | number() | <STRING> | <BOOLEAN>
+}
+
+void matches() throws Exception : {} {
+
 }
 
 void guards() throws Exception : {} {

@@ -74,6 +74,7 @@ include {
 
     # Import an expression
     a = import "./someFile.fl";
+    b = import blah;
 
     # Access a set
     set = {

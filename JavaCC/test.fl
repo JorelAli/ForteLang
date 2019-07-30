@@ -100,9 +100,9 @@ include {
     myEnum = {| SUCCESS, FAILED, PARTIAL_SUCCESS |};
 
     enumGuard = x -> match x
-        | SUCCESS ->> true
-        | FAILED ->> false
-        | PARTIAL_SUCCESS ->> false
+        | myEnum.SUCCESS ->> true
+        | myEnum.FAILED ->> false
+        | myEnum.PARTIAL_SUCCESS ->> false
         | ->> false;
 
 } in @exec "echo hi"

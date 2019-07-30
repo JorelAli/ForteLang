@@ -728,7 +728,11 @@ void expression() throws Exception : {} {
   	(  	  LOOKAHEAD(2) lambda() 
 	  | <VAR_NAME> (
 		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+
-		| (<SELECT> <VAR_NAME>)+
+//		| (<SELECT> <VAR_NAME>)+
+		| <SELECT> (
+		  <CAPS> (<SELECT> <CAPS>)*
+		  | <VAR_NAME> (<SELECT> <VAR_NAME>)*
+		)
 		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)?
 	  )
 	)
@@ -742,7 +746,6 @@ void expression() throws Exception : {} {
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (<CONCAT> <STRING>)?))
 	| <BOOLEAN> (<BOOLEAN_OP> <BOOLEAN>)?
 	| builtinFunctions()
-	| <CAPS>
 }
 
 void builtinFunctions() throws Exception : {} {

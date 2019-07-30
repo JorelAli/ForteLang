@@ -598,6 +598,7 @@ TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
 
 TOKEN : { < INCLUDE : "include" > }
 TOKEN : { < IN : "in" > }
+TOKEN : { < IMPORT : "import" > }
 
 TOKEN : { < STRING : "\"" (~["\""])* "\"" >}
 
@@ -633,7 +634,7 @@ SKIP : { < "###" (~["#"])* "###" > }
  * symbol), and the end of file character
  */
 void input() throws Exception : {} {
-  (set()|includedSet()) eof()
+  expression() eof()
 }
 
 /**
@@ -703,6 +704,7 @@ void expression() throws Exception : {} {
 	| list() (<CONCAT> expression())?
 	| number() (LOOKAHEAD(2) <OPERATION> number())?
 	| <STRING> (<CONCAT> <STRING>)?
+	| <IMPORT> <STRING>
 }
 
 void singleExpression() throws Exception : {} {

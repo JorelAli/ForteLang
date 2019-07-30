@@ -13,43 +13,47 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int CONCAT = 2;
   /** RegularExpression Id. */
-  int NUMBER = 3;
+  int SELECT = 3;
   /** RegularExpression Id. */
-  int FLOATING_POINT_NUMBER = 4;
+  int CONTAINS = 4;
   /** RegularExpression Id. */
-  int INCLUDE = 5;
+  int NUMBER = 5;
   /** RegularExpression Id. */
-  int IN = 6;
+  int FLOATING_POINT_NUMBER = 6;
   /** RegularExpression Id. */
-  int IMPORT = 7;
+  int INCLUDE = 7;
   /** RegularExpression Id. */
-  int STRING = 8;
+  int IN = 8;
   /** RegularExpression Id. */
-  int VAR_NAME = 9;
+  int IMPORT = 9;
   /** RegularExpression Id. */
-  int OPENBRACKET = 10;
+  int STRING = 10;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 11;
+  int VAR_NAME = 11;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 12;
+  int OPENBRACKET = 12;
   /** RegularExpression Id. */
-  int CLOSECBRACKET = 13;
+  int CLOSEBRACKET = 13;
   /** RegularExpression Id. */
-  int OPENSBRACKET = 14;
+  int OPENCBRACKET = 14;
   /** RegularExpression Id. */
-  int CLOSESBRACKET = 15;
+  int CLOSECBRACKET = 15;
   /** RegularExpression Id. */
-  int COMMA = 16;
+  int OPENSBRACKET = 16;
   /** RegularExpression Id. */
-  int SEMICOLON = 17;
+  int CLOSESBRACKET = 17;
   /** RegularExpression Id. */
-  int EQUALS = 18;
+  int COMMA = 18;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 19;
+  int SEMICOLON = 19;
   /** RegularExpression Id. */
-  int GUARD = 20;
+  int EQUALS = 20;
   /** RegularExpression Id. */
-  int GUARD_ARROW = 21;
+  int FUNCTION_ARROW = 21;
+  /** RegularExpression Id. */
+  int GUARD = 22;
+  /** RegularExpression Id. */
+  int GUARD_ARROW = 23;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -59,6 +63,8 @@ public interface ForteLangConstants {
     "<EOF>",
     "<OPERATION>",
     "\"++\"",
+    "\".\"",
+    "\"?\"",
     "<NUMBER>",
     "<FLOATING_POINT_NUMBER>",
     "\"include\"",
@@ -78,11 +84,11 @@ public interface ForteLangConstants {
     "\"->\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 22>",
+    "<token of kind 24>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",
-    "<token of kind 26>",
+    "<token of kind 28>",
   };
 
 }

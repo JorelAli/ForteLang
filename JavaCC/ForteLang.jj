@@ -590,8 +590,11 @@ public class ForteLang {
 
 PARSER_END(ForteLang)
 
-TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<" | "/+" | "/-" | "//" > }
+TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<" | "/+" | "/-" | "//" | "<=" | ">=" | "==" | "!=" | "||" | "&&"> }
 TOKEN : { < CONCAT : "++" > }
+
+TOKEN : { < SELECT : "." > }
+TOKEN : { < CONTAINS : "?" > }
 
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
@@ -697,13 +700,17 @@ void number() throws Exception : {} {
 void expression() throws Exception : {} {
 	<VAR_NAME> (
 		(LOOKAHEAD(3) singleExpression() | enclosedExpression())+
+		| (<SELECT> <VAR_NAME>)+
 		| (LOOKAHEAD(2) <OPERATION> <VAR_NAME>)?
 	)
-	| set() (LOOKAHEAD(2) <OPERATION> set())?
+	| set() (
+	  (<SELECT> <VAR_NAME>)+
+	  | (LOOKAHEAD(2) <OPERATION> set())?
+	)
 	| includedSet() (LOOKAHEAD(2) <OPERATION> includedSet())?
 	| list() (<CONCAT> expression())?
 	| number() (LOOKAHEAD(2) <OPERATION> number())?
-	| <STRING> (<CONCAT> <STRING>)?
+	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (<CONCAT> <STRING>)?))
 	| <IMPORT> <STRING>
 }
 

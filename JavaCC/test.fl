@@ -59,7 +59,9 @@ include {
         a = x -> y -> x + y;
     } in [
         (a b c), 
-        c, x, y, 
+        c, 
+        x, 
+        y, 
         (x x)
         ];
 
@@ -70,6 +72,17 @@ include {
 
     guard = | x ->> y | ->> y;
 
+    # Import an expression
     a = import "./someFile.fl";
+
+    # Access a set
+    set = {
+        hello = "hello";
+    }.hello;
+
+    # Check if an element exists in a set
+    set = "hello" ? {
+        hello = "hello";
+    };
     
 } in {}

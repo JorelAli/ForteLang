@@ -37,15 +37,17 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int CLOSESBRACKET = 14;
   /** RegularExpression Id. */
-  int SEMICOLON = 15;
+  int COMMA = 15;
   /** RegularExpression Id. */
-  int EQUALS = 16;
+  int SEMICOLON = 16;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 17;
+  int EQUALS = 17;
   /** RegularExpression Id. */
-  int GUARD = 18;
+  int FUNCTION_ARROW = 18;
   /** RegularExpression Id. */
-  int GUARD_ARROW = 19;
+  int GUARD = 19;
+  /** RegularExpression Id. */
+  int GUARD_ARROW = 20;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -67,17 +69,17 @@ public interface ForteLangConstants {
     "\"}\"",
     "\"[\"",
     "\"]\"",
+    "\",\"",
     "\";\"",
     "\"=\"",
     "\"->\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 20>",
+    "<token of kind 21>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",
-    "<token of kind 24>",
-    "\",\"",
+    "<token of kind 25>",
   };
 
 }

@@ -607,8 +607,10 @@ TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
 TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
+
 TOKEN : { < OPENSBRACKET : "[" > }
 TOKEN : { < CLOSESBRACKET : "]" > }
+TOKEN : { < COMMA : "," > }
 
 TOKEN : { < SEMICOLON : ";" > }
 
@@ -660,7 +662,7 @@ void eof() throws Exception : {} {
 }
 
 void includedSet() throws Exception : { } {
-	<INCLUDE> set() <IN> set()
+	<INCLUDE> set() <IN> expression()
 }
 
 void set() throws Exception : {} {
@@ -677,32 +679,29 @@ void lambda() throws Exception : {} {
 	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards())
 }
 
-
-
 void list() throws Exception : {} {
-  	<OPENSBRACKET>
-  	(  	  LOOKAHEAD(3) <CLOSESBRACKET>
-  	| LOOKAHEAD(3) expression() <CLOSESBRACKET>
-  	| (LOOKAHEAD(2) expression() ",")+ expression() <CLOSESBRACKET> )
+  	<OPENSBRACKET> (  	 <CLOSESBRACKET>
+  	 | (LOOKAHEAD(2) enclosedExpression() <COMMA>)* enclosedExpression() <CLOSESBRACKET>
+	)
+}
+
+void enclosedExpression() throws Exception : {} {
+	(<OPENBRACKET> expression() <CLOSEBRACKET>) | singleExpression()
 }
 
 void number() throws Exception : {} {
 	<NUMBER> | <FLOATING_POINT_NUMBER>
 }
 
-//void functionCall() throws Exception : {} {
-//	<OPENBRACKET> <VAR_NAME> (LOOKAHEAD(2) expression())* <CLOSEBRACKET>
-//}
-
 void expression() throws Exception : {} {
 	<VAR_NAME> (
-		(singleExpression() | <OPENBRACKET> expression() <CLOSEBRACKET>)+
-		| (<OPERATION> <VAR_NAME>)?
+		(LOOKAHEAD(3) singleExpression() | enclosedExpression())+
+		| (LOOKAHEAD(2) <OPERATION> <VAR_NAME>)?
 	)
-	| set() (<OPERATION> set())?
-	| includedSet() (<OPERATION> includedSet())?
+	| set() (LOOKAHEAD(2) <OPERATION> set())?
+	| includedSet() (LOOKAHEAD(2) <OPERATION> includedSet())?
 	| list() (<CONCAT> list())?
-	| number() (<OPERATION> number())?
+	| number() (LOOKAHEAD(2) <OPERATION> number())?
 	| <STRING> (<CONCAT> <STRING>)?
 }
 

@@ -52,7 +52,11 @@
         what's 
         up?";
 
-    # Function calls MUST be surrounded by brackets
+    # Inner function calls must be surrounded by brackets
     reallyEmptySet = union (union {} {}) {};
+
+    somethingElse = include {
+        a = x -> y -> x + y;
+    } in [(a b c), c, x, y, (x x)];
     
 }

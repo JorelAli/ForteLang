@@ -20,4 +20,18 @@
     intersect =  set1 -> set2 -> set1 /- set2;
     difference = set1 -> set2 -> set1 // set2;
 
+    ### Multiline comments
+    are supported as well! ###
+
+    # Constants
+    number2 = 2;
+
+    # Sets
+    emptySet = {};
+    simpleSet = {
+        hello = 2;
+        primes = [2, 3, 5, 7, 11];
+        subtract = x -> y -> x - y;
+    };
+    
 }

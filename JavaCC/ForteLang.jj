@@ -728,15 +728,19 @@ void eof() throws Exception : {} {
 	}
 }
 
+//void includedSet() throws Exception : { } {
+//
+//}
+
 void set() throws Exception : {} {
 	<OPENCBRACKET> (
 	  <VAR_NAME> <EQUALS>
 	  functionResult()
-	  )+ <CLOSECBRACKET>
+	  )* <CLOSECBRACKET>
 }
 
 void functionResult() throws Exception : {} {
-	(lambda() | list()) <SEMICOLON>
+	(LOOKAHEAD(2) lambda() | expression()) <SEMICOLON>
 }
 
 void lambda() throws Exception : {} {
@@ -747,15 +751,14 @@ void list() throws Exception : {} {
   	<OPENSBRACKET>
   	(  	  LOOKAHEAD(3) <CLOSESBRACKET>
   	| LOOKAHEAD(3) expression() <CLOSESBRACKET>
-  	| (expression() "," expression())+ <CLOSESBRACKET> )
+  	| (LOOKAHEAD(2) expression() ",")+ expression() <CLOSESBRACKET> )
 }
 
 void expression() throws Exception : {} {
-  	//varname
-  	//varname <op> varname
 	(<VAR_NAME> (<OPERATION> <VAR_NAME>)?)
 	| (set() (<OPERATION> set())?)
 	| (list() (<OPERATION> list())?)
+	| (<NUMBER> (<OPERATION> <NUMBER>)?)
 }
 
 void guards() throws Exception : {} {

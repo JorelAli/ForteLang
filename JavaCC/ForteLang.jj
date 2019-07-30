@@ -692,6 +692,8 @@ TOKEN : { < GUARD_ARROW : "->>" > }
 SKIP : { < "#" (~["\r", "\n"])* > }
 SKIP : { "\n" | "\r" | " " }
 
+SKIP : { < "###" (~["#"])* "###" > }
+
 /**
  * This parses the input from System.in
  * This accepts the program, which is 1 or more functions (denoted by the +

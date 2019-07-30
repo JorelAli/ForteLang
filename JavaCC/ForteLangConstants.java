@@ -64,6 +64,7 @@ public interface ForteLangConstants {
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",
+    "<token of kind 20>",
     "\",\"",
   };
 

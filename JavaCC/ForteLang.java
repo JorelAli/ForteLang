@@ -775,7 +775,7 @@ public class ForteLang implements ForteLangConstants {
         label_4:
         while (true) {
           expression();
-          jj_consume_token(20);
+          jj_consume_token(21);
           expression();
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case VAR_NAME:
@@ -885,11 +885,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(2, xla); }
   }
 
-  static private boolean jj_3_2() {
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_13() {
     if (jj_scan_token(OPERATION)) return true;
     return false;
@@ -974,7 +969,7 @@ public class ForteLang implements ForteLangConstants {
 
   static private boolean jj_3R_16() {
     if (jj_3R_6()) return true;
-    if (jj_scan_token(20)) return true;
+    if (jj_scan_token(21)) return true;
     return false;
   }
 
@@ -990,6 +985,11 @@ public class ForteLang implements ForteLangConstants {
 
   static private boolean jj_3_3() {
     if (jj_3R_6()) return true;
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2() {
     if (jj_scan_token(CLOSESBRACKET)) return true;
     return false;
   }
@@ -1219,7 +1219,7 @@ public class ForteLang implements ForteLangConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[21];
+    boolean[] la1tokens = new boolean[22];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -1233,7 +1233,7 @@ public class ForteLang implements ForteLangConstants {
         }
       }
     }
-    for (int i = 0; i < 21; i++) {
+    for (int i = 0; i < 22; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

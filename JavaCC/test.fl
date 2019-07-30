@@ -93,4 +93,8 @@ include {
         @b = run "echo 'hi'";
     }.@b;
 
-} in @exec "hello"
+    map = x -> ys -> x ys;
+
+    useMap = map (x -> y -> x + y);
+
+} in @exec "echo hi"

@@ -715,10 +715,12 @@ void number() throws Exception : {} {
 }
 
 void expression() throws Exception : {} {
-	<VAR_NAME> (
+  	(  	  LOOKAHEAD(2) lambda() 
+	  | <VAR_NAME> (
 		(LOOKAHEAD(3) singleExpression() | enclosedExpression())+
 		| (<SELECT> <VAR_NAME>)+
 		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)?
+	)
 	)
 	| set() (
 	  (<SELECT> <VAR_NAME>)+

@@ -13,7 +13,7 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int NUMBER = 2;
   /** RegularExpression Id. */
-  int FUNCDEF = 3;
+  int FLOATING_POINT_NUMBER = 3;
   /** RegularExpression Id. */
   int VAR_NAME = 4;
   /** RegularExpression Id. */
@@ -27,7 +27,9 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int SEMICOLON = 9;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 10;
+  int EQUALS = 10;
+  /** RegularExpression Id. */
+  int FUNCTION_ARROW = 11;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -37,19 +39,19 @@ public interface ForteLangConstants {
     "<EOF>",
     "<OPERATION>",
     "<NUMBER>",
-    "\"DEF\"",
+    "<FLOATING_POINT_NUMBER>",
     "<VAR_NAME>",
     "\"(\"",
     "\")\"",
     "\"{\"",
     "\"}\"",
     "\";\"",
+    "\"=\"",
     "\"->\"",
-    "<token of kind 11>",
+    "<token of kind 12>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",
-    "\"=\"",
   };
 
 }

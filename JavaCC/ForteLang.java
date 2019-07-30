@@ -703,7 +703,7 @@ public class ForteLang implements ForteLangConstants {
     label_2:
     while (true) {
       jj_consume_token(VAR_NAME);
-      jj_consume_token(15);
+      jj_consume_token(EQUALS);
       lambda();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case VAR_NAME:
@@ -728,11 +728,11 @@ public class ForteLang implements ForteLangConstants {
         break label_3;
       }
     }
-    ex();
+    expression();
     jj_consume_token(SEMICOLON);
   }
 
-  static final public void ex() throws ParseException, Exception {
+  static final public void expression() throws ParseException, Exception {
     jj_consume_token(VAR_NAME);
     jj_consume_token(OPERATION);
     jj_consume_token(VAR_NAME);

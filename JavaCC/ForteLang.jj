@@ -670,16 +670,20 @@ PARSER_END(ForteLang)
 
 TOKEN : { < OPERATION : "+" | "*" | "-" | "/" > }
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
-TOKEN : { < FUNCDEF : "DEF" > }
-//TOKEN : { < FUNCNAME : (["A"-"Z", "a"-"z"])+ > }
+TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
+
 TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z"])+ > }
-//TOKEN : { < EOL : "\n" | "\r" | "\r\n" > }
+
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
 TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
+
 TOKEN : { < SEMICOLON : ";" > }
+
+TOKEN : { < EQUALS : "=" > }
 TOKEN : { < FUNCTION_ARROW : "->" > }
+
 SKIP : { < "#" (~["\r", "\n"])* > }
 SKIP : { "\n" | "\r" | " " }
 
@@ -718,16 +722,16 @@ void eof() throws Exception : {} {
 }
 
 void set() throws Exception : { } {
-	"{" (
-	  <VAR_NAME> "="
+	<OPENCBRACKET> (
+	  <VAR_NAME> <EQUALS>
 	  lambda()
-	  )+ "}"
+	  )+ <CLOSECBRACKET>
 }
 
 void lambda() throws Exception : {} {
-	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ ex() ";"
+	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ expression() <SEMICOLON>
 }
 
-void ex() throws Exception : {} {
+void expression() throws Exception : {} {
 	<VAR_NAME> <OPERATION> <VAR_NAME>
 }

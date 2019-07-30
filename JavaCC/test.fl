@@ -1,0 +1,7 @@
+{
+    # Adds two parameters together
+    add = x -> y -> x + y;
+
+    # Square a number
+    SQUARE = x -> x * x;
+}

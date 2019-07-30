@@ -1,2 +1,2 @@
 #!/bin/sh
-java ForteLang < test.txt
+java ForteLang < test.fl

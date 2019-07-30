@@ -249,7 +249,7 @@ public class ForteLang {
 	 *   detail
 	 */
 	private static String getErrorMessage(List<String> expectedTokens, Token currentToken) {
-	  	if(expectedTokens.contains("<NUMBER>") && expectedTokens.contains("<FUNCNAME>") && expectedTokens.contains("<PARAMNAME>")) {
+	  	if(expectedTokens.contains("<NUMBER>") && expectedTokens.contains("") && expectedTokens.contains("")) {
 			return "Expected a number, function name or parameter " + printLoc(currentToken) + " in the " + currentFunction + " function";
 	  	}
 		if(expectedTokens.contains("\"}\"")) {
@@ -261,10 +261,10 @@ public class ForteLang {
 		if(expectedTokens.contains("\"DEF\"")) {
 			return "Expected DEF keyword " + printLoc(currentToken);
 		}
-		if(expectedTokens.contains("<FUNCNAME>")) {
+		if(expectedTokens.contains("")) {
 			return "Expected a valid function name consisting of only uppercase letters " + printLoc(currentToken);
 		}
-		if(expectedTokens.contains("\"{\"") && expectedTokens.contains("<PARAMNAME>")) {
+		if(expectedTokens.contains("\"{\"") && expectedTokens.contains("")) {
 			return "Expected a valid parameter name consisting of only lowercase letters " + printLoc(currentToken);
 		}
 
@@ -671,17 +671,17 @@ PARSER_END(ForteLang)
 TOKEN : { < OPERATION : "+" | "*" | "-" | "/" > }
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FUNCDEF : "DEF" > }
-TOKEN : { < FUNCNAME : (["A"-"Z"])+ > }
-TOKEN : { < PARAMNAME : (["a"-"z"])+ > }
-TOKEN : { < EOL : "\n" | "\r" | "\r\n" > }
-TOKEN : { < SP : " " > }
+//TOKEN : { < FUNCNAME : (["A"-"Z", "a"-"z"])+ > }
+TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z"])+ > }
+//TOKEN : { < EOL : "\n" | "\r" | "\r\n" > }
 TOKEN : { < OPENBRACKET : "(" > }
 TOKEN : { < CLOSEBRACKET : ")" > }
 TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
 TOKEN : { < SEMICOLON : ";" > }
-TOKEN : { < POTENTIAL_SPACE : (" ")+ > }
 TOKEN : { < FUNCTION_ARROW : "->" > }
+SKIP : { < "#" (~["\r", "\n"])* > }
+SKIP : { "\n" | "\r" | " " }
 
 /**
  * This parses the input from System.in
@@ -689,20 +689,7 @@ TOKEN : { < FUNCTION_ARROW : "->" > }
  * symbol), and the end of file character
  */
 void input() throws Exception : {} {
-  (lambda())+ eof()
-
-  /*
-  Things it could be:
-  	Object
-  	Comment
-
-  	Objects are:
-  		Functions (lambdas)
-  		Sets
-  		Lists
-  		Expressions
-  		includes?
-  */
+  (set())+ eof()
 }
 
 /**
@@ -730,207 +717,17 @@ void eof() throws Exception : {} {
 	}
 }
 
+void set() throws Exception : { } {
+	"{" (
+	  <VAR_NAME> "="
+	  lambda()
+	  )+ "}"
+}
+
 void lambda() throws Exception : {} {
-	(LOOKAHEAD(3) <PARAMNAME> <SP> <FUNCTION_ARROW> <SP>)+ ex() (<EOL>|<EOF>)
+	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ ex() ";"
 }
 
 void ex() throws Exception : {} {
-	<PARAMNAME> <SP> <OPERATION> <SP> <PARAMNAME>
-}
-
-/**
- * This method handles a function declaration. It checks the name of the
- * function using functionName and checks whether the declared function should
- * or should not have parameters. It also adds the function body definitions to
- * the map functionBodies
- */
-void function() throws Exception : { boolean isMain; Expression expr; } {
-	<FUNCDEF> <SP>
-	/* Check whether the function is a MAIN function and check for duplicate
-	 * function definitions */
-	isMain = functionName()
-	<SP> 
-	{
-	  	/* Retrieve the next token to be read and check if it is a { or not to
-	  	 * determine whether the function should or should not have a parameter */
-		Token nextToken = getToken(1);
-		if(isMain) {
-			if(!nextToken.image.equals("{")) {
-				throw mkException(MAIN_FUNCTION + " function declaration should not have a parameter " + printLoc(nextToken));
-			}
-		} else {
-			if(nextToken.image.equals("{")) {
-				throw mkException("Non-" + MAIN_FUNCTION + " function declaration should have a parameter " + printLoc(nextToken));
-			}
-		}
-	}
-	/* Using JavaCC, the next token is either a parameter and a space, OR not a
-	 * parameter and a space. The check for whether it should be one or the 
-	 * other is performed above. The use of the ? is part of the regular
-	 * expression meaning "0 or 1 occurrence" */
-	(<PARAMNAME> <SP>)?
-	<OPENCBRACKET> 
-	<SP>
-	/* Parse the body of the function and put it in the functionBodies map*/
-	expr = expression() 
-	{
-		functionBodies.put(currentFunction, expr);
-	}
-	<SP> 
-	<CLOSECBRACKET> 
-	<SP> 
-	<SEMICOLON> 
-	<EOL>
-}
-
-/**
- * This method checks if a function name has been declared more than once
- * within a function declaration.
- *
- * @return True if the function name is a main function
- */
-boolean functionName() throws Exception : { Token functionName; } {
-	functionName = <FUNCNAME>
-
-	{
-		
-		/* Checks if a function has been defined more than once */
-		if(definedFunctions.contains(functionName.image)) {
-			throw mkException("Multiple declarations of function " + functionName.image + " were found " + printLoc(functionName));
-		} else {
-			definedFunctions.add(functionName.image);
-			/* Keep track of the current function, which is used to apply
-			 * parameters to function calls */
-			currentFunction = functionName.image;
-		}
-
-		/* Return whether this function is the main function */
-		return functionName.image.equals(MAIN_FUNCTION);
-	}
-}
-
-/**
- * Parses an expression. An expression consists of a single statement, or a
- * statement, followed by an operator, followed by another statement.
- *
- * This uses a list to keep track of the parts of the expression which is then
- * converted into a compound Expression to be returned. If the expression is
- * just a number, a number expression is returned instead of a compound
- * expression.
- *
- * This uses JavaCC's LOOKAHEAD feature to determine whether the expression is
- * a statement or many statements. The function uses LOOKAHEAD(1) to look ahead
- * after parsing a statement. If the next character (hence the lookahead of 1)
- * is an operator (+ or * is only 1 character in size), it will then continue to
- * look for other statements.
- *
- * This also uses the Kleene Star operator to form the following grammar:
- *   <STATEMENT> (<OPERATION> <STATEMENT>)*
- * such that it can accept more than one statement, or a single statement instead.
- *
- * @return An Expression object representing the current expression 
- */
-Expression expression(): { Token operator; Expression firstStatement; Expression otherStatements; } {
-  	/* Read the first statement and store it in the list */
-  	firstStatement = statement()
-	{
-		List<Expression> elements = new ArrayList<Expression>();
-		elements.add(firstStatement);
-	}
-
-	/* Perform a lookahead to check for an operator. If an operator is found,
-	 * read the operator and the next statement and repeat (as defined by the
-	 * Kleene Star). If an operator is not found, continue*/
-	(LOOKAHEAD(1)
-		operator = <OPERATION>
-		otherStatements = statement()
-
-		{
-		  	/* Add the operator and statement to the list */
-			elements.add(new Expression(operator.image, ExpressionType.OPERATOR));
-			elements.add(otherStatements);
-		}
-	)*
-
-	{
-		/* If the expression is just a number, return an Expression object
-		 * representing just a number. */
-		if(elements.size() == 1) {
-			if((elements.get(0)).type == ExpressionType.NUMBER) {
-				return (elements.get(0));
-			}
-		}
-
-		/* If the expression is not just a number, return a compound Expression
-		 * consisting of the Expressions in the list */
-		return new Expression(elements, ExpressionType.COMPOUND);
-	}
-}
-
-/**
- * Parses a statement. A statement consists of a number, a parameter name or
- * a function call.
- *
- * @return An Expression representing the parsed statement
- */
-Expression statement(): { Expression expression; } { 
-	  expression = number()		{ return expression; }
-	| expression = param()		{ return expression; }
-	| expression = funccall()	{ return expression; }
-}
-
-/**
- * Parses a number token
- *
- * @return An Expression representing the value of the parsed number token
- */
-Expression number(): { Token numberToken; } {
-	numberToken = <NUMBER>
-	{
-		return new Expression(Integer.parseInt(numberToken.image), ExpressionType.NUMBER);
-	}
-}
-
-/**
- * Parses a parameter token
- *
- * @return An Expression representing the name of the parsed parameter token
- */
-Expression param(): { Token parameterToken; } {
-	parameterToken = <PARAMNAME>
-	{
-		return new Expression(parameterToken.image, ExpressionType.PARAMETER);
-	}
-}
-
-/**
- * Parses a function call
- * This takes the function name, the open bracket, the function contents and
- * close brackets of the function call. It then populates the list of function
- * calls, defined functions and appends it to the function mapping map which is
- * used by the interpreter to perform checks for recursion and undeclared
- * functions.
- *
- * @return An Expression representing the function call, stored as a LangFunction
- */
-Expression funccall(): { Token functionNameToken; Expression functionBody; } { 
-	functionNameToken = <FUNCNAME>
-	<OPENBRACKET> functionBody = expression() <CLOSEBRACKET> 
-	{
-		/* Adds this function to the functionCalls to check. This is done to
-		 * reduce the amount of computation for previously "found" functions.
-		 * For example, if a function has already been found by the parser,
-		 * it knows that this function call is valid. If not, it adds the
-		 * function call to a list to be checked at the end of parsing the
-		 * program */
-		if(!definedFunctions.contains(functionNameToken.image)) {
-			functionCalls.add(functionNameToken);
-		}
-
-		/* Adds this function to the current function mapping */
-		addToFunctionMapping(functionNameToken.image);
-		
-		return new Expression(new LangFunction(functionNameToken.image, functionBody), ExpressionType.FUNCTION);
-	}
-
+	<VAR_NAME> <OPERATION> <VAR_NAME>
 }

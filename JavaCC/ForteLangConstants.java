@@ -15,27 +15,19 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int FUNCDEF = 3;
   /** RegularExpression Id. */
-  int FUNCNAME = 4;
+  int VAR_NAME = 4;
   /** RegularExpression Id. */
-  int PARAMNAME = 5;
+  int OPENBRACKET = 5;
   /** RegularExpression Id. */
-  int EOL = 6;
+  int CLOSEBRACKET = 6;
   /** RegularExpression Id. */
-  int SP = 7;
+  int OPENCBRACKET = 7;
   /** RegularExpression Id. */
-  int OPENBRACKET = 8;
+  int CLOSECBRACKET = 8;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 9;
+  int SEMICOLON = 9;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 10;
-  /** RegularExpression Id. */
-  int CLOSECBRACKET = 11;
-  /** RegularExpression Id. */
-  int SEMICOLON = 12;
-  /** RegularExpression Id. */
-  int POTENTIAL_SPACE = 13;
-  /** RegularExpression Id. */
-  int FUNCTION_ARROW = 14;
+  int FUNCTION_ARROW = 10;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -46,17 +38,18 @@ public interface ForteLangConstants {
     "<OPERATION>",
     "<NUMBER>",
     "\"DEF\"",
-    "<FUNCNAME>",
-    "<PARAMNAME>",
-    "<EOL>",
-    "\" \"",
+    "<VAR_NAME>",
     "\"(\"",
     "\")\"",
     "\"{\"",
     "\"}\"",
     "\";\"",
-    "<POTENTIAL_SPACE>",
     "\"->\"",
+    "<token of kind 11>",
+    "\"\\n\"",
+    "\"\\r\"",
+    "\" \"",
+    "\"=\"",
   };
 
 }

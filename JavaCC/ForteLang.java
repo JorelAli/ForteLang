@@ -248,7 +248,7 @@ public class ForteLang implements ForteLangConstants {
 	 *   detail
 	 */
         private static String getErrorMessage(List<String> expectedTokens, Token currentToken) {
-                if(expectedTokens.contains("<NUMBER>") && expectedTokens.contains("<FUNCNAME>") && expectedTokens.contains("<PARAMNAME>")) {
+                if(expectedTokens.contains("<NUMBER>") && expectedTokens.contains("") && expectedTokens.contains("")) {
                         return "Expected a number, function name or parameter " + printLoc(currentToken) + " in the " + currentFunction + " function";
                 }
                 if(expectedTokens.contains("\u005c"}\u005c"")) {
@@ -260,10 +260,10 @@ public class ForteLang implements ForteLangConstants {
                 if(expectedTokens.contains("\u005c"DEF\u005c"")) {
                         return "Expected DEF keyword " + printLoc(currentToken);
                 }
-                if(expectedTokens.contains("<FUNCNAME>")) {
+                if(expectedTokens.contains("")) {
                         return "Expected a valid function name consisting of only uppercase letters " + printLoc(currentToken);
                 }
-                if(expectedTokens.contains("\u005c"{\u005c"") && expectedTokens.contains("<PARAMNAME>")) {
+                if(expectedTokens.contains("\u005c"{\u005c"") && expectedTokens.contains("")) {
                         return "Expected a valid parameter name consisting of only lowercase letters " + printLoc(currentToken);
                 }
 
@@ -672,9 +672,9 @@ public class ForteLang implements ForteLangConstants {
   static final public void input() throws ParseException, Exception {
     label_1:
     while (true) {
-      lambda();
+      set();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case PARAMNAME:
+      case OPENCBRACKET:
         ;
         break;
       default:
@@ -698,254 +698,44 @@ public class ForteLang implements ForteLangConstants {
 
   }
 
-  static final public void lambda() throws ParseException, Exception {
+  static final public void set() throws ParseException, Exception {
+    jj_consume_token(OPENCBRACKET);
     label_2:
     while (true) {
-      jj_consume_token(PARAMNAME);
-      jj_consume_token(SP);
-      jj_consume_token(FUNCTION_ARROW);
-      jj_consume_token(SP);
-      if (jj_2_1(3)) {
-        ;
-      } else {
-        break label_2;
-      }
-    }
-    ex();
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case EOL:
-      jj_consume_token(EOL);
-      break;
-    case 0:
-      jj_consume_token(0);
-      break;
-    default:
-      jj_la1[1] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-  }
-
-  static final public void ex() throws ParseException, Exception {
-    jj_consume_token(PARAMNAME);
-    jj_consume_token(SP);
-    jj_consume_token(OPERATION);
-    jj_consume_token(SP);
-    jj_consume_token(PARAMNAME);
-  }
-
-/**
- * This method handles a function declaration. It checks the name of the
- * function using functionName and checks whether the declared function should
- * or should not have parameters. It also adds the function body definitions to
- * the map functionBodies
- */
-  static final public void function() throws ParseException, Exception {
-                                     boolean isMain; Expression expr;
-    jj_consume_token(FUNCDEF);
-    jj_consume_token(SP);
-    /* Check whether the function is a MAIN function and check for duplicate
-    	 * function definitions */
-            isMain = functionName();
-    jj_consume_token(SP);
-                /* Retrieve the next token to be read and check if it is a { or not to
-	  	 * determine whether the function should or should not have a parameter */
-                Token nextToken = getToken(1);
-                if(isMain) {
-                        if(!nextToken.image.equals("{")) {
-                                {if (true) throw mkException(MAIN_FUNCTION + " function declaration should not have a parameter " + printLoc(nextToken));}
-                        }
-                } else {
-                        if(nextToken.image.equals("{")) {
-                                {if (true) throw mkException("Non-" + MAIN_FUNCTION + " function declaration should have a parameter " + printLoc(nextToken));}
-                        }
-                }
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case PARAMNAME:
-      jj_consume_token(PARAMNAME);
-      jj_consume_token(SP);
-      break;
-    default:
-      jj_la1[2] = jj_gen;
-      ;
-    }
-    jj_consume_token(OPENCBRACKET);
-    jj_consume_token(SP);
-    /* Parse the body of the function and put it in the functionBodies map*/
-            expr = expression();
-                functionBodies.put(currentFunction, expr);
-    jj_consume_token(SP);
-    jj_consume_token(CLOSECBRACKET);
-    jj_consume_token(SP);
-    jj_consume_token(SEMICOLON);
-    jj_consume_token(EOL);
-  }
-
-/**
- * This method checks if a function name has been declared more than once
- * within a function declaration.
- *
- * @return True if the function name is a main function
- */
-  static final public boolean functionName() throws ParseException, Exception {
-                                            Token functionName;
-    functionName = jj_consume_token(FUNCNAME);
-                /* Checks if a function has been defined more than once */
-                if(definedFunctions.contains(functionName.image)) {
-                        {if (true) throw mkException("Multiple declarations of function " + functionName.image + " were found " + printLoc(functionName));}
-                } else {
-                        definedFunctions.add(functionName.image);
-                        /* Keep track of the current function, which is used to apply
-			 * parameters to function calls */
-                        currentFunction = functionName.image;
-                }
-
-                /* Return whether this function is the main function */
-                {if (true) return functionName.image.equals(MAIN_FUNCTION);}
-    throw new Error("Missing return statement in function");
-  }
-
-/**
- * Parses an expression. An expression consists of a single statement, or a
- * statement, followed by an operator, followed by another statement.
- *
- * This uses a list to keep track of the parts of the expression which is then
- * converted into a compound Expression to be returned. If the expression is
- * just a number, a number expression is returned instead of a compound
- * expression.
- *
- * This uses JavaCC's LOOKAHEAD feature to determine whether the expression is
- * a statement or many statements. The function uses LOOKAHEAD(1) to look ahead
- * after parsing a statement. If the next character (hence the lookahead of 1)
- * is an operator (+ or * is only 1 character in size), it will then continue to
- * look for other statements.
- *
- * This also uses the Kleene Star operator to form the following grammar:
- *   <STATEMENT> (<OPERATION> <STATEMENT>)*
- * such that it can accept more than one statement, or a single statement instead.
- *
- * @return An Expression object representing the current expression 
- */
-  static final public Expression expression() throws ParseException {
-                           Token operator; Expression firstStatement; Expression otherStatements;
-    /* Read the first statement and store it in the list */
-            firstStatement = statement();
-                List<Expression> elements = new ArrayList<Expression>();
-                elements.add(firstStatement);
-    label_3:
-    while (true) {
+      jj_consume_token(VAR_NAME);
+      jj_consume_token(15);
+      lambda();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case OPERATION:
+      case VAR_NAME:
         ;
         break;
       default:
-        jj_la1[3] = jj_gen;
+        jj_la1[1] = jj_gen;
+        break label_2;
+      }
+    }
+    jj_consume_token(CLOSECBRACKET);
+  }
+
+  static final public void lambda() throws ParseException, Exception {
+    label_3:
+    while (true) {
+      jj_consume_token(VAR_NAME);
+      jj_consume_token(FUNCTION_ARROW);
+      if (jj_2_1(3)) {
+        ;
+      } else {
         break label_3;
       }
-      operator = jj_consume_token(OPERATION);
-      otherStatements = statement();
-                        /* Add the operator and statement to the list */
-                        elements.add(new Expression(operator.image, ExpressionType.OPERATOR));
-                        elements.add(otherStatements);
     }
-                /* If the expression is just a number, return an Expression object
-		 * representing just a number. */
-                if(elements.size() == 1) {
-                        if((elements.get(0)).type == ExpressionType.NUMBER) {
-                                {if (true) return (elements.get(0));}
-                        }
-                }
-
-                /* If the expression is not just a number, return a compound Expression
-		 * consisting of the Expressions in the list */
-                {if (true) return new Expression(elements, ExpressionType.COMPOUND);}
-    throw new Error("Missing return statement in function");
+    ex();
+    jj_consume_token(SEMICOLON);
   }
 
-/**
- * Parses a statement. A statement consists of a number, a parameter name or
- * a function call.
- *
- * @return An Expression representing the parsed statement
- */
-  static final public Expression statement() throws ParseException {
-                          Expression expression;
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case NUMBER:
-      expression = number();
-                                          {if (true) return expression;}
-      break;
-    case PARAMNAME:
-      expression = param();
-                                          {if (true) return expression;}
-      break;
-    case FUNCNAME:
-      expression = funccall();
-                                          {if (true) return expression;}
-      break;
-    default:
-      jj_la1[4] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-    throw new Error("Missing return statement in function");
-  }
-
-/**
- * Parses a number token
- *
- * @return An Expression representing the value of the parsed number token
- */
-  static final public Expression number() throws ParseException {
-                       Token numberToken;
-    numberToken = jj_consume_token(NUMBER);
-                {if (true) return new Expression(Integer.parseInt(numberToken.image), ExpressionType.NUMBER);}
-    throw new Error("Missing return statement in function");
-  }
-
-/**
- * Parses a parameter token
- *
- * @return An Expression representing the name of the parsed parameter token
- */
-  static final public Expression param() throws ParseException {
-                      Token parameterToken;
-    parameterToken = jj_consume_token(PARAMNAME);
-                {if (true) return new Expression(parameterToken.image, ExpressionType.PARAMETER);}
-    throw new Error("Missing return statement in function");
-  }
-
-/**
- * Parses a function call
- * This takes the function name, the open bracket, the function contents and
- * close brackets of the function call. It then populates the list of function
- * calls, defined functions and appends it to the function mapping map which is
- * used by the interpreter to perform checks for recursion and undeclared
- * functions.
- *
- * @return An Expression representing the function call, stored as a LangFunction
- */
-  static final public Expression funccall() throws ParseException {
-                         Token functionNameToken; Expression functionBody;
-    functionNameToken = jj_consume_token(FUNCNAME);
-    jj_consume_token(OPENBRACKET);
-    functionBody = expression();
-    jj_consume_token(CLOSEBRACKET);
-                /* Adds this function to the functionCalls to check. This is done to
-		 * reduce the amount of computation for previously "found" functions.
-		 * For example, if a function has already been found by the parser,
-		 * it knows that this function call is valid. If not, it adds the
-		 * function call to a list to be checked at the end of parsing the
-		 * program */
-                if(!definedFunctions.contains(functionNameToken.image)) {
-                        functionCalls.add(functionNameToken);
-                }
-
-                /* Adds this function to the current function mapping */
-                addToFunctionMapping(functionNameToken.image);
-
-                {if (true) return new Expression(new LangFunction(functionNameToken.image, functionBody), ExpressionType.FUNCTION);}
-    throw new Error("Missing return statement in function");
+  static final public void ex() throws ParseException, Exception {
+    jj_consume_token(VAR_NAME);
+    jj_consume_token(OPERATION);
+    jj_consume_token(VAR_NAME);
   }
 
   static private boolean jj_2_1(int xla) {
@@ -956,8 +746,7 @@ public class ForteLang implements ForteLangConstants {
   }
 
   static private boolean jj_3_1() {
-    if (jj_scan_token(PARAMNAME)) return true;
-    if (jj_scan_token(SP)) return true;
+    if (jj_scan_token(VAR_NAME)) return true;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
     return false;
   }
@@ -974,13 +763,13 @@ public class ForteLang implements ForteLangConstants {
   static private Token jj_scanpos, jj_lastpos;
   static private int jj_la;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[5];
+  static final private int[] jj_la1 = new int[2];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x20,0x41,0x20,0x2,0x34,};
+      jj_la1_0 = new int[] {0x80,0x10,};
    }
   static final private JJCalls[] jj_2_rtns = new JJCalls[1];
   static private boolean jj_rescan = false;
@@ -1004,7 +793,7 @@ public class ForteLang implements ForteLangConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1019,7 +808,7 @@ public class ForteLang implements ForteLangConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1037,7 +826,7 @@ public class ForteLang implements ForteLangConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1048,7 +837,7 @@ public class ForteLang implements ForteLangConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1065,7 +854,7 @@ public class ForteLang implements ForteLangConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1075,7 +864,7 @@ public class ForteLang implements ForteLangConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 2; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1187,12 +976,12 @@ public class ForteLang implements ForteLangConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[15];
+    boolean[] la1tokens = new boolean[16];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 2; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -1201,7 +990,7 @@ public class ForteLang implements ForteLangConstants {
         }
       }
     }
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 16; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

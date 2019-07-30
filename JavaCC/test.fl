@@ -40,5 +40,14 @@
     } in {
         add2 = myAdd;
     };
+
+    # Strings!
+    strings = "hello, world!" ++ "hi";
+
+    # And of course, they're natively multi-lined
+    multiLineString = "hello
+        world
+        what's 
+        up?";
     
 }

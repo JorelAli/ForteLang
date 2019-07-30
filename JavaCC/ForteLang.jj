@@ -668,12 +668,16 @@ public class ForteLang {
 
 PARSER_END(ForteLang)
 
-TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<" | "/+" | "/-" | "//" | "++" > }
+TOKEN : { < OPERATION : "+" | "*" | "-" | "/" | ">" | "<" | "/+" | "/-" | "//" > }
+TOKEN : { < CONCAT : "++" > }
+
 TOKEN : { < NUMBER : (["0"-"9"])+ > }
 TOKEN : { < FLOATING_POINT_NUMBER : <NUMBER>"."<NUMBER> > }
 
 TOKEN : { < INCLUDE : "include" > }
 TOKEN : { < IN : "in" > }
+
+TOKEN : { < STRING : "\"" (~["\""])* "\"" >}
 
 TOKEN : { < VAR_NAME : (["A"-"Z", "a"-"z", "0"-"9", "'"])+ > }
 
@@ -738,10 +742,9 @@ void includedSet() throws Exception : { } {
 }
 
 void set() throws Exception : {} {
-	<OPENCBRACKET> (
-	  <VAR_NAME> <EQUALS>
-	  functionResult()
-	  )* <CLOSECBRACKET>
+	<OPENCBRACKET>
+	(<VAR_NAME> <EQUALS> functionResult())*
+	<CLOSECBRACKET>
 }
 
 void functionResult() throws Exception : {} {
@@ -763,8 +766,9 @@ void expression() throws Exception : {} {
 	(<VAR_NAME> (<OPERATION> <VAR_NAME>)?)
 	| (set() (<OPERATION> set())?)
 	| (includedSet() (<OPERATION> includedSet())?)
-	| (list() (<OPERATION> list())?)
+	| (list() (<CONCAT> list())?)
 	| (<NUMBER> (<OPERATION> <NUMBER>)?)
+	| (<STRING> (<CONCAT> <STRING>)?)
 }
 
 void guards() throws Exception : {} {

@@ -631,7 +631,7 @@ SKIP : { < "###" (~["#"])* "###" > }
  * symbol), and the end of file character
  */
 void input() throws Exception : {} {
-  (set())+ eof()
+  (set()|includedSet()) eof()
 }
 
 /**
@@ -677,9 +677,7 @@ void lambda() throws Exception : {} {
 	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards())
 }
 
-void functionCall() throws Exception : {} {
-	<OPENBRACKET> <VAR_NAME> (LOOKAHEAD(2) expression())* <CLOSEBRACKET>
-}
+
 
 void list() throws Exception : {} {
   	<OPENSBRACKET>
@@ -692,14 +690,24 @@ void number() throws Exception : {} {
 	<NUMBER> | <FLOATING_POINT_NUMBER>
 }
 
+//void functionCall() throws Exception : {} {
+//	<OPENBRACKET> <VAR_NAME> (LOOKAHEAD(2) expression())* <CLOSEBRACKET>
+//}
+
 void expression() throws Exception : {} {
-	(<VAR_NAME> (<OPERATION> <VAR_NAME>)?)
-	| (set() (<OPERATION> set())?)
-	| (includedSet() (<OPERATION> includedSet())?)
-	| (list() (<CONCAT> list())?)
-	| (number() (<OPERATION> number())?)
-	| (<STRING> (<CONCAT> <STRING>)?)
-	| functionCall()
+	<VAR_NAME> (
+		(singleExpression() | <OPENBRACKET> expression() <CLOSEBRACKET>)+
+		| (<OPERATION> <VAR_NAME>)?
+	)
+	| set() (<OPERATION> set())?
+	| includedSet() (<OPERATION> includedSet())?
+	| list() (<CONCAT> list())?
+	| number() (<OPERATION> number())?
+	| <STRING> (<CONCAT> <STRING>)?
+}
+
+void singleExpression() throws Exception : {} {
+	set() | <VAR_NAME> | list() | number() | <STRING>
 }
 
 void guards() throws Exception : {} {

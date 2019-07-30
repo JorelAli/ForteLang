@@ -53,6 +53,6 @@
         up?";
 
     # Function calls MUST be surrounded by brackets
-    reallyEmptySet = (union (union {} {}) {});
+    reallyEmptySet = union (union {} {}) {};
     
 }

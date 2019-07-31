@@ -114,4 +114,6 @@ include {
 
     advancedList = [a, (a + b), (x -> | x ->> y | ->> x)];
 
+    otherStrings = "hi\" hello";
+
 } in @exec "echo hi"

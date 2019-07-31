@@ -5,206 +5,6 @@ import java.util.stream.*;
 
 public class ForteLang implements ForteLangConstants {
 
-         /**
-	 * A class that represents a function in the grammar
-	 */
-        private static class LangFunction {
-                String functionName;
-                Expression inputParam;
-
-                /**
-		 * @param functionName The name of the function
-		 * @param result The parameter which is passed to the function
-		 */
-                public LangFunction(String functionName, Expression result) {
-                        this.functionName = functionName;
-                        this.inputParam = result;
-                }
-        }
-
-        /**
-	 * Enumeration that represents the type of a token. This can be an operator
-	 * (+ or *), a number, parameter name or function. This enumeration also
-	 * represents compound expressions, for example a list of expressions
-	 * (2 + 3)
-	 */
-        private static enum ExpressionType {
-                /** An operator (+) or (*) */
-                OPERATOR,
-
-                /** An integer */
-                NUMBER,
-
-                /** A parameter name */
-                PARAMETER,
-
-                /** A function declaration */
-                FUNCTION,
-
-                /** A list of expressions */
-                COMPOUND,
-
-                /** A left bracket ( */
-                LEFTBRACKET,
-
-                /** A right bracket ) */
-                RIGHTBRACKET;
-        }
-
-        /**
-	 * A class representing a computable expression statement. Examples of
-	 * expressions are:
-	 *
-	 * 3
-	 * 3 + 4
-	 * 2 * (3 + 4)
-	 * 2 * ( ADDFOUR(4) )
-	 */
-        private static class Expression {
-                ExpressionType type;
-
-                LangFunction langFunction;
-                List<Expression> listOfExpressions;
-                int number;
-                String operator;
-
-                private Expression(ExpressionType type) {
-                        this.type = type;
-                }
-
-                /**
-		 * @param value The expression's value (A function)
-		 * @param type The type of expression that this object represents 
-		 */
-                public Expression(LangFunction value, ExpressionType type) {
-                        this(type);
-                        this.langFunction = value;
-                }
-
-                /**
-		 * @param value The expression's value (A list of expressions)
-		 * @param type The type of expression that this object represents 
-		 */
-                public Expression(List<Expression> value, ExpressionType type) {
-                        this(type);
-                        this.listOfExpressions = value;
-                }
-
-                /**
-		 * @param value The expression's value (an Integer)
-		 * @param type The type of expression that this object represents 
-		 */
-                public Expression(int value, ExpressionType type) {
-                        this(type);
-                        this.number = value;
-                }
-
-                /**
-		 * @param value The expression's value (a String)
-		 * @param type The type of expression that this object represents 
-		 */
-                public Expression(String value, ExpressionType type) {
-                        this(type);
-                        this.operator = value;
-                }
-        }
-
-        /**
-	 * An enumeration that represents mathematical operators and their
-	 * precedence over other operators. Operators with a higher precedence value
-	 * takes precedence over operators with a lower precedence value.
-	 *
-	 * It also consists of the application of the operator, i.e. what happens
-	 * when you apply the operator to two numbers. For example, the + operator
-	 * will add two numbers that are given to it.
-	 *
-	 * This makes the code maintainable by allowing new operators to be added
-	 * easily, along with their precedence over other operators as well as the
-	 * actions that occur when the operator is used. For example, to add a
-	 * subtract operator:
-	 *
-	 *   SUBTRACT("-", 1, new ToIntBiFunction<Integer, Integer>() {
-	 *	  	public int applyAsInt(Integer int1, Integer int2) {
-	 *			return int1 - int2;
-	 *	  	} 
-	 *	 }),
-	 *
-	 * and then add it as a valid token in the JavaCC token declaration:
-	 *
-	 *   TOKEN : { < OPERATION : "+" | "*" | "-" > }
-	 */
-        private enum Operator {
-                /* This is equivalent to Java 8's lambda expression:
-	  	 *
-	  	 *   PLUS("+", 1, (int1, int2) -> { int2 + int2 }),
-	  	 * 	 TIMES("*", 2, (int1, int2) -> { int2 * int2 }),
-	   	 */
-                PLUS("+", 1, new ToIntBiFunction<Integer, Integer>() {
-                        public int applyAsInt(Integer int1, Integer int2) {
-                                return int1 + int2;
-                        }
-                }),
-                TIMES("*", 2, new ToIntBiFunction<Integer, Integer>() {
-                        public int applyAsInt(Integer int1, Integer int2) {
-                                return int1 * int2;
-                        }
-                });
-
-                String character;
-                int precedence;
-                ToIntBiFunction<Integer, Integer> application;
-
-                Operator(String character, int precedence, ToIntBiFunction<Integer, Integer> application) {
-                        this.character = character;
-                        this.precedence = precedence;
-                        this.application = application;
-                }
-
-                /**
-		 * Converts an object by character to its respective operator
-		 * @param character The character to convert to an operator
-		 */
-                public static Operator toOperator(String character) {
-                        for(Operator operator : Operator.values()) {
-                                if(operator.character.equals(character)) {
-                                        return operator;
-                                }
-                        }
-                        return null;
-                }
-        }
-
-        /** String token for the MAIN function */
-        private static final String MAIN_FUNCTION = "MAIN";
-
-        /** The current function being parsed by the parser */
-        private static String currentFunction;
-
-        /** A List<String> of all declared function names */
-        private static List<String> definedFunctions = new ArrayList<String>();
-
-        /** A List<Token> of all function calls within function declarations */
-        private static List<Token> functionCalls = new ArrayList<Token>();
-
-        /**
-	 * A Map<String, Set> consisting of function names mapping to a set of
-	 * function calls. For example:
-	 *
-	 *   DEF MAIN { 1+ADDFOUR(2+ADDFOUR(3)) } ;
-	 *
-	 * produces the mapping MAIN -> [ADDFOUR]
-	 */
-        private static Map<String, Set<String>> functionMapping = new HashMap<String, Set<String>>();
-
-        private static final String LEFT_BRACKET = "(";
-        private static final String RIGHT_BRACKET = ")";
-
-        /**
-	 * A Map<String, Expression> which maps function names to expressions that
-	 * represent the operations and statements of that function
-	 */
-        private static Map<String, Expression> functionBodies = new HashMap<String, Expression>();
-
         public static void main(String[] args) throws ParseException {
                 try {
                         /* Run the parser */
@@ -237,353 +37,6 @@ public class ForteLang implements ForteLangConstants {
 //			? "DIVERGENCE"
 //			: interpretProgram()
 //		);
-        }
-
-        /**
-	 * Prints a helpful error message from an array of expected tokens
-	 *
-	 * @param expectedTokens A list of expected string tokens that the parser
-	 *   expects
-	 * @return An error message string that explains what the error is in more
-	 *   detail
-	 */
-        private static String getErrorMessage(List<String> expectedTokens, Token currentToken) {
-                if(expectedTokens.contains("<NUMBER>") && expectedTokens.contains("") && expectedTokens.contains("")) {
-                        return "Expected a number, function name or parameter " + printLoc(currentToken) + " in the " + currentFunction + " function";
-                }
-                if(expectedTokens.contains("\u005c"}\u005c"")) {
-                        return "Expected a closing bracket } " + printLoc(currentToken);
-                }
-                if(expectedTokens.contains("\u005c" \u005c"")) {
-                        return "Expected a space " + printLoc(currentToken);
-                }
-                if(expectedTokens.contains("\u005c"DEF\u005c"")) {
-                        return "Expected DEF keyword " + printLoc(currentToken);
-                }
-                if(expectedTokens.contains("")) {
-                        return "Expected a valid function name consisting of only uppercase letters " + printLoc(currentToken);
-                }
-                if(expectedTokens.contains("\u005c"{\u005c"") && expectedTokens.contains("")) {
-                        return "Expected a valid parameter name consisting of only lowercase letters " + printLoc(currentToken);
-                }
-
-                return "Expected " + expectedTokens.toString().substring(1, expectedTokens.toString().length() - 1) + " " + printLoc(currentToken);
-        }
-
-        /**
-	 * Prints an error message to System.err and causes the program to FAIL
-	 * @param errorMsg The error message to print to System.err
-	 */
-        private static void fail(String errorMsg) {
-                System.err.println("FAIL");
-                System.err.println(errorMsg);
-        }
-
-        /**
-	 * Applies the parameters to a function. Because all function Expression
-	 * objects are a LangFunction and each LangFunction contains the input
-	 * parameter passed to that function, each function already "knows" what
-	 * parameter needs to be applied to it.
-	 *
-	 * This converts each function body (i.e. the list of statements that the
-	 * function will execute) into a compound Expression. It then iterates
-	 * over the expression contents of the compound expression.
-	 *
-	 * If it finds a parameter, a substitution is applied to the parameter and
-	 * replaces it with the given input parameter (as a compound Expression)
-	 *
-	 * If it finds a function, The function's parameters are applied to it (by
-	 * calling applyParameters on that inner function call)
-	 *
-	 * @param resultFunction The function to apply parameters to
-	 * @return The function contents as a compound Expression
-	 */
-        private static Expression applyParameters(Expression resultFunction) {
-
-                /* Get the contents of the function to apply parameters to */
-                LangFunction function = resultFunction.langFunction;
-        Expression functionBody = functionBodies.get(function.functionName);
-
-                /* Convert non-compound function bodies into compound Expressions */
-                if(functionBody.type != ExpressionType.COMPOUND) {
-                        List<Expression> compound = new ArrayList<Expression>();
-                        compound.add(functionBody);
-                        functionBody = new Expression(compound, ExpressionType.COMPOUND);
-                }
-
-        /* Create a list of the function body */
-        List<Expression> funcDeclaration = functionBody.listOfExpressions;
-        ListIterator<Expression> iterator = funcDeclaration.listIterator();
-
-        while (iterator.hasNext()) {
-                Expression currentObj = iterator.next();
-                switch(currentObj.type) {
-                                case PARAMETER:
-                                        /* If a parameter is found, evaluate the parameter that is
-					 * passed to the function. If it is a compound expression,
-					 * expand the compound expression. Because expanding a
-					 * compound expression automatically calls applyParameters
-					 * to inner functions, this function just returns the result
-					 * of the expanded compound. Otherwise, if no compound
-					 * expression was found, set the value of the parameter as
-					 * the value of the input parameter */
-                                if(function.inputParam.type == ExpressionType.COMPOUND) {
-                                                return expandCompound(function.inputParam);
-                                } else {
-                                                iterator.set(function.inputParam);
-                                        }
-                                        break;
-                                case FUNCTION:
-                                        /* If a function is found, set the inner function's
-					 * parameter to the current parameter which is being applied
-					 * in this function. Then, apply the parameters for the
-					 * inner function and set that result as the result of this
-					 * function's function call */
-                                        LangFunction innerFunc = currentObj.langFunction;
-                                        innerFunc.inputParam = function.inputParam;
-
-                                        iterator.set(applyParameters(new Expression(innerFunc, ExpressionType.FUNCTION)));
-                                        break;
-                                default:
-                                        break;
-                }
-            }
-            return new Expression(funcDeclaration, ExpressionType.COMPOUND);
-        }
-
-        /**
-	 * Expands a compound Expression into a compound expression with no function
-	 * calls or parameters. This effectively produces a compound expression
-	 * consisting of operators and numbers only.
-	 *
-	 * This loops through each expression and if it finds a function, it then
-	 * applies the parameters of that function.
-	 *
-	 * @param compound The compound expression to expand
-	 * @return A compound Expression object with no inner function calls.
-	 */
-        private static Expression expandCompound(Expression compound) {
-        List<Expression> compoundContents = compound.listOfExpressions;
-        ListIterator<Expression> it = compoundContents.listIterator();
-        /* Loop through the elements of the compound expression */
-        while (it.hasNext()) {
-                Expression next = it.next();
-                switch(next.type) {
-                                case FUNCTION:
-                                        /* If a function is found, apply the parameters */
-                                        it.set(applyParameters(next));
-                                        break;
-                                default:
-                                        break;
-                }
-        }
-        return new Expression(compoundContents, ExpressionType.COMPOUND);
-        }
-
-        /**
-	 * Takes a compound expression and "flattens" it as a monadic action. This
-	 * function also inserts bracket symbols to aid in the order of mathematical
-	 * operations for calculating a mathematical expression.
-	 *
-	 * For example, converts the compound expression [2, *, [3, +, 4]]
-	 * into a list of tokens as an infix mathematical expression:
-	 * [(, 2, *, (, 3, *, 4, ), )]
-	 *
-	 * @param compound The compound expression to flatten
-	 * @param accumulator The current computed result
-	 * @return A list of numbers, operators and brackets in infix notation that
-	 *   represents the given compound expression
-	 */
-        private static List<Expression> flattenExpression(Expression compound, List<Expression> accumulator) {
-                for(Expression expression : compound.listOfExpressions) {
-                        if(expression.type == ExpressionType.COMPOUND) {
-                                accumulator.add(new Expression(LEFT_BRACKET, ExpressionType.LEFTBRACKET));
-                                accumulator.addAll(flattenExpression(expression, new ArrayList<Expression>()));
-                                accumulator.add(new Expression(RIGHT_BRACKET, ExpressionType.RIGHTBRACKET));
-                        } else {
-                                accumulator.add(expression);
-                        }
-                }
-                return accumulator;
-        }
-
-        /**
-	 * Interprets the program. This method is broken up into 3 parts:
-	 * [1] Simplifying the input program
-	 * [2] Converting the infix program to Reverse Polish Notation
-	 * [3] Interpreting the Reverse Polish Notation representation of the program
-	 *
-	 * [1] Simplifying the input program
-	 *   expandCompound is used to simplify the nested compound expressions made
-	 *   from the MAIN function. It produces an expression which consists of no
-	 *   functions, therefore it only contains compound expressions of only
-	 *   operators and numbers.
-	 *
-	 *   flattenExpression is then used to convert the nested compound
-	 *   expressions into a list of operators and numbers.
-	 *
-	 * [2] The Shunting-Yard Algorithm is used to convert from infix notation to
-	 *   Reverse Polish Notation
-	 *
-	 * @return The integer result of the program
-	 */
-        private static int interpretProgram() {
-
-                /* Simplifies the program */
-                Expression newExpression = expandCompound(functionBodies.get(MAIN_FUNCTION));
-                List<Expression> program = flattenExpression(newExpression, new ArrayList<Expression>());
-
-                /* Applies the Shunting-Yard Algorithm to the program to convert it from
-		 * infix notation (e.g. 2 + 3) to Reverse Polish Notation (e.g. 2 3 +)
-		 * See https://en.wikipedia.org/wiki/Shunting-yard_algorithm */
-                LinkedList<String> queue = new LinkedList<String>();
-                Stack<String> operatorStack = new Stack<String>();
-
-                for(Expression expression : program) {
-                        switch(expression.type) {
-                                case NUMBER:
-                                        /* If it's a number, add it to the output queue */
-                                        queue.add(String.valueOf(expression.number));
-                                        break;
-                                case OPERATOR:
-                                        /* If it's an operator, check the precedence of it with
-					 * other operators. If it doesn't have precedence over
-					 * other operators in the stack, add those to the output
-					 * queue. Then, add the operator to the operator stack */
-                                        while(!operatorStack.empty() && !hasPrecedence(expression, operatorStack.peek())) {
-                                                queue.add(operatorStack.pop());
-                                        }
-                                        operatorStack.push(expression.operator);
-                                        break;
-                                case LEFTBRACKET:
-                                        /* If it's a left bracket, add it to the operator stack*/
-                                        operatorStack.push(LEFT_BRACKET);
-                                        break;
-                                case RIGHTBRACKET:
-                                        /* If it's a right bracket put stuff from the operator
-					 * stack to the output queue until a left bracket is
-					 * found. Then, remove the left bracket from the operator
-					 * stack. */
-                                        while(!operatorStack.peek().equals(LEFT_BRACKET)) {
-                                                queue.add(operatorStack.pop());
-                                        }
-                                        operatorStack.pop();
-                                        break;
-                        }
-                }
-
-                /* Add all remaining operators from the operator stack to the output queue */
-                queue.addAll(operatorStack);
-
-                /* Interprets the Reverse Polish Notation program */
-                Stack<Integer> accumulator = new Stack<Integer>();
-                while(queue.size() != 0) {
-                        String element = queue.remove();
-
-                        if(Operator.toOperator(element) == null) {
-                                /* If the thing in the queue is not an operator (i.e. a number),
-			  	 * add it to the top of the stack */
-                                accumulator.push(Integer.parseInt(element));
-                        } else {
-                                /* If the thing in the queue is an operator, apply the operator's
-			  	 * function, as declared in the Operator enumeration */
-                                accumulator.push(Operator.toOperator(element).application.applyAsInt(accumulator.pop(), accumulator.pop()));
-                        }
-                }
-
-                return accumulator.pop();
-        }
-
-        /**
-	 * Checks if an operator has precedence over another operator. This uses
-	 * the Operator enum's precedence value to check whether an operator has
-	 * precedence over another. If the given operator to check precedence over
-	 * is a left bracket, returns true (all operations have precendence over
-	 * the left bracket)
-	 *
-	 * @param expression The operator to check precedence over
-	 * @param topOfStack The operator that is being checked for precedence over
-	 * @return True if (expression) has precedence over (topOfStack)
-	 */
-        private static boolean hasPrecedence(Expression operator1, String operator2) {
-                if(operator2.equals(LEFT_BRACKET)) {
-                        return true;
-                } else {
-                        return Operator.toOperator(operator1.operator).precedence > Operator.toOperator(operator2).precedence;
-                }
-        }
-
-        /**
-	 * This gets the list of expected tokens from a ParseException. When a
-	 * ParseException takes place, it produces a list of possible tokens that
-	 * it expects. This function turns the encoded list from the ParseException
-	 * into a list of strings of the tokens that it expects.
-	 *
-	 * @param exception The ParseException to retrieve expected tokens from
-	 * @return A List of strings of expected tokens
-	 */
-        private static List<String> getExpectedTokens(ParseException exception) {
-                /* "Flattens" a multidimensional integer array using a monadic action.
-	  	 * This converts a nested array for example [2, [3]] into a single array
-	  	 * [2, 3]. This uses /i's Stream framework's flatMapToInt function.
-	  	 *
-	  	 * This is equivalent to the Java 8 code:
-	  	 *
-	  	 *   Arrays.stream(e.expectedTokenSequences)
-	  	 *     .flatMapToInt(Arrays::stream)
-	  	 *     .toArray(); 
-	  	 */
-                int[] flattenedArr = Arrays.stream(exception.expectedTokenSequences).flatMapToInt(new Function<int[], IntStream>() {
-                        public IntStream apply(int[] array) { return Arrays.stream(array); }
-                }).toArray();
-
-                /* Use the flattened array with the contents of the parse exception to
-		 * get the token names that the parse exception expects */
-                String[] expectedTokens = new String[flattenedArr.length];
-                for(int i = 0; i < flattenedArr.length; i++) {
-                        expectedTokens[i] = exception.tokenImage[flattenedArr[i]];
-                }
-
-                return Arrays.asList(expectedTokens);
-        }
-
-        /**
-	 * Parses the result of a TokenMgrError to convert its result to a more
-	 * human-readable format stating which token was found, what function it was
-	 * found inside and where in the program it was discovered.
-	 *
-	 * @param error The TokenMgrError to convert to human-readable format
-	 * @return A human-readable string which describes the TokenMgrError
-	 */
-        private static String parseLexicalError(TokenMgrError error) {
-                String msg = error.getMessage();
-                String errLine = msg.split(",")[0].substring(22);
-                String errCol = msg.split("column ")[1].split("\u005c\u005c.")[0];
-                String found = msg.split("Encountered: \u005c"")[1].substring(0, 1);
-
-                return "Invalid character " + found +
-                        " was found in the " + currentFunction +
-                        " function on line " + errLine +
-                        ", column " + errCol;
-        }
-
-        /**
-	 * Prints the location of where an error occurred, given a specific token
-	 * @param token The token to print the location of
-	 * @return A human-readable String indicating the location of the token
-     */
-        private static String printLoc(Token token) {
-                return "on line " + token.beginLine + ", column " + token.beginColumn;
-        }
-
-        /**
-	 * Creates a generic exception with the given message
-	 *
-	 * @param message The message that the exception will produce
-	 * @return A new Exception 
-	 */
-        private static Exception mkException(String message) {
-                return new Exception(message);
         }
 
 /** Main endpoint */
@@ -1310,176 +763,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(14, xla); }
   }
 
-  static private boolean jj_3R_58() {
-    if (jj_3R_62()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_6() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_63() {
-    if (jj_3R_18()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_52() {
-    if (jj_3R_23()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_64() {
-    if (jj_scan_token(GUARD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_61() {
-    Token xsp;
-    if (jj_3R_64()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_64()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_57() {
-    if (jj_3R_61()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_27() {
-    if (jj_3R_19()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_15() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_scan_token(GUARD_ARROW)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_14() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_62() {
-    if (jj_scan_token(MATCH)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_13() {
-    if (jj_scan_token(BOOLEAN_OP)) return true;
-    if (jj_scan_token(BOOLEAN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_9() {
-    if (jj_scan_token(SET_OP)) return true;
-    if (jj_3R_24()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_43() {
-    if (jj_scan_token(CONTAINS)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_52()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(30)) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_19() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_28()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(30)) {
-    jj_scanpos = xsp;
-    if (jj_3R_29()) {
-    jj_scanpos = xsp;
-    if (jj_3R_30()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(10)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(9)) return true;
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_28() {
-    if (jj_3R_23()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_11() {
-    if (jj_scan_token(OP)) return true;
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_55() {
-    if (jj_scan_token(EXEC)) return true;
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_56() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_10() {
-    if (jj_scan_token(CONCAT)) return true;
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_53() {
-    if (jj_scan_token(IMPORT)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(10)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(30)) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_45() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_53()) {
-    jj_scanpos = xsp;
-    if (jj_3R_54()) {
-    jj_scanpos = xsp;
-    if (jj_3R_55()) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_54() {
-    if (jj_scan_token(PRINT)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(10)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(30)) return true;
-    }
-    return false;
-  }
-
   static private boolean jj_3R_38() {
     if (jj_3R_45()) return true;
     return false;
@@ -1838,6 +1121,176 @@ public class ForteLang implements ForteLangConstants {
 
   static private boolean jj_3R_29() {
     if (jj_3R_39()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_58() {
+    if (jj_3R_62()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_6() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_63() {
+    if (jj_3R_18()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_52() {
+    if (jj_3R_23()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_64() {
+    if (jj_scan_token(GUARD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_61() {
+    Token xsp;
+    if (jj_3R_64()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_64()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_57() {
+    if (jj_3R_61()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_27() {
+    if (jj_3R_19()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_15() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_scan_token(GUARD_ARROW)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_14() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_62() {
+    if (jj_scan_token(MATCH)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_13() {
+    if (jj_scan_token(BOOLEAN_OP)) return true;
+    if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_9() {
+    if (jj_scan_token(SET_OP)) return true;
+    if (jj_3R_24()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_43() {
+    if (jj_scan_token(CONTAINS)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_52()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(30)) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_19() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_28()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(30)) {
+    jj_scanpos = xsp;
+    if (jj_3R_29()) {
+    jj_scanpos = xsp;
+    if (jj_3R_30()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(10)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(9)) return true;
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_28() {
+    if (jj_3R_23()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_11() {
+    if (jj_scan_token(OP)) return true;
+    if (jj_3R_25()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_55() {
+    if (jj_scan_token(EXEC)) return true;
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_56() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_10() {
+    if (jj_scan_token(CONCAT)) return true;
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_53() {
+    if (jj_scan_token(IMPORT)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(10)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(30)) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_45() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_53()) {
+    jj_scanpos = xsp;
+    if (jj_3R_54()) {
+    jj_scanpos = xsp;
+    if (jj_3R_55()) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_54() {
+    if (jj_scan_token(PRINT)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(10)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(30)) return true;
+    }
     return false;
   }
 

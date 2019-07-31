@@ -680,7 +680,7 @@ void functionResult() throws Exception : {} {
 }
 
 void lambda() throws Exception : {} {
-	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW> )+ (expression()|guards()|matches())
+	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW>)+ (expression()|guards()|matches())
 }
 
 void list() throws Exception : {} {
@@ -705,7 +705,7 @@ void expression() throws Exception : {} {
 		  <CAPS>
 		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))*
 		)
-		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)*
+		| (LOOKAHEAD(2) anyOperator() (LOOKAHEAD(3) expression() | enclosedExpression()))*
 	  )
 	)
 	| set() (
@@ -716,7 +716,7 @@ void expression() throws Exception : {} {
 	| list() (LOOKAHEAD(2) <CONCAT> expression())*
 	| number() (LOOKAHEAD(2) <OP> number())*
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*))
-	| <BOOLEAN> (<BOOLEAN_OP> <BOOLEAN>)*
+	| <BOOLEAN> (LOOKAHEAD(2) <BOOLEAN_OP> <BOOLEAN>)*
 	| builtinFunctions()
 }
 

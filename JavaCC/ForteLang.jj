@@ -648,41 +648,13 @@ SKIP : { < "###" (~["#"])* "###" > }
 //Whitespace
 SKIP : { "\n" | "\r" | " " }
 
-
-
-
-/**
- * This parses the input from System.in
- * This accepts the program, which is 1 or more functions (denoted by the +
- * symbol), and the end of file character
- */
+/** Main endpoint */
 void input() throws Exception : {} {
   expression() eof()
 }
 
-/**
- * Parses the end of file character. When this is run by the parser, two checks
- * take place:
- *
- * [1] Checks that the MAIN function has been declared
- * [2] Checks that functions that were called in other function declarations
- *     have been declared
- */
 void eof() throws Exception : {} {
   	<EOF>
-	{
-		/* Checks if the main function has been declared */
-//		if(!definedFunctions.contains(MAIN_FUNCTION)) {
-//			throw mkException(MAIN_FUNCTION + " function has not been defined");
-//		}
-//
-//		/* Handle undeclared functions from other function declarations */
-//		for(Token functionCall : functionCalls) {
-//			if(!definedFunctions.contains(functionCall.image)) {
-//				throw mkException("Function " + functionCall.image + " has not been declared " + printLoc(functionCall));
-//			}
-//		}
-	}
 }
 
 void anyOperator() throws Exception : {} {
@@ -733,18 +705,18 @@ void expression() throws Exception : {} {
 		  <CAPS>
 		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))*
 		)
-		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)?
+		| (LOOKAHEAD(2) anyOperator() <VAR_NAME>)*
 	  )
 	)
 	| set() (
 	  (<SELECT> <VAR_NAME>)+
-	  | (LOOKAHEAD(2) <SET_OP> set())?
+	  | (LOOKAHEAD(2) <SET_OP> set())*
 	)
-	| includedSet() (LOOKAHEAD(2) <SET_OP> includedSet())?
-	| list() (<CONCAT> expression())?
-	| number() (LOOKAHEAD(2) <OP> number())?
-	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (<CONCAT> <STRING>)?))
-	| <BOOLEAN> (<BOOLEAN_OP> <BOOLEAN>)?
+	| includedSet() (LOOKAHEAD(2) <SET_OP> includedSet())*
+	| list() (LOOKAHEAD(2) <CONCAT> expression())*
+	| number() (LOOKAHEAD(2) <OP> number())*
+	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*))
+	| <BOOLEAN> (<BOOLEAN_OP> <BOOLEAN>)*
 	| builtinFunctions()
 }
 

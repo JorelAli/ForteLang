@@ -108,4 +108,15 @@ include {
 
     print = x -> @print "hello";
 
+    # Things to test:
+    ###
+
+    a * (b + c)
+
+    a + b + c
+
+    ###
+
+    threeAdditions = a + b + c;
+
 } in @exec "echo hi"

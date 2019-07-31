@@ -6,23 +6,6 @@ import java.util.stream.*;
 
 public class ForteLang {
 
-	 /**
-	 * A class that represents a function in the grammar
-	 */
-	private static class LangFunction {
-		String functionName;
-		Expression inputParam;
-
-		/**
-		 * @param functionName The name of the function
-		 * @param result The parameter which is passed to the function
-		 */
-		public LangFunction(String functionName, Expression result) {
-			this.functionName = functionName;
-			this.inputParam = result;
-		}
-	}
-
 	/**
 	 * Enumeration that represents the type of a token. This can be an operator
 	 * (+ or *), a number, parameter name or function. This enumeration also
@@ -737,6 +720,6 @@ void matches() throws Exception : {} {
 }
 
 void guards() throws Exception : {} {
-	(<GUARD> expression() <GUARD_ARROW> expression() <GUARD> )+
+	(<GUARD> expression() <GUARD_ARROW> expression() <GUARD>)+
 	(<GUARD_ARROW> expression())
 }

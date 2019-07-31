@@ -16,7 +16,7 @@ include {
     max = x -> y -> 
         | x > y ->> x
         | ->> y;
-    
+
     # Set operations
     union =      set1 -> set2 -> set1 /+ set2;
     intersect =  set1 -> set2 -> set1 /- set2;
@@ -111,5 +111,7 @@ include {
     threeAdditions = a + b + c;
 
     parenthesis = a * (b + c);
+
+    advancedList = [a, (a + b), (x -> | x ->> y | ->> x)];
 
 } in @exec "echo hi"

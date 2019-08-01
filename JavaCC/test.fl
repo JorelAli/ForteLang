@@ -137,4 +137,4 @@ include impure {
 
     awvew = "Hello, " ++ "world!";
 
-} in "hi"
+} in square 4

@@ -100,7 +100,57 @@ public class ForteLang {
 		@Override public String toString() { return "ENUM" + elements.toString(); }
 	}
 
-	static String fileName; 
+	/** Scope system */
+
+	static class Scope implements Iterable<Scope> {
+
+		String attributeName;
+		boolean isPrivateScope;
+		
+		List<Scope> children;
+		Scope parent;
+
+		public Scope addAttribute(String attributeName) {
+		  	Scope newScope = new Scope();
+		  	newScope.attributeName = attributeName;
+			newScope.parent = this;
+			newScope.children = new LinkedList<Scope>();
+			newScope.isPrivateScope = false;
+
+			children.add(newScope);
+			return newScope;
+		}
+
+		public Scope addIncludedAttribute(String attributeName) {
+		  	Scope newScope = new Scope();
+		  	newScope.attributeName = attributeName;
+			newScope.parent = this;
+			newScope.children = new LinkedList<Scope>();
+			newScope.isPrivateScope = true;
+
+			children.add(newScope);
+			return newScope;
+		}
+
+		@Override
+    	public Iterator<Scope> iterator() {
+       		return children.iterator();
+    	}
+
+		@Override
+    	public String toString() {
+			return attributeName + children.toString();
+    	}
+	}
+
+	/** Static fields */
+	static String fileName;
+
+	/*
+	The "scope" of what's visible where.
+	*/
+	static Scope root;
+	static Scope currentScope;
 
 	/** Main method */
 	public static void main(String[] args) throws ParseException, FileNotFoundException {
@@ -113,8 +163,18 @@ public class ForteLang {
 	  	fileName = file.getName();
 		try {
 		  	/* Run the parser */
+			root = new Scope();
+			root.children = new LinkedList<Scope>();
+			root.isPrivateScope = false;
+			root.parent = null;
+			
+			currentScope = root;
 			new ForteLang(new FileInputStream(file)).input();
 			System.out.println("PASS");
+
+			System.out.println("Scopes:");
+			System.out.println(root);
+			
 		} catch(Exception e) {
 		  	e.printStackTrace();
 		  	return;
@@ -158,10 +218,12 @@ public class ForteLang {
 			op = operator.image;
 		}
 
-		public float applyFloat(float f1, float f2) throws Exception {
+		public double applyDouble(double f1, double f2) throws Exception {
 			if(operatorKind != Operator.NUMERICAL) {
 				throw new Exception("Invalid operator (expected numerical operator)");
 		  	}
+
+		  	//TODO: operator precedence
 			switch(op) {
 				case "+":
 					return f1 + f2;
@@ -171,6 +233,8 @@ public class ForteLang {
 					return f1 - f2;
 				case "/":
 					return f1 / f2;
+				case "%":
+					return (int) f1 % (int) f2;
 			}
 			throw new Exception("Invalid operator " + op);
 		}
@@ -228,7 +292,7 @@ PARSER_END(ForteLang)
 TOKEN : { < COMPARATOR_OP : ">" | "<" | "<=" | ">=" | "==" | "!=" > }
 TOKEN : { < BOOLEAN_OP : "||" | "&&" > }
 TOKEN : { < SET_OP : "/+" | "/-" | "//" > }
-TOKEN : { < OP : "+" | "*" | "-" | "/" > }
+TOKEN : { < OP : "+" | "*" | "-" | "/" | "%" > }
 TOKEN : { < CONCAT : "++" > }
 TOKEN : { < SELECT : "." > }
 TOKEN : { < CONTAINS : "?" > }
@@ -331,6 +395,9 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	<CLOSECBRACKET>
 	{
 	  set.checkPurity(setDeclaration);
+	  for(String key : set.attributes.keySet()) {
+	  	  currentScope.addAttribute(key);
+	  }
 	  return print(set); //TODO: Remove this
 	}
 }
@@ -419,15 +486,26 @@ Object enclosedExpression() throws Exception : { Object result; } {
 	| result = singleExpression() { return result; }
 }
 
-float number() throws Exception : { Token value; float f; } {
-	  value = <NUMBER> 				  { return Float.valueOf(value.image); }
-	| value = <FLOATING_POINT_NUMBER> { return Float.valueOf(value.image); }
+double number() throws Exception : { Token value; double f; } {
+	  value = <NUMBER> 				  { return Double.valueOf(value.image); }
+	| value = <FLOATING_POINT_NUMBER> { return Double.valueOf(value.image); }
 }
 
 /** Expressions */
 Object expression() throws Exception : { Object result; } {
-  	(  	  LOOKAHEAD(2) result = lambda() { return result; }
-	  | <VAR_NAME> (
+  	  result = variableExpression() { return result; }
+	| result = setExpression()      { return result; }
+	| result = includedSet()        { return result; }
+	| result = listExpression()     { return result; }
+	| result = numberExpression()   { return result; }
+	| result = stringExpression()   { return result; }
+	| result = booleanExpression()  { return result; }
+	| builtinFunctions()            { return "builtin"; }
+}
+
+Object variableExpression() throws Exception : { Object result; Token varName; } {
+  	  LOOKAHEAD(2) result = lambda() { return result; }
+	  | varName = <VAR_NAME> (
 		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+ { return "function call"; }
 		| <SELECT> (
 		  <CAPS> { return null; }
@@ -435,31 +513,23 @@ Object expression() throws Exception : { Object result; } {
 		)
 		| (LOOKAHEAD(2) anyOperator() (LOOKAHEAD(3) expression() | enclosedExpression()))* { return "variable operator"; }
 	  )
-	)
-	| result = setExpression()     { return result; }
-	| result = includedSet()       { return result; }
-	| result = listExpression()    { return result; }
-	| result = numberExpression()  { return result; }
-	| result = stringExpression()  { return result; }
-	| result = booleanExpression() { return result; }
-	| builtinFunctions()           { return "builtin"; }
 }
 
-Object stringExpression() throws Exception : { Token initString; Token nextToken; StringBuilder builder; } {
+Object stringExpression() throws Exception : { Token initString; Token nextToken; StringBuilder builder; FL_Set setExistance; } {
 	initString = <STRING>
 	{ builder = new StringBuilder(parseString(initString)); }
 	(
-	    <CONTAINS> (set()|<VAR_NAME>) { return "set existance operation using Strings"; }
+	    <CONTAINS> (
+	        setExistance = set() /*TODO: |<VAR_NAME> */
+		) { return setExistance.attributes.containsKey(parseString(initString)); }
 	    |
 	    (
 	      LOOKAHEAD(2)
 	      <CONCAT>
-	      nextToken = <STRING>
+	      nextToken = <STRING> //TODO: This could ... just not be a String.
 	      { builder.append(parseString(nextToken)); }
 	    )* { return builder.toString(); }
 	)
-
-	
 }
 
 Object setExpression() throws Exception : {
@@ -491,14 +561,14 @@ Object setExpression() throws Exception : {
 	)
 }
 
-float numberExpression() throws Exception : { float acc; Token op; float next; } {
+double numberExpression() throws Exception : { double acc; Token op; double next; } {
 	acc = number()
 	(
 	  LOOKAHEAD(2)
 	  op = <OP>
 	  next = number()
 	  {
-		 acc = new OperatorParser(op).applyFloat(acc, next);
+		 acc = new OperatorParser(op).applyDouble(acc, next);
 	  }
 	)*
 	{ return acc; }

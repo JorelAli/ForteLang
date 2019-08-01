@@ -11,32 +11,34 @@ public class ForteLang {
 		List<String> parameters;
 		Object expression;
 
-		public FL_Function() {
-			parameters = new LinkedList<String>();
-		} 
+		public FL_Function() { parameters = new LinkedList<String>(); } 
 	}
 
 	static class FL_Set {
 		boolean impure;
 		LinkedHashMap<String, Object> attributes;
+
+		public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
 	}
 
 	static class FL_Guards {
 		LinkedHashMap<Object, Object> statements;
 		Object finalStatement;
 
-		public FL_Guards() {
-			statements = new LinkedHashMap<Object, Object>();
-		}
+		public FL_Guards() { statements = new LinkedHashMap<Object, Object>(); }
 	}
 
 	static class FL_Matches {
 		LinkedHashMap<Object, Object> statements;
 		Object finalStatement;
 
-		public FL_Matches() {
-			statements = new LinkedHashMap<Object, Object>();
-		}
+		public FL_Matches() { statements = new LinkedHashMap<Object, Object>(); }
+	}
+
+	static class FL_Enum {
+		List<String> elements;
+		
+		public FL_Enum() { elements = new LinkedList<String>(); } 
 	}
 
 	/** Main method */
@@ -131,18 +133,42 @@ void includedSet() throws Exception : {} {
 	<INCLUDE> set() <IN> expression()
 }
 
-void set() throws Exception : {} {
-	(<IMPURE>)? <OPENCBRACKET>
-	(<VAR_NAME> <EQUALS> functionResult())*
+FL_Set set() throws Exception : { FL_Set set; Token attrName; Object attrValue; } {
+  	{ set = new FL_Set(); }
+	(
+	  <IMPURE>
+	  { set.impure = true;}
+	)?
+	<OPENCBRACKET>
+	(
+	  attrName = <VAR_NAME>
+	  <EQUALS>
+	  attrValue = functionResult()
+	  { set.attributes.put(attrName.image, attrValue); }
+	)*
 	<CLOSECBRACKET>
+	{ return set; }
 }
 
-void enumeration() throws Exception : {} {
-	<ENUM_OPEN> <CAPS> (<COMMA> <CAPS>)* <ENUM_CLOSE>
+FL_Enum enumeration() throws Exception : { FL_Enum flEnum; Token element; } {
+    { flEnum = new FL_Enum(); }
+	<ENUM_OPEN>
+	
+	element = <CAPS>
+	{ flEnum.elements.add(element.image); }
+
+	(
+	  <COMMA>
+	  element = <CAPS>
+	  { flEnum.elements.add(element.image); }
+	)*
+
+	<ENUM_CLOSE>
+	{ return flEnum; } 
 }
 
-void functionResult() throws Exception : {} {
-	(LOOKAHEAD(2) lambda() | expression() | guards() | enumeration() | matches()) <SEMICOLON>
+Object functionResult() throws Exception : {} {
+	(LOOKAHEAD(2) lambda() | expression() | guards() | enumeration() | matches()) <SEMICOLON> { return null; }
 }
 
 FL_Function lambda() throws Exception : { FL_Function function; Token paramName; Object innerExpression; } {

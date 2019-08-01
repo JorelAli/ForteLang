@@ -103,7 +103,7 @@ public class ForteLang {
 			op = operator.image;
 		}
 
-		public float apply(float f1, float f2) throws Exception {
+		public float applyFloat(float f1, float f2) throws Exception {
 			if(operatorKind != Operator.NUMERICAL) {
 				throw new Exception("Invalid operator (expected numerical operator)");
 		  	}
@@ -118,6 +118,19 @@ public class ForteLang {
 					return f1 / f2;
 			}
 			throw new Exception("Invalid operator " + op);
+		}
+
+		public boolean applyBoolean(boolean b1, boolean b2) throws Exception {
+			if(operatorKind != Operator.BOOLEAN) {
+				throw new Exception("Invalid operator (expected boolean operator)");
+		  	}
+			switch(op) {
+				case "||":
+					return b1 || b2;
+				case "&&":
+					return b1 && b2;
+			}
+			throw new Exception("Invalid operator " + op);
 		} 
 	}
 }
@@ -125,7 +138,8 @@ public class ForteLang {
 PARSER_END(ForteLang)
 
 //Operators
-TOKEN : { < BOOLEAN_OP : ">" | "<" | "<=" | ">=" | "==" | "!=" | "||" | "&&" > }
+TOKEN : { < COMPARATOR_OP : ">" | "<" | "<=" | ">=" | "==" | "!=" > }
+TOKEN : { < BOOLEAN_OP : "||" | "&&" > }
 TOKEN : { < SET_OP : "/+" | "/-" | "//" > }
 TOKEN : { < OP : "+" | "*" | "-" | "/" > }
 TOKEN : { < CONCAT : "++" > }
@@ -192,7 +206,7 @@ void eof() throws Exception : {} {
 }
 
 void anyOperator() throws Exception : {} {
-	<BOOLEAN_OP> | <OP> | <SET_OP>
+	<BOOLEAN_OP> | <OP> | <SET_OP> | <COMPARATOR_OP>
 }
 
 void includedSet() throws Exception : {} {
@@ -328,7 +342,7 @@ Object expression() throws Exception : { Object result; } {
 	| result = listExpression()   { return result; }
 	| result = numberExpression() { return result; }
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*)) { return null; }
-	| <BOOLEAN> (LOOKAHEAD(2) <BOOLEAN_OP> <BOOLEAN>)* { return null; }
+	| result = booleanExpression() { return result;}
 	| builtinFunctions() { return null; }
 }
 
@@ -339,7 +353,21 @@ float numberExpression() throws Exception : { float acc; Token op; float next; }
 	  op = <OP>
 	  next = number()
 	  {
-		 acc = new OperatorParser(op).apply(acc, next);
+		 acc = new OperatorParser(op).applyFloat(acc, next);
+	  }
+	)*
+	{ return acc; }
+}
+
+boolean booleanExpression() throws Exception : { Token first; boolean acc; Token op; Token next; } {
+  	first = <BOOLEAN>
+	{ acc = Boolean.parseBoolean(first.image); }
+	(
+	  LOOKAHEAD(2)
+	  op = <BOOLEAN_OP>
+	  next = <BOOLEAN>
+	  {
+		 acc = new OperatorParser(op).applyBoolean(acc, Boolean.parseBoolean(next.image));
 	  }
 	)*
 	{ return acc; }
@@ -371,11 +399,11 @@ void builtinFunctions() throws Exception : {} {
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
-	| token = <VAR_NAME> { return token.image; } //TODO
+	| token = <VAR_NAME> { return "VAR[" + token.image + "]"; } //TODO
 	| result = list() { return result; }
 	| result = number() { return result; }
 	| token = <STRING> { return token.image; } //TODO
-	| token = <BOOLEAN> { return token.image; } //TODO: parse boolean
+	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); } //TODO: parse boolean
 }
 
 FL_Matches matches() throws Exception : { FL_Matches matches; } {

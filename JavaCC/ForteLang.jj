@@ -13,7 +13,12 @@ public class ForteLang {
 		Object expression;
 
 		public FL_Function() { parameters = new LinkedList<String>(); }
-		@Override public String toString() { return "FL_Function"; }
+		@Override public String toString() { return "FL_Function" + parameters; }
+
+		/*
+		Don't forget currying!
+		x -> y -> true is actually equal to x -> (y -> true)
+		*/
 	}
 
 	static class FL_Set {
@@ -224,7 +229,12 @@ FL_Set set() throws Exception : { FL_Set set; Token attrName; Object attrValue; 
 	  attrName = <VAR_NAME>
 	  <EQUALS>
 	  attrValue = functionResult()
-	  { set.attributes.put(attrName.image, attrValue); }
+	  {
+	    if(set.attributes.containsKey(attrName.image)) {
+			System.out.println("'" + attrName.image + "' already exists in the set... overriding");
+	    }
+	    set.attributes.put(attrName.image, attrValue);
+	  }
 	)*
 	<CLOSECBRACKET>
 	{
@@ -324,7 +334,7 @@ float number() throws Exception : { Token value; float f; } {
 
 /** Expressions */
 Object expression() throws Exception : { Object result; } {
-  	(  	  LOOKAHEAD(2) lambda() { return null; }
+  	(  	  LOOKAHEAD(2) result = lambda() { return result; }
 	  | <VAR_NAME> (
 		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+ { return null; }
 		| <SELECT> (

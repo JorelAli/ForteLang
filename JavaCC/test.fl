@@ -1,4 +1,4 @@
-include impure {
+include {
     # Adds two parameters together
     add = x -> y -> x + y;
 
@@ -94,6 +94,10 @@ include impure {
     # Booleans!
     blah = true || false;
 
+    impureSet'' = impure {
+        @val = "hello";
+    };
+
     # Impure sets
     impureSet = impure {
         @b = run "echo 'hi'";
@@ -121,7 +125,9 @@ include impure {
 
     otherStrings = "hi\" hello";
 
+    ###
     anotherImpureSet = impure {};
+    ###
 
     ###
     invalidImpureSet = {

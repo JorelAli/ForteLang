@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 import java.lang.reflect.Field;
+import java.io.*;
 
 public class ForteLang {
 
@@ -27,15 +28,34 @@ public class ForteLang {
 
 		public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
 
-		public void checkPurity() throws Exception {
+		public void checkPurity(Token setDeclaration) throws Exception {
 			if(!impure) {
 				for(String str: attributes.keySet()) {
 					if(str.startsWith("@")) {
 						throw new Exception("impure set detected and isn't declared as 'impure'");
 					}
 				}
+			} else {
+				for(String str: attributes.keySet()) {
+					if(str.startsWith("@")) {
+						return;
+					}
+				}
+				for(Object o : attributes.values()) {
+					if(o instanceof FL_Set) {
+					  System.out.println("a");
+						if(((FL_Set) o).impure) {
+							return;
+						}
+					}
+				}
+				throw new Exception("impure keyword detected, but the set is actually pure" + location(setDeclaration));
 			}
 		}
+	}
+
+	static String location(Token token) {
+ 		return " (Line " + token.beginLine + " in " + fileName + ")";
 	}
 
 	static class FL_Guards {
@@ -59,11 +79,20 @@ public class ForteLang {
 		@Override public String toString() { return "ENUM" + elements.toString(); }
 	}
 
+	static String fileName; 
+
 	/** Main method */
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) throws ParseException, FileNotFoundException {
+	  	if(args.length != 1) {
+	  	  	System.out.println("Usage: java ForteLang <File>");
+			return;
+	  	}
+
+	  	File file = new File(args[0]);
+	  	fileName = file.getName();
 		try {
 		  	/* Run the parser */
-			new ForteLang(System.in).input();
+			new ForteLang(new FileInputStream(file)).input();
 			System.out.println("PASS");
 		} catch(Exception e) {
 		  	e.printStackTrace();
@@ -220,17 +249,21 @@ void anyOperator() throws Exception : {} {
 	<BOOLEAN_OP> | <OP> | <SET_OP> | <COMPARATOR_OP>
 }
 
-void includedSet() throws Exception : {} {
-	<INCLUDE> set() <IN> expression()
+Object includedSet() throws Exception : { Object result; } {
+  	// Don't forget, these are EXPRESSIONS and not SETS
+	<INCLUDE>
+	set()
+	<IN>
+	result = expression() { return result; }
 }
 
-FL_Set set() throws Exception : { FL_Set set; Token attrName; Object attrValue; } {
+FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {
   	{ set = new FL_Set(); }
 	(
 	  <IMPURE>
 	  { set.impure = true;}
 	)?
-	<OPENCBRACKET>
+	setDeclaration = <OPENCBRACKET>
 	(
 	  attrName = <VAR_NAME>
 	  <EQUALS>
@@ -244,7 +277,7 @@ FL_Set set() throws Exception : { FL_Set set; Token attrName; Object attrValue; 
 	)*
 	<CLOSECBRACKET>
 	{
-	  set.checkPurity();
+	  set.checkPurity(setDeclaration);
 	  return print(set);
 	}
 }
@@ -350,16 +383,32 @@ Object expression() throws Exception : { Object result; } {
 		| (LOOKAHEAD(2) anyOperator() (LOOKAHEAD(3) expression() | enclosedExpression()))* { return "variable operator"; }
 	  )
 	)
-	| set() (
-	  (<SELECT> <VAR_NAME>)+ { return "set selection"; }
-	  | (LOOKAHEAD(2) <SET_OP> set())* { return "set operation"; }
-	)
-	| includedSet() { return "set operator with included sets"; }
+	| result = setExpression()    { return result; }
+	| result = includedSet()      { return result; }
 	| result = listExpression()   { return result; }
 	| result = numberExpression() { return result; }
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*)) { return "string operations"; }
 	| result = booleanExpression() { return result;}
 	| builtinFunctions() { return "builtin"; }
+}
+
+Object setExpression() throws Exception : { FL_Set initSet; Token setParam; Object accessed; } {
+	initSet = set()
+	{ accessed = initSet; }
+	(
+	  (
+	    <SELECT>
+	    setParam = <VAR_NAME>
+	    {
+	      	if(accessed instanceof FL_Set) {
+				accessed = ((FL_Set) accessed).attributes.get(setParam.image);
+	    	} else {
+				throw new Exception ("Tried to access element " + setParam.image + " from something that's not a set" + location(setParam));
+	    	}	
+	    }
+	  )+ { return accessed; } //"set selection"
+	  | (LOOKAHEAD(2) <SET_OP> set())* { return null; } //"set operation"
+	)
 }
 
 float numberExpression() throws Exception : { float acc; Token op; float next; } {
@@ -408,9 +457,9 @@ List<Object> listExpression() throws Exception : { List<Object> list; Object exp
 }
 
 void builtinFunctions() throws Exception : {} {
-	<IMPORT> (<STRING> | <VAR_NAME>)
+	<IMPORT>  (<STRING> | <VAR_NAME>)
     | <PRINT> (<STRING> | <VAR_NAME>)
-	| <EXEC> <STRING> 
+	| <EXEC>  (<STRING> | <VAR_NAME>)
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {

@@ -29,10 +29,19 @@ public class ForteLang {
 		public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
 
 		public void checkPurity(Token setDeclaration) throws Exception {
+		  //TODO: Make this code WAY more elegant, like seriously... what even
 			if(!impure) {
 				for(String str: attributes.keySet()) {
 					if(str.startsWith("@")) {
 						throw new Exception("impure set detected and isn't declared as 'impure'");
+					}
+				}
+				
+				for(Object o : attributes.values()) {
+					if(o instanceof FL_Set) {
+						if(((FL_Set) o).impure) {
+							throw new Exception("Set detected as impure due to inner attribute and isn't declared as 'impure'" + location(setDeclaration));
+						}
 					}
 				}
 			} else {
@@ -43,7 +52,6 @@ public class ForteLang {
 				}
 				for(Object o : attributes.values()) {
 					if(o instanceof FL_Set) {
-					  System.out.println("a");
 						if(((FL_Set) o).impure) {
 							return;
 						}

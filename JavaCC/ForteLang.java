@@ -28,10 +28,19 @@ public class ForteLang implements ForteLangConstants {
                 public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
 
                 public void checkPurity(Token setDeclaration) throws Exception {
+                  //TODO: Make this code WAY more elegant, like seriously... what even
                         if(!impure) {
                                 for(String str: attributes.keySet()) {
                                         if(str.startsWith("@")) {
                                                 throw new Exception("impure set detected and isn't declared as 'impure'");
+                                        }
+                                }
+
+                                for(Object o : attributes.values()) {
+                                        if(o instanceof FL_Set) {
+                                                if(((FL_Set) o).impure) {
+                                                        throw new Exception("Set detected as impure due to inner attribute and isn't declared as 'impure'" + location(setDeclaration));
+                                                }
                                         }
                                 }
                         } else {
@@ -42,7 +51,6 @@ public class ForteLang implements ForteLangConstants {
                                 }
                                 for(Object o : attributes.values()) {
                                         if(o instanceof FL_Set) {
-                                          System.out.println("a");
                                                 if(((FL_Set) o).impure) {
                                                         return;
                                                 }
@@ -281,7 +289,8 @@ public class ForteLang implements ForteLangConstants {
     }
     jj_consume_token(CLOSECBRACKET);
           set.checkPurity(setDeclaration);
-          {if (true) return set;}
+          {if (true) return print(set);} //TODO: Remove this
+
     throw new Error("Missing return statement in function");
   }
 
@@ -1051,21 +1060,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(13, xla); }
   }
 
-  static private boolean jj_3R_67() {
-    if (jj_3R_73()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_66() {
-    if (jj_3R_72()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_65() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
   static private boolean jj_3_2() {
     if (jj_scan_token(VAR_NAME)) return true;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
@@ -1641,6 +1635,21 @@ public class ForteLang implements ForteLangConstants {
     jj_scanpos = xsp;
     if (jj_3R_55()) return true;
     }
+    return false;
+  }
+
+  static private boolean jj_3R_67() {
+    if (jj_3R_73()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_66() {
+    if (jj_3R_72()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_65() {
+    if (jj_3R_21()) return true;
     return false;
   }
 

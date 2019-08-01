@@ -75,6 +75,49 @@ public class ForteLang {
 		System.out.println(builder.append("]").toString());
 		return o;
 	}
+
+	static class OperatorParser {
+
+		enum Operator { BOOLEAN, NUMERICAL, SET };
+
+		Operator operatorKind;
+		String op;
+	  
+		public OperatorParser(Token operator) {
+			switch(operator.kind) {
+				case ForteLangConstants.BOOLEAN_OP:
+					operatorKind = Operator.BOOLEAN;
+					break;
+				case ForteLangConstants.OP:
+					operatorKind = Operator.NUMERICAL;
+					break;
+				case ForteLangConstants.SET_OP:
+					operatorKind = Operator.SET;
+					break;
+				default:
+					operatorKind = null;
+					break;
+			}
+			op = operator.image;
+		}
+
+		public float apply(float f1, float f2) throws Exception {
+			if(operatorKind != Operator.NUMERICAL) {
+				throw new Exception("Invalid operator (expected numerical operator)");
+		  	}
+			switch(op) {
+				case "+":
+					return f1 + f2;
+				case "*":
+					return f1 * f2;
+				case "-":
+					return f1 - f2;
+				case "/":
+					return f1 / f2;
+			}
+			throw new Exception("Invalid operator " + op);
+		} 
+	}
 }
 
 PARSER_END(ForteLang)
@@ -191,8 +234,18 @@ FL_Enum enumeration() throws Exception : { FL_Enum flEnum; Token element; } {
 	{ return flEnum; } 
 }
 
-Object functionResult() throws Exception : {} {
-	(LOOKAHEAD(2) lambda() | expression() | guards() | enumeration() | matches()) <SEMICOLON> { return null; }
+Object functionResult() throws Exception : { Object result; } {
+	(
+	  LOOKAHEAD(2)
+	    result = lambda()
+	  | result = expression()
+	  | result = guards()
+	  | result = enumeration()
+	  | result = matches()
+	)
+	<SEMICOLON>
+
+	{ return result; }
 }
 
 FL_Function lambda() throws Exception : { FL_Function function; Token paramName; Object innerExpression; } {
@@ -247,7 +300,7 @@ float number() throws Exception : { Token value; float f; } {
 	| value = <FLOATING_POINT_NUMBER> { return Float.valueOf(value.image); }
 }
 
-Object expression() throws Exception : {} {
+Object expression() throws Exception : { Object result; } {
   	(  	  LOOKAHEAD(2) lambda() { return null; }
 	  | <VAR_NAME> (
 		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+ { return null; }
@@ -264,10 +317,24 @@ Object expression() throws Exception : {} {
 	)
 	| includedSet() (LOOKAHEAD(2) <SET_OP> includedSet())* { return null; }
 	| list() (LOOKAHEAD(2) <CONCAT> expression())* { return null; }
-	| number() (LOOKAHEAD(2) <OP> number())* { return null; }
+	| result = numberExpression() { return result; }
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*)) { return null; }
 	| <BOOLEAN> (LOOKAHEAD(2) <BOOLEAN_OP> <BOOLEAN>)* { return null; }
 	| builtinFunctions() { return null; }
+}
+
+float numberExpression() throws Exception : { float acc; Token op; float next; } {
+	acc = number()
+	(
+	  LOOKAHEAD(2)
+	  op = <OP>
+	  next = number()
+	  {
+		 acc = new OperatorParser(op).apply(acc, next);
+	  }
+	)*
+	{	System.out.println(acc);
+	  return acc; }
 }
 
 void builtinFunctions() throws Exception : {} {

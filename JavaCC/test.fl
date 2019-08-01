@@ -1,4 +1,4 @@
-include {
+include impure {
     # Adds two parameters together
     add = x -> y -> x + y;
 

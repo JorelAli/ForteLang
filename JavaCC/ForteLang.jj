@@ -13,6 +13,7 @@ public class ForteLang {
 		Object expression;
 
 		public FL_Function() { parameters = new LinkedList<String>(); }
+		@Override public String toString() { return "FL_Function"; }
 	}
 
 	static class FL_Set {
@@ -49,7 +50,8 @@ public class ForteLang {
 	static class FL_Enum {
 		List<String> elements;
 		
-		public FL_Enum() { elements = new LinkedList<String>(); } 
+		public FL_Enum() { elements = new LinkedList<String>(); }
+		@Override public String toString() { return "ENUM" + elements.toString(); }
 	}
 
 	/** Main method */
@@ -291,8 +293,14 @@ List<Object> list() throws Exception : { List<Object> list; Object nextItem; } {
 	{ return list; }
 }
 
-Object enclosedExpression() throws Exception : {} {
-	(<OPENBRACKET> expression() <CLOSEBRACKET>) {  return null; } | singleExpression() { return null; }
+Object enclosedExpression() throws Exception : { Object result; } {
+	(
+	  <OPENBRACKET>
+	  result = expression()
+	  <CLOSEBRACKET>
+	   { return result; }
+	)
+	| result = singleExpression() { return result; }
 }
 
 float number() throws Exception : { Token value; float f; } {
@@ -300,6 +308,7 @@ float number() throws Exception : { Token value; float f; } {
 	| value = <FLOATING_POINT_NUMBER> { return Float.valueOf(value.image); }
 }
 
+/** Expressions */
 Object expression() throws Exception : { Object result; } {
   	(  	  LOOKAHEAD(2) lambda() { return null; }
 	  | <VAR_NAME> (
@@ -316,7 +325,7 @@ Object expression() throws Exception : { Object result; } {
 	  | (LOOKAHEAD(2) <SET_OP> set())* { return null; }
 	)
 	| includedSet() (LOOKAHEAD(2) <SET_OP> includedSet())* { return null; }
-	| list() (LOOKAHEAD(2) <CONCAT> expression())* { return null; }
+	| result = listExpression()   { return result; }
 	| result = numberExpression() { return result; }
 	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*)) { return null; }
 	| <BOOLEAN> (LOOKAHEAD(2) <BOOLEAN_OP> <BOOLEAN>)* { return null; }
@@ -333,8 +342,25 @@ float numberExpression() throws Exception : { float acc; Token op; float next; }
 		 acc = new OperatorParser(op).apply(acc, next);
 	  }
 	)*
-	{	System.out.println(acc);
-	  return acc; }
+	{ return acc; }
+}
+
+List<Object> listExpression() throws Exception : { List<Object> list; Object expr; } {
+    list = list()
+    (
+      LOOKAHEAD(2)
+      <CONCAT>
+      expr = expression()
+      {
+      	if(expr instanceof List) {
+			list.addAll((List) expr);
+      	} else {
+      	  	//TODO: Handle list concat with new stuff
+			//throw new Exception("Tried to concat a list with unknown expression");
+      	}
+      }
+    )*
+	{ return list; }
 }
 
 void builtinFunctions() throws Exception : {} {
@@ -343,8 +369,13 @@ void builtinFunctions() throws Exception : {} {
 	| <EXEC> <STRING> 
 }
 
-void singleExpression() throws Exception : {} {
-	set() | <VAR_NAME> | list() | number() | <STRING> | <BOOLEAN>
+Object singleExpression() throws Exception : { Object result; Token token; } {
+	  result = set() { return result; }
+	| token = <VAR_NAME> { return token.image; } //TODO
+	| result = list() { return result; }
+	| result = number() { return result; }
+	| token = <STRING> { return token.image; } //TODO
+	| token = <BOOLEAN> { return token.image; } //TODO: parse boolean
 }
 
 FL_Matches matches() throws Exception : { FL_Matches matches; } {

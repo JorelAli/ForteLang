@@ -5,7 +5,19 @@ import java.util.function.*;
 import java.util.stream.*;
 
 public class ForteLang {
-  
+
+	/** Class declarations */
+	static class FL_Function {
+		List<String> parameters;
+		Object expression; 
+	}
+
+	static class FL_Set {
+		boolean impure;
+		LinkedHashMap<String, Object> attributes;
+	} 
+
+	/** Main method */
 	public static void main(String[] args) throws ParseException {
 		try {
 		  	/* Run the parser */
@@ -13,31 +25,10 @@ public class ForteLang {
 			System.out.println("PASS");
 		} catch(Exception e) {
 		  	e.printStackTrace();
-//		  	/* Catch ParseExceptions (unexpected tokens) */
-//			if(e instanceof ParseException) {
-//				ParseException ex = (ParseException) e;
-//				fail(getErrorMessage(getExpectedTokens(ex), ex.currentToken));
-//			} else {
-//			  	/* Catch Exceptions which are thrown by the program which
-//			  	 * indicate more specific exceptions */
-//				fail(e.getMessage());
-//			}
-//			return;
+		  	return;
 		}
-//		catch(TokenMgrError error) {
-//		  	/* Catch lexical errors (invalid characters) */
-//			fail(parseLexicalError(error));
-//			return;
-//		}
 
-
-//		/* Check whether the function diverges or not. If it does not diverge,
-//		 * interpret the program and print the result. */
-//		System.out.println("PASS");
-//		System.out.println(doesProgramDiverge() 
-//			? "DIVERGENCE"
-//			: interpretProgram()
-//		);
+		//Begin interpreting system
 	}
 }
 
@@ -136,18 +127,34 @@ void lambda() throws Exception : {} {
 	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW>)+ (expression()|guards()|matches())
 }
 
-void list() throws Exception : {} {
-  	<OPENSBRACKET> (  	 <CLOSESBRACKET>
-  	 | enclosedExpression() (LOOKAHEAD(2) <COMMA> enclosedExpression())* <CLOSESBRACKET>
+List<Object> list() throws Exception : { List<Object> list; Object nextItem; } {
+	{ list = new LinkedList<Object>(); }
+
+  	//Open bracket
+  	<OPENSBRACKET> (
+  	  
+		//Empty list		<CLOSESBRACKET> { return list; }
+		|
+		//Non-empty list
+		nextItem = enclosedExpression()
+		{ list.add(nextItem); }
+		
+		(LOOKAHEAD(2) <COMMA>
+			nextItem = enclosedExpression()
+			{ list.add(nextItem); }
+		)*
+		<CLOSESBRACKET>
 	)
+	{ return list; }
 }
 
-void enclosedExpression() throws Exception : {} {
-	(<OPENBRACKET> expression() <CLOSEBRACKET>) | singleExpression()
+Object enclosedExpression() throws Exception : {} {
+	(<OPENBRACKET> expression() <CLOSEBRACKET>) {  return null; }| singleExpression() { return null; }
 }
 
-void number() throws Exception : {} {
-	<NUMBER> | <FLOATING_POINT_NUMBER>
+float number() throws Exception : { Token value; float f; } {
+	  value = <NUMBER> 				  { return Float.valueOf(value.image); }
+	| value = <FLOATING_POINT_NUMBER> { return Float.valueOf(value.image); }
 }
 
 void expression() throws Exception : {} {

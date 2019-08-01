@@ -139,7 +139,7 @@ public class ForteLang {
 
 		@Override
     	public String toString() {
-			return attributeName + children.toString();
+			return attributeName + children.toString() /*+ "(" + (parent == null ? "" : parent.attributeName) + ")"*/;
     	}
 	}
 
@@ -348,7 +348,7 @@ SKIP : { < "###" (~["#"])* "###" > }
 SKIP : { "\n" | "\r" | " " }
 
 /** Main endpoint */
-void input() throws Exception : { Object result; } {
+Object input() throws Exception : { Object result; } {
   result = expression()
   {
     System.out.println();
@@ -356,6 +356,7 @@ void input() throws Exception : { Object result; } {
     System.out.println("Preparing to evaluate: " + result);
   }
   eof()
+  { return result; }
 }
 
 void eof() throws Exception : {} {
@@ -395,10 +396,7 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	<CLOSECBRACKET>
 	{
 	  set.checkPurity(setDeclaration);
-	  for(String key : set.attributes.keySet()) {
-	  	  currentScope.addAttribute(key);
-	  }
-	  return print(set); //TODO: Remove this
+	  return set;//print(set); //TODO: Remove this
 	}
 }
 

@@ -118,4 +118,10 @@ include {
 
     anotherImpureSet = impure {};
 
+    ###
+    invalidImpureSet = {
+        @blah = "hello";
+    };
+    ###
+
 } in @exec "echo hi"

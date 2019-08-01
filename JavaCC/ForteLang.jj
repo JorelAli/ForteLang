@@ -3,6 +3,7 @@ PARSER_BEGIN(ForteLang)
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
+import java.lang.reflect.Field;
 
 public class ForteLang {
 
@@ -11,7 +12,7 @@ public class ForteLang {
 		List<String> parameters;
 		Object expression;
 
-		public FL_Function() { parameters = new LinkedList<String>(); } 
+		public FL_Function() { parameters = new LinkedList<String>(); }
 	}
 
 	static class FL_Set {
@@ -19,6 +20,16 @@ public class ForteLang {
 		LinkedHashMap<String, Object> attributes;
 
 		public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
+
+		public void checkPurity() throws Exception {
+			if(!impure) {
+				for(String str: attributes.keySet()) {
+					if(str.startsWith("@")) {
+						throw new Exception("impure set detected and isn't declared as 'impure'");
+					}
+				}
+			}
+		}
 	}
 
 	static class FL_Guards {
@@ -53,6 +64,16 @@ public class ForteLang {
 		}
 
 		//Begin interpreting system
+	}
+
+	public static <T> T print(T o) throws Exception {
+	  	StringBuilder builder = new StringBuilder();
+	  	builder.append(o.getClass().getName() + "[");
+		for(Field f : o.getClass().getDeclaredFields()) {
+			builder.append(f.getName() + ": " + f.get(o).toString() + "; ");
+		}
+		System.out.println(builder.append("]").toString());
+		return o;
 	}
 }
 
@@ -147,7 +168,10 @@ FL_Set set() throws Exception : { FL_Set set; Token attrName; Object attrValue; 
 	  { set.attributes.put(attrName.image, attrValue); }
 	)*
 	<CLOSECBRACKET>
-	{ return set; }
+	{
+	  set.checkPurity();
+	  return print(set);
+	}
 }
 
 FL_Enum enumeration() throws Exception : { FL_Enum flEnum; Token element; } {

@@ -9,13 +9,35 @@ public class ForteLang {
 	/** Class declarations */
 	static class FL_Function {
 		List<String> parameters;
-		Object expression; 
+		Object expression;
+
+		public FL_Function() {
+			parameters = new LinkedList<String>();
+		} 
 	}
 
 	static class FL_Set {
 		boolean impure;
 		LinkedHashMap<String, Object> attributes;
-	} 
+	}
+
+	static class FL_Guards {
+		LinkedHashMap<Object, Object> statements;
+		Object finalStatement;
+
+		public FL_Guards() {
+			statements = new LinkedHashMap<Object, Object>();
+		}
+	}
+
+	static class FL_Matches {
+		LinkedHashMap<Object, Object> statements;
+		Object finalStatement;
+
+		public FL_Matches() {
+			statements = new LinkedHashMap<Object, Object>();
+		}
+	}
 
 	/** Main method */
 	public static void main(String[] args) throws ParseException {
@@ -123,8 +145,26 @@ void functionResult() throws Exception : {} {
 	(LOOKAHEAD(2) lambda() | expression() | guards() | enumeration() | matches()) <SEMICOLON>
 }
 
-void lambda() throws Exception : {} {
-	(LOOKAHEAD(3) <VAR_NAME> <FUNCTION_ARROW>)+ (expression()|guards()|matches())
+FL_Function lambda() throws Exception : { FL_Function function; Token paramName; Object innerExpression; } {
+	{ function = new FL_Function(); }
+	
+	(
+	  LOOKAHEAD(3)
+	  paramName = <VAR_NAME>
+	  { function.parameters.add(paramName.image); }
+	  <FUNCTION_ARROW>
+	)+
+
+	(
+	    innerExpression = expression()
+	  | innerExpression = guards()
+	  | innerExpression = matches()
+	)
+
+	{
+	  function.expression = innerExpression;
+	  return function;
+	}
 }
 
 List<Object> list() throws Exception : { List<Object> list; Object nextItem; } {
@@ -149,7 +189,7 @@ List<Object> list() throws Exception : { List<Object> list; Object nextItem; } {
 }
 
 Object enclosedExpression() throws Exception : {} {
-	(<OPENBRACKET> expression() <CLOSEBRACKET>) {  return null; }| singleExpression() { return null; }
+	(<OPENBRACKET> expression() <CLOSEBRACKET>) {  return null; } | singleExpression() { return null; }
 }
 
 float number() throws Exception : { Token value; float f; } {
@@ -157,27 +197,27 @@ float number() throws Exception : { Token value; float f; } {
 	| value = <FLOATING_POINT_NUMBER> { return Float.valueOf(value.image); }
 }
 
-void expression() throws Exception : {} {
-  	(  	  LOOKAHEAD(2) lambda() 
+Object expression() throws Exception : {} {
+  	(  	  LOOKAHEAD(2) lambda() { return null; }
 	  | <VAR_NAME> (
-		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+
+		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+ { return null; }
 		| <SELECT> (
-		  <CAPS>
-		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))*
+		  <CAPS> { return null; }
+		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))* { return null; }
 		)
-		| (LOOKAHEAD(2) anyOperator() (LOOKAHEAD(3) expression() | enclosedExpression()))*
+		| (LOOKAHEAD(2) anyOperator() (LOOKAHEAD(3) expression() | enclosedExpression()))* { return null; }
 	  )
 	)
 	| set() (
-	  (<SELECT> <VAR_NAME>)+
-	  | (LOOKAHEAD(2) <SET_OP> set())*
+	  (<SELECT> <VAR_NAME>)+ { return null; }
+	  | (LOOKAHEAD(2) <SET_OP> set())* { return null; }
 	)
-	| includedSet() (LOOKAHEAD(2) <SET_OP> includedSet())*
-	| list() (LOOKAHEAD(2) <CONCAT> expression())*
-	| number() (LOOKAHEAD(2) <OP> number())*
-	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*))
-	| <BOOLEAN> (LOOKAHEAD(2) <BOOLEAN_OP> <BOOLEAN>)*
-	| builtinFunctions()
+	| includedSet() (LOOKAHEAD(2) <SET_OP> includedSet())* { return null; }
+	| list() (LOOKAHEAD(2) <CONCAT> expression())* { return null; }
+	| number() (LOOKAHEAD(2) <OP> number())* { return null; }
+	| <STRING> ((<CONTAINS> (set()|<VAR_NAME>) | (LOOKAHEAD(2) <CONCAT> <STRING>)*)) { return null; }
+	| <BOOLEAN> (LOOKAHEAD(2) <BOOLEAN_OP> <BOOLEAN>)* { return null; }
+	| builtinFunctions() { return null; }
 }
 
 void builtinFunctions() throws Exception : {} {
@@ -190,13 +230,31 @@ void singleExpression() throws Exception : {} {
 	set() | <VAR_NAME> | list() | number() | <STRING> | <BOOLEAN>
 }
 
-void matches() throws Exception : {} {
+FL_Matches matches() throws Exception : { FL_Matches matches; } {
+	{ matches = new FL_Matches();}
+  
 	<MATCH> <VAR_NAME> 
 	(LOOKAHEAD(2) <GUARD> expression() <GUARD_ARROW> expression())+
 	(LOOKAHEAD(2) <GUARD> <GUARD_ARROW> expression())?
+
+	{ return matches; }
 }
 
-void guards() throws Exception : {} {
-	(<GUARD> expression() <GUARD_ARROW> expression() <GUARD>)+
-	(<GUARD_ARROW> expression())
+FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; } {
+	{ guards = new FL_Guards(); }
+  
+	(<GUARD>
+		predicate = expression()
+		<GUARD_ARROW>
+		expression = expression()
+		<GUARD>
+		{ guards.statements.put(predicate, expression); }
+	)+
+	(
+	  	<GUARD_ARROW>
+	  	finalExpression = expression()
+	  	{ guards.finalStatement = finalExpression; }
+	)
+
+	{ return guards; }
 }

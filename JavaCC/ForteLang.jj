@@ -52,6 +52,10 @@ public class ForteLang {
 				throw new Exception("impure keyword detected, but the set is actually pure" + location(setDeclaration));
 			}
 		}
+
+		@Override public String toString() {
+		  return "FL_Set[impure=" + impure + ", attrs=" + attributes + "]";
+		}
 	}
 
 	static String location(Token token) {
@@ -165,6 +169,38 @@ public class ForteLang {
 					return b1 && b2;
 			}
 			throw new Exception("Invalid operator " + op);
+		}
+
+		public FL_Set applySetObjects(FL_Set s1, FL_Set s2) throws Exception {
+			if(operatorKind != Operator.SET) {
+				throw new Exception("Invalid operator (expected set operator)");
+		  	}
+
+			FL_Set newSet = new FL_Set();
+			newSet.attributes = (LinkedHashMap<String, Object>) s1.attributes.clone();
+		  	
+			switch(op) {
+			  	//union
+				case "/+": {
+				  	newSet.impure = (s1.impure || s2.impure);
+				  	newSet.attributes.putAll(s2.attributes);
+					break;
+				}
+				//intersect
+				case "/-": {
+				  	//TODO: Check impurity, implement intersection 
+					break;
+				}
+				//difference
+				case "//": {
+				  	newSet.impure = s1.impure; //TODO: Check impurity
+				  	for(String key : s2.attributes.keySet()) {
+						newSet.attributes.remove(key);
+				  	}
+					break;
+				}
+			}
+			return newSet;
 		} 
 	}
 }
@@ -278,7 +314,7 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	<CLOSECBRACKET>
 	{
 	  set.checkPurity(setDeclaration);
-	  return print(set);
+	  return print(set); //TODO: Remove this
 	}
 }
 
@@ -392,7 +428,10 @@ Object expression() throws Exception : { Object result; } {
 	| builtinFunctions() { return "builtin"; }
 }
 
-Object setExpression() throws Exception : { FL_Set initSet; Token setParam; Object accessed; } {
+Object setExpression() throws Exception : {
+  FL_Set initSet; Token setParam; Object accessed;
+  FL_Set secondSet; Token setOp;
+} {
 	initSet = set()
 	{ accessed = initSet; }
 	(
@@ -406,8 +445,15 @@ Object setExpression() throws Exception : { FL_Set initSet; Token setParam; Obje
 				throw new Exception ("Tried to access element " + setParam.image + " from something that's not a set" + location(setParam));
 	    	}	
 	    }
-	  )+ { return accessed; } //"set selection"
-	  | (LOOKAHEAD(2) <SET_OP> set())* { return null; } //"set operation"
+	  )+ { return accessed; } //Set accessing
+	  | (
+	    LOOKAHEAD(2)
+	    setOp = <SET_OP>
+	    secondSet = set()
+	    {
+	      initSet = new OperatorParser(setOp).applySetObjects(initSet, secondSet);
+	    }
+	  )* { return initSet; } //"set operations"
 	)
 }
 

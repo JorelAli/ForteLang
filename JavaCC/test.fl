@@ -87,7 +87,7 @@ include impure {
     }.hello;
 
     # Check if an element exists in a set
-    set = "hello" ? {
+    set' = "hello" ? {
         hello = "hello";
     };
 
@@ -95,7 +95,7 @@ include impure {
     blah = true || false;
 
     # Impure sets
-    a = impure {
+    impureSet = impure {
         @b = run "echo 'hi'";
     }.@b;
 

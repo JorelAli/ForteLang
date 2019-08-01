@@ -135,4 +135,6 @@ include impure {
     };
     ###
 
-} in @exec "echo hi"
+    awvew = "Hello, " ++ "world!";
+
+} in "hi"

@@ -117,6 +117,11 @@ public class ForteLang {
 		@Override public String toString() { return "ENUM" + elements.toString(); }
 	}
 
+	static class FL_IncludedSet {
+		FL_Set set;
+		Object expression;
+	}
+
 	/** Scope system */
 
 	static class Scope implements Iterable<Scope> {
@@ -291,7 +296,6 @@ public class ForteLang {
 				  	for(String key : newSet.attributes.keySet()) {
 						newSet.attributes.put(key, s1.attributes.get(key));
 				  	}
-				  	//TODO: Check impurity, implement intersection
 				  	newSet.impure = newSet.isImpure(); 
 					break;
 				}
@@ -390,12 +394,18 @@ void anyOperator() throws Exception : {} {
 	<BOOLEAN_OP> | <OP> | <SET_OP> | <COMPARATOR_OP>
 }
 
-Object includedSet() throws Exception : { Object result; } {
-  	// Don't forget, these are EXPRESSIONS and not SETS
+FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object expression; FL_Set set; } {
+  	{ result = new FL_IncludedSet(); }
 	<INCLUDE>
-	set(true)
+	set = set(true)
 	<IN>
-	result = expression() { return result; }
+	expression = expression()
+
+	{
+	  result.set = set;
+	  result.expression = expression;
+	  return result;
+	}
 }
 
 FL_Set set(boolean isPrivate) throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {

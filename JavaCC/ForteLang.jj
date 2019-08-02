@@ -61,6 +61,23 @@ public class ForteLang {
 			}
 		}
 
+		public boolean isImpure() {
+			for(String str: attributes.keySet()) {
+				if(str.startsWith("@")) {
+					return true;
+				}
+			}
+			
+			for(Object o : attributes.values()) {
+				if(o instanceof FL_Set) {
+					if(((FL_Set) o).impure) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
 		@Override public String toString() {
 		  return "FL_Set[impure=" + impure + ", attrs=" + attributes + "]";
 		}
@@ -258,7 +275,7 @@ public class ForteLang {
 		  	}
 
 			FL_Set newSet = new FL_Set();
-			newSet.attributes = (LinkedHashMap<String, Object>) s1.attributes.clone();
+			newSet.attributes = new LinkedHashMap<String, Object>(s1.attributes);
 		  	
 			switch(op) {
 			  	//union
@@ -269,15 +286,21 @@ public class ForteLang {
 				}
 				//intersect
 				case "/-": {
-				  	//TODO: Check impurity, implement intersection 
+				  	newSet.attributes.putAll(s1.attributes);
+				  	newSet.attributes.keySet().retainAll(s2.attributes.keySet());
+				  	for(String key : newSet.attributes.keySet()) {
+						newSet.attributes.put(key, s1.attributes.get(key));
+				  	}
+				  	//TODO: Check impurity, implement intersection
+				  	newSet.impure = newSet.isImpure(); 
 					break;
 				}
 				//difference
 				case "//": {
-				  	newSet.impure = s1.impure; //TODO: Check impurity
 				  	for(String key : s2.attributes.keySet()) {
 						newSet.attributes.remove(key);
 				  	}
+				  	newSet.impure = newSet.isImpure(); 
 					break;
 				}
 			}
@@ -370,12 +393,12 @@ void anyOperator() throws Exception : {} {
 Object includedSet() throws Exception : { Object result; } {
   	// Don't forget, these are EXPRESSIONS and not SETS
 	<INCLUDE>
-	set()
+	set(true)
 	<IN>
 	result = expression() { return result; }
 }
 
-FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {
+FL_Set set(boolean isPrivate) throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {
   	{ set = new FL_Set(); }
 	(
 	  <IMPURE>
@@ -518,7 +541,7 @@ Object stringExpression() throws Exception : { Token initString; Token nextToken
 	{ builder = new StringBuilder(parseString(initString)); }
 	(
 	    <CONTAINS> (
-	        setExistance = set() /*TODO: |<VAR_NAME> */
+	        setExistance = set(false) /*TODO: |<VAR_NAME> */
 		) { return setExistance.attributes.containsKey(parseString(initString)); }
 	    |
 	    (
@@ -534,7 +557,7 @@ Object setExpression() throws Exception : {
   FL_Set initSet; Token setParam; Object accessed;
   FL_Set secondSet; Token setOp;
 } {
-	initSet = set()
+	initSet = set(false)
 	{ accessed = initSet; }
 	(
 	  (
@@ -551,7 +574,7 @@ Object setExpression() throws Exception : {
 	  | (
 	    LOOKAHEAD(2)
 	    setOp = <SET_OP>
-	    secondSet = set()
+	    secondSet = set(false)
 	    {
 	      initSet = new OperatorParser(setOp).applySetObjects(initSet, secondSet);
 	    }
@@ -611,7 +634,7 @@ void builtinFunctions() throws Exception : {} {
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
-	  result = set() { return result; }
+	  result = set(false) { return result; }
 	| token = <VAR_NAME> { return "VAR[" + token.image + "]"; } //TODO
 	| result = list() { return result; }
 	| result = number() { return result; }

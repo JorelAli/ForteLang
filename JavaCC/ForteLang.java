@@ -60,6 +60,23 @@ public class ForteLang implements ForteLangConstants {
                         }
                 }
 
+                public boolean isImpure() {
+                        for(String str: attributes.keySet()) {
+                                if(str.startsWith("@")) {
+                                        return true;
+                                }
+                        }
+
+                        for(Object o : attributes.values()) {
+                                if(o instanceof FL_Set) {
+                                        if(((FL_Set) o).impure) {
+                                                return true;
+                                        }
+                                }
+                        }
+                        return false;
+                }
+
                 @Override public String toString() {
                   return "FL_Set[impure=" + impure + ", attrs=" + attributes + "]";
                 }
@@ -257,7 +274,7 @@ public class ForteLang implements ForteLangConstants {
                         }
 
                         FL_Set newSet = new FL_Set();
-                        newSet.attributes = (LinkedHashMap<String, Object>) s1.attributes.clone();
+                        newSet.attributes = new LinkedHashMap<String, Object>(s1.attributes);
 
                         switch(op) {
                                 //union
@@ -268,15 +285,21 @@ public class ForteLang implements ForteLangConstants {
                                 }
                                 //intersect
                                 case "/-": {
-                                        //TODO: Check impurity, implement intersection 
+                                        newSet.attributes.putAll(s1.attributes);
+                                        newSet.attributes.keySet().retainAll(s2.attributes.keySet());
+                                        for(String key : newSet.attributes.keySet()) {
+                                                newSet.attributes.put(key, s1.attributes.get(key));
+                                        }
+                                        //TODO: Check impurity, implement intersection
+                                        newSet.impure = newSet.isImpure();
                                         break;
                                 }
                                 //difference
                                 case "//": {
-                                        newSet.impure = s1.impure; //TODO: Check impurity
                                         for(String key : s2.attributes.keySet()) {
                                                 newSet.attributes.remove(key);
                                         }
+                                        newSet.impure = newSet.isImpure();
                                         break;
                                 }
                         }
@@ -324,15 +347,15 @@ public class ForteLang implements ForteLangConstants {
   static final public Object includedSet() throws ParseException, Exception {
                                           Object result;
     jj_consume_token(INCLUDE);
-    set();
+    set(true);
     jj_consume_token(IN);
     result = expression();
                                 {if (true) return result;}
     throw new Error("Missing return statement in function");
   }
 
-  static final public FL_Set set() throws ParseException, Exception {
-                                  FL_Set set; Token setDeclaration; Token attrName; Object attrValue;
+  static final public FL_Set set(boolean isPrivate) throws ParseException, Exception {
+                                                   FL_Set set; Token setDeclaration; Token attrName; Object attrValue;
           set = new FL_Set();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IMPURE:
@@ -770,7 +793,7 @@ public class ForteLang implements ForteLangConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case CONTAINS:
       jj_consume_token(CONTAINS);
-      setExistance = set();
+      setExistance = set(false);
                     {if (true) return setExistance.attributes.containsKey(parseString(initString));}
       break;
     default:
@@ -794,7 +817,7 @@ public class ForteLang implements ForteLangConstants {
   static final public Object setExpression() throws ParseException, Exception {
   FL_Set initSet; Token setParam; Object accessed;
   FL_Set secondSet; Token setOp;
-    initSet = set();
+    initSet = set(false);
           accessed = initSet;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SELECT:
@@ -828,7 +851,7 @@ public class ForteLang implements ForteLangConstants {
           break label_10;
         }
         setOp = jj_consume_token(SET_OP);
-        secondSet = set();
+        secondSet = set(false);
               initSet = new OperatorParser(setOp).applySetObjects(initSet, secondSet);
       }
                {if (true) return initSet;}
@@ -955,8 +978,8 @@ public class ForteLang implements ForteLangConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IMPURE:
     case OPENCBRACKET:
-      result = set();
-                           {if (true) return result;}
+      result = set(false);
+                                {if (true) return result;}
       break;
     case VAR_NAME:
       token = jj_consume_token(VAR_NAME);
@@ -1138,68 +1161,6 @@ public class ForteLang implements ForteLangConstants {
     try { return !jj_3_14(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(13, xla); }
-  }
-
-  static private boolean jj_3R_46() {
-    if (jj_scan_token(INCLUDE)) return true;
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_19() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(2)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(4)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(3)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(1)) return true;
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_9() {
-    if (jj_scan_token(SET_OP)) return true;
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_57() {
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_9()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3_6() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_75() {
-    if (jj_3R_17()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_66() {
-    if (jj_scan_token(SELECT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_56() {
-    Token xsp;
-    if (jj_3R_66()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_66()) { jj_scanpos = xsp; break; }
-    }
-    return false;
   }
 
   static private boolean jj_3R_45() {
@@ -1729,6 +1690,68 @@ public class ForteLang implements ForteLangConstants {
     while (true) {
       xsp = jj_scanpos;
       if (jj_3_10()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_46() {
+    if (jj_scan_token(INCLUDE)) return true;
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_19() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(2)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(4)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(3)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(1)) return true;
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_9() {
+    if (jj_scan_token(SET_OP)) return true;
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_57() {
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_9()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_6() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_75() {
+    if (jj_3R_17()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_66() {
+    if (jj_scan_token(SELECT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_56() {
+    Token xsp;
+    if (jj_3R_66()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_66()) { jj_scanpos = xsp; break; }
     }
     return false;
   }

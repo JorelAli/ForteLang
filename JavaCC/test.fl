@@ -149,6 +149,14 @@
 #
 #} in 2 + 2
 
-{
+#{} /+ {a = "hi"; aList = [impure {@b = "hii";}];}
 
+{
+    a = "hi";
+    d = "yes";
+} // impure {
+
+    a = "hello";
+    b = "yo";
+    @c = blah;
 }

@@ -8,8 +8,10 @@ import java.io.*;
 
 public class ForteLang {
 
+	static interface Evaluatable { }
+
 	/** Class declarations */
-	static class FL_Function {
+	static class FL_Function implements Evaluatable {
 		List<String> parameters;
 		Object expression;
 
@@ -22,7 +24,7 @@ public class ForteLang {
 		*/
 	}
 
-	static class FL_Set {
+	static class FL_Set implements Evaluatable {
 		boolean impure;
 		LinkedHashMap<String, Object> attributes;
 
@@ -96,30 +98,34 @@ public class ForteLang {
 
 	/** Other declared objects */
 
-	static class FL_Guards {
+	static class FL_Guards implements Evaluatable {
 		LinkedHashMap<Object, Object> statements;
 		Object finalStatement;
 
 		public FL_Guards() { statements = new LinkedHashMap<Object, Object>(); }
 	}
 
-	static class FL_Matches {
+	static class FL_Matches implements Evaluatable {
 		LinkedHashMap<Object, Object> statements;
 		Object finalStatement;
 
 		public FL_Matches() { statements = new LinkedHashMap<Object, Object>(); }
 	}
 
-	static class FL_Enum {
+	static class FL_Enum implements Evaluatable {
 		List<String> elements;
 		
 		public FL_Enum() { elements = new LinkedList<String>(); }
 		@Override public String toString() { return "ENUM" + elements.toString(); }
 	}
 
-	static class FL_IncludedSet {
+	static class FL_IncludedSet implements Evaluatable {
 		FL_Set set;
 		Object expression;
+
+		@Override public String toString() {
+		  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
+		}
 	}
 
 	/** Scope system */
@@ -192,10 +198,6 @@ public class ForteLang {
 			
 			currentScope = root;
 			new ForteLang(new FileInputStream(file)).input();
-			System.out.println("PASS");
-
-			System.out.println("Scopes:");
-			System.out.println(root);
 			
 		} catch(Exception e) {
 		  	e.printStackTrace();
@@ -311,6 +313,11 @@ public class ForteLang {
 			return newSet;
 		} 
 	}
+
+	public static Object evaluate(FL_Set scope, Object expression) {
+		return null;
+	}
+
 }
 
 PARSER_END(ForteLang)
@@ -375,19 +382,25 @@ SKIP : { < "###" (~["#"])* "###" > }
 SKIP : { "\n" | "\r" | " " }
 
 /** Main endpoint */
-Object input() throws Exception : { Object result; } {
-  result = expression()
+Object input() throws Exception : { Object expression; Object result; } {
+  expression = expression()
+  <EOF>
   {
     System.out.println();
-    System.out.println("Finished prior evaluation");
-    System.out.println("Preparing to evaluate: " + result);
-  }
-  eof()
-  { return result; }
-}
+    System.out.println("Finished parsing file.");
+    System.out.println("Preparing to evaluate result");
+    if(expression instanceof FL_IncludedSet) {
+    	System.out.println("FL_Included set discovered, building scope tree & evaluating");
+    	result = evaluate(((FL_IncludedSet) expression).set, expression);
+		
+    } else {
+		System.out.println(expression);
+		result = evaluate(new FL_Set(), expression);
+    }
 
-void eof() throws Exception : {} {
-  	<EOF>
+    System.out.println("Final result: " + result);
+  	return result;
+  }
 }
 
 void anyOperator() throws Exception : {} {

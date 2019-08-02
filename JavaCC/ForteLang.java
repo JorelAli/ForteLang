@@ -119,6 +119,10 @@ public class ForteLang implements ForteLangConstants {
         static class FL_IncludedSet {
                 FL_Set set;
                 Object expression;
+
+                @Override public String toString() {
+                  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
+                }
         }
 
         /** Scope system */
@@ -191,10 +195,6 @@ public class ForteLang implements ForteLangConstants {
 
                         currentScope = root;
                         new ForteLang(new FileInputStream(file)).input();
-                        System.out.println("PASS");
-
-                        System.out.println("Scopes:");
-                        System.out.println(root);
 
                 } catch(Exception e) {
                         e.printStackTrace();
@@ -311,20 +311,30 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
+        public static Object evaluate(FL_Set scope, Object expression) {
+                return null;
+        }
+
 /** Main endpoint */
   static final public Object input() throws ParseException, Exception {
-                                    Object result;
-    result = expression();
-    System.out.println();
-    System.out.println("Finished prior evaluation");
-    System.out.println("Preparing to evaluate: " + result);
-    eof();
-    {if (true) return result;}
-    throw new Error("Missing return statement in function");
-  }
-
-  static final public void eof() throws ParseException, Exception {
+                                    Object expression; Object result;
+    expression = expression();
     jj_consume_token(0);
+    System.out.println();
+    System.out.println("Finished parsing file.");
+    System.out.println("Preparing to evaluate result");
+    if(expression instanceof FL_IncludedSet) {
+        System.out.println("FL_Included set discovered, building scope tree & evaluating");
+        result = evaluate(((FL_IncludedSet) expression).set, expression);
+
+    } else {
+                System.out.println(expression);
+                result = evaluate(new FL_Set(), expression);
+    }
+
+    System.out.println("Final result: " + result);
+        {if (true) return result;}
+    throw new Error("Missing return statement in function");
   }
 
   static final public void anyOperator() throws ParseException, Exception {
@@ -1170,51 +1180,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(13, xla); }
   }
 
-  static private boolean jj_3R_59() {
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_8()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_58() {
-    if (jj_scan_token(CONTAINS)) return true;
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_5() {
-    if (jj_3R_19()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_6()) {
-    jj_scanpos = xsp;
-    if (jj_3R_20()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_65() {
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_5()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_72() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_71() {
-    if (jj_scan_token(CAPS)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_64() {
     if (jj_scan_token(SELECT)) return true;
     Token xsp;
@@ -1760,6 +1725,51 @@ public class ForteLang implements ForteLangConstants {
   static private boolean jj_3_8() {
     if (jj_scan_token(CONCAT)) return true;
     if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_59() {
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_8()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_58() {
+    if (jj_scan_token(CONTAINS)) return true;
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_5() {
+    if (jj_3R_19()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_6()) {
+    jj_scanpos = xsp;
+    if (jj_3R_20()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_65() {
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_5()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_72() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_71() {
+    if (jj_scan_token(CAPS)) return true;
     return false;
   }
 

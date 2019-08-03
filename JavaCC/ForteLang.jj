@@ -696,14 +696,19 @@ FL_Matches matches() throws Exception : { FL_Matches matches; } {
 	{ return matches; }
 }
 
-FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; } {
+FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard; } {
 	{ guards = new FL_Guards(); }
   
-	(<GUARD>
+	(firstGuard = <GUARD>
 		predicate = expression()
 		<GUARD_ARROW>
 		expression = expression()
-		<GUARD>
+		try { 
+			<GUARD>
+		} catch(ParseException e) {
+			System.err.println("Guards doesn't have a default case, for example:\n  | ->> ...\n" + location(firstGuard));
+			System.exit(0);
+		}
 		{ guards.statements.put(predicate, expression); }
 	)+
 	(

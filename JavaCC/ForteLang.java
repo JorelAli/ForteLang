@@ -1079,15 +1079,20 @@ public class ForteLang implements ForteLangConstants {
   }
 
   static final public FL_Guards guards() throws ParseException, Exception {
-                                        FL_Guards guards; Object predicate; Object expression; Object finalExpression;
+                                        FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard;
           guards = new FL_Guards();
     label_15:
     while (true) {
-      jj_consume_token(GUARD);
+      firstGuard = jj_consume_token(GUARD);
       predicate = expression();
       jj_consume_token(GUARD_ARROW);
       expression = expression();
-      jj_consume_token(GUARD);
+      try {
+        jj_consume_token(GUARD);
+      } catch (ParseException e) {
+                        System.err.println("Guards doesn't have a default case, for example:\u005cn  | ->> ...\u005cn" + location(firstGuard));
+                        System.exit(0);
+      }
                   guards.statements.put(predicate, expression);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case GUARD:

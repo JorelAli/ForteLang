@@ -147,4 +147,4 @@ include impure {
 
     awvew = "Hello, " ++ "world!";
 
-} in 2 + 2
+} in x -> | x == x ->> true

@@ -1,3 +1,7 @@
+options {
+	STATIC = false;
+}
+
 PARSER_BEGIN(ForteLang)
 
 import java.util.*;
@@ -241,7 +245,7 @@ public class ForteLang {
 		  	/* Run the parser */
 
 			Object result = new ForteLang(new FileInputStream(file)).input();
-			
+			System.out.println("Final result: " + result);
 			
 		} catch(Exception e) {
 		  	e.printStackTrace();
@@ -398,10 +402,16 @@ public class ForteLang {
 	  	if(expression instanceof Evaluatable) {
 	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
+				Object builtinParam = evaluate(scope, builtin.param);
+				//TODO: Fix for when builtins require non-String types
+				if(!(builtinParam instanceof String)) {
+					throw new Exception("Builtin parameter " + builtinParam + " did not evaluate to a String");
+				}
+				String builtinParamStr = (String) builtinParam;
 				switch(builtin.type) {
 					case IMPORT:
-						System.out.println("About to get a file");
-						break;
+						File file = new File(builtinParamStr);
+						return new ForteLang(new FileInputStream(file)).input();
 					case PRINT:
 						break;
 					case EXEC:
@@ -550,20 +560,12 @@ Object input() throws Exception : { Object expression; Object result; } {
   expression = expression()
   <EOF>
   {
-    System.out.println();
-    System.out.println("Finished parsing file.");
-    System.out.println("Preparing to evaluate result");
     if(expression instanceof FL_IncludedSet) {
-    	System.out.println("FL_Included set discovered, building scope tree & evaluating");
     	FL_IncludedSet flIS = (FL_IncludedSet) expression;
-    	result = evaluate(flIS.set, flIS.expression);
+    	return evaluate(flIS.set, flIS.expression);
     } else {
-		System.out.println(expression);
-		result = evaluate(new FL_Set(), expression);
+		return evaluate(new FL_Set(), expression);
     }
-
-    System.out.println("Final result: " + result);
-  	return result;
   }
 }
 
@@ -870,10 +872,10 @@ List<Object> listExpression() throws Exception : { List<Object> list; Object exp
 	{ return list; }
 }
 
-Object builtinFunctions() throws Exception : { Object param; } {
-	<IMPORT>  (param = <STRING> | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
-    | <PRINT> (param = <STRING> | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
-	| <EXEC>  (param = <STRING> | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
+Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
+	<IMPORT>  (stringToken = <STRING> { param = parseString(stringToken); } | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
+    | <PRINT> (stringToken = <STRING> { param = parseString(stringToken); } | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
+	| <EXEC>  (stringToken = <STRING> { param = parseString(stringToken); } | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {

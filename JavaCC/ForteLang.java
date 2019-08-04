@@ -211,6 +211,18 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
+        static class FL_Builtin implements Evaluatable {
+                Object param;
+                enum Builtin { IMPORT, PRINT, EXEC }
+
+                Builtin type;
+
+                public FL_Builtin(Builtin type, Object param) {
+                        this.type = type;
+                        this.param = param;
+                }
+        }
+
         /** Static fields */
         static String fileName;
 
@@ -227,7 +239,8 @@ public class ForteLang implements ForteLangConstants {
                 try {
                         /* Run the parser */
 
-                        new ForteLang(new FileInputStream(file)).input();
+                        Object result = new ForteLang(new FileInputStream(file)).input();
+
 
                 } catch(Exception e) {
                         e.printStackTrace();
@@ -381,32 +394,33 @@ public class ForteLang implements ForteLangConstants {
 
         public static Object evaluate(FL_Set scope, Object expression) throws Exception {
                 scope = scope.clone();
-                System.out.println();
-//	  	System.out.println("Current scope:");
-//	  	System.out.println(scope);
-                System.out.println();
                 if(expression instanceof Evaluatable) {
-                        System.out.println("Evaluating expression...");
+                        if(expression instanceof FL_Builtin) {
+                                FL_Builtin builtin = (FL_Builtin) expression;
+                                switch(builtin.type) {
+                                        case IMPORT:
+                                                System.out.println("About to get a file");
+                                                break;
+                                        case PRINT:
+                                                break;
+                                        case EXEC:
+                                                break;
+                                }
 
-                        if(expression instanceof FL_Function_Call) {
+                        } else if(expression instanceof FL_Function_Call) {
                                 FL_Function_Call call = (FL_Function_Call) expression;
                                 Object function = scope.attributes.get(call.functionName.name);
                                 if(function instanceof FL_Function) {
-                                        //FL_Function func = (FL_Function) function;
-
-                                        System.out.println("About to evaluate the following: ");
-                                        System.out.println(function);
-                                        System.out.println("With parameters " + call.arguments);
-
+//					System.out.println("About to evaluate the following: ");
+//					System.out.println(function);
+//					System.out.println("With parameters " + call.arguments);
                                         while(function instanceof FL_Function) {
                                                 FL_Function func = (FL_Function) function;
                                                 scope.attributes.put(func.parameter, call.arguments.pop());
                                                 function = func.expression;
                                         }
-
-                                        System.out.println("Applied parameters");
-                                        System.out.println(function);
-
+//					System.out.println("Applied parameters");
+//					System.out.println(function);
                                         return evaluate(scope, function);
                                 } else {
                                         throw new Exception("Tried to perform a function call on something that's not a function");
@@ -430,7 +444,7 @@ public class ForteLang implements ForteLangConstants {
                                 return evaluate(scope, guards.finalStatement);
                         } else if(expression instanceof FL_Var) {
                                 FL_Var flVar = (FL_Var) expression;
-                                return scope.attributes.get(flVar.name);
+                                return evaluate(scope, scope.attributes.get(flVar.name));
                         } else if(expression instanceof FL_VarOp) {
                                 FL_VarOp flVarOp = (FL_VarOp) expression;
                                 if(flVarOp.isSingle()) {
@@ -439,18 +453,18 @@ public class ForteLang implements ForteLangConstants {
                                         Object init = flVarOp.initVar;
                                         Object next = flVarOp.expressionsToParse.pop();
 
-                                        if(init instanceof Evaluatable) {
+                                        while (init instanceof Evaluatable) {
                                                 init = evaluate(scope, init);
                                         }
 
-                                        if(next instanceof Evaluatable) {
+                                        while (next instanceof Evaluatable) {
                                                 next = evaluate(scope, next);
                                         }
 
                                         Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
 
                                         if(flVarOp.expressionsToParse.isEmpty()) {
-                                                return newInit;
+                                                return evaluate(scope, newInit);
                                         } else {
                                                 FL_VarOp newOp = new FL_VarOp();
                                                 newOp.initVar = newInit;
@@ -460,9 +474,9 @@ public class ForteLang implements ForteLangConstants {
                                         }
                                 }
                         }
-                        System.out.println("Not implemented yet, could not evaluate: " + expression);
-                        return null;
+                        throw new Exception("Not implemented yet, could not evaluate: " + expression);
                 } else {
+//	  	  System.out.println("Primitive result: ");
                   return expression;
                 }
         }
@@ -811,8 +825,8 @@ public class ForteLang implements ForteLangConstants {
     case IMPORT:
     case EXEC:
     case PRINT:
-      builtinFunctions();
-                                          {if (true) return "builtin";}
+      result = builtinFunctions();
+                                          {if (true) return result;}
       break;
     case GUARD:
       result = guards();
@@ -1135,58 +1149,63 @@ public class ForteLang implements ForteLangConstants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public void builtinFunctions() throws ParseException, Exception {
+  static final public Object builtinFunctions() throws ParseException, Exception {
+                                               Object param;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IMPORT:
       jj_consume_token(IMPORT);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STRING:
-        jj_consume_token(STRING);
+        param = jj_consume_token(STRING);
         break;
       case VAR_NAME:
-        jj_consume_token(VAR_NAME);
+        param = jj_consume_token(VAR_NAME);
         break;
       default:
         jj_la1[21] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
+                                                            {if (true) return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param);}
       break;
     case PRINT:
       jj_consume_token(PRINT);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STRING:
-        jj_consume_token(STRING);
+        param = jj_consume_token(STRING);
         break;
       case VAR_NAME:
-        jj_consume_token(VAR_NAME);
+        param = jj_consume_token(VAR_NAME);
         break;
       default:
         jj_la1[22] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
+                                                        {if (true) return new FL_Builtin(FL_Builtin.Builtin.PRINT, param);}
       break;
     case EXEC:
       jj_consume_token(EXEC);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STRING:
-        jj_consume_token(STRING);
+        param = jj_consume_token(STRING);
         break;
       case VAR_NAME:
-        jj_consume_token(VAR_NAME);
+        param = jj_consume_token(VAR_NAME);
         break;
       default:
         jj_la1[23] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
+                                                            {if (true) return new FL_Builtin(FL_Builtin.Builtin.EXEC, param);}
       break;
     default:
       jj_la1[24] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
   static final public Object singleExpression() throws ParseException, Exception {
@@ -1382,62 +1401,6 @@ public class ForteLang implements ForteLangConstants {
     try { return !jj_3_14(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(13, xla); }
-  }
-
-  static private boolean jj_3R_29() {
-    if (jj_scan_token(COMPARATOR_OP)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_28() {
-    if (jj_scan_token(SET_OP)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_27() {
-    if (jj_scan_token(OP)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_26() {
-    if (jj_scan_token(BOOLEAN_OP)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_18() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_26()) {
-    jj_scanpos = xsp;
-    if (jj_3R_27()) {
-    jj_scanpos = xsp;
-    if (jj_3R_28()) {
-    jj_scanpos = xsp;
-    if (jj_3R_29()) return true;
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_76() {
-    Token xsp;
-    if (jj_3R_81()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_81()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_19() {
-    if (jj_3R_17()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_6() {
-    if (jj_3R_20()) return true;
-    return false;
   }
 
   static private boolean jj_3_5() {
@@ -2006,6 +1969,62 @@ public class ForteLang implements ForteLangConstants {
   static private boolean jj_3R_50() {
     if (jj_scan_token(INCLUDE)) return true;
     if (jj_3R_22()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_29() {
+    if (jj_scan_token(COMPARATOR_OP)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_28() {
+    if (jj_scan_token(SET_OP)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_27() {
+    if (jj_scan_token(OP)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_26() {
+    if (jj_scan_token(BOOLEAN_OP)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_18() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_26()) {
+    jj_scanpos = xsp;
+    if (jj_3R_27()) {
+    jj_scanpos = xsp;
+    if (jj_3R_28()) {
+    jj_scanpos = xsp;
+    if (jj_3R_29()) return true;
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_76() {
+    Token xsp;
+    if (jj_3R_81()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_81()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_19() {
+    if (jj_3R_17()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_6() {
+    if (jj_3R_20()) return true;
     return false;
   }
 

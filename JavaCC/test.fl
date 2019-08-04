@@ -158,4 +158,8 @@ include impure {
 
     otherTestCase = x -> x + 2;
 
-} in maxOr0 5 10 #otherTestCase 2 #maxOr0 5 10
+    importFile = import "./test2.fl";
+
+    someTestVariable' = 2;
+
+} in maxOr0 1 someTestVariable' #(import "./test2.fl")

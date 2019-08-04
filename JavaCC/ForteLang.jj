@@ -212,6 +212,18 @@ public class ForteLang {
 		}
 	}
 
+	static class FL_Builtin implements Evaluatable {
+		Object param;
+		enum Builtin { IMPORT, PRINT, EXEC }
+
+		Builtin type;
+
+		public FL_Builtin(Builtin type, Object param) {
+			this.type = type;
+			this.param = param;
+		}
+	}
+
 	/** Static fields */
 	static String fileName;
 
@@ -228,7 +240,8 @@ public class ForteLang {
 		try {
 		  	/* Run the parser */
 
-			new ForteLang(new FileInputStream(file)).input();
+			Object result = new ForteLang(new FileInputStream(file)).input();
+			
 			
 		} catch(Exception e) {
 		  	e.printStackTrace();
@@ -382,32 +395,33 @@ public class ForteLang {
 
 	public static Object evaluate(FL_Set scope, Object expression) throws Exception {
 	  	scope = scope.clone();
-	  	System.out.println();
-//	  	System.out.println("Current scope:");
-//	  	System.out.println(scope);
-	  	System.out.println();
 	  	if(expression instanceof Evaluatable) {
-	  	  	System.out.println("Evaluating expression...");
-
-			if(expression instanceof FL_Function_Call) {
+	  	  	if(expression instanceof FL_Builtin) {
+				FL_Builtin builtin = (FL_Builtin) expression;
+				switch(builtin.type) {
+					case IMPORT:
+						System.out.println("About to get a file");
+						break;
+					case PRINT:
+						break;
+					case EXEC:
+						break;
+				}
+	  	  	  
+			} else if(expression instanceof FL_Function_Call) {
 				FL_Function_Call call = (FL_Function_Call) expression;
 				Object function = scope.attributes.get(call.functionName.name);
 				if(function instanceof FL_Function) {
-					//FL_Function func = (FL_Function) function;
-
-					System.out.println("About to evaluate the following: ");
-					System.out.println(function);
-					System.out.println("With parameters " + call.arguments);
-
+//					System.out.println("About to evaluate the following: ");
+//					System.out.println(function);
+//					System.out.println("With parameters " + call.arguments);
 					while(function instanceof FL_Function) {
 					  	FL_Function func = (FL_Function) function;
 						scope.attributes.put(func.parameter, call.arguments.pop());
 						function = func.expression;
 					}
-
-					System.out.println("Applied parameters");
-					System.out.println(function);
-	
+//					System.out.println("Applied parameters");
+//					System.out.println(function);
 					return evaluate(scope, function);
 				} else {
 					throw new Exception("Tried to perform a function call on something that's not a function");
@@ -431,7 +445,7 @@ public class ForteLang {
 				return evaluate(scope, guards.finalStatement);
 			} else if(expression instanceof FL_Var) {
 				FL_Var flVar = (FL_Var) expression;
-				return scope.attributes.get(flVar.name);
+				return evaluate(scope, scope.attributes.get(flVar.name));
 			} else if(expression instanceof FL_VarOp) {
 				FL_VarOp flVarOp = (FL_VarOp) expression;
 				if(flVarOp.isSingle()) {
@@ -440,18 +454,18 @@ public class ForteLang {
 				  	Object init = flVarOp.initVar;
 				  	Object next = flVarOp.expressionsToParse.pop();
 
-				  	if(init instanceof Evaluatable) {
+				  	while (init instanceof Evaluatable) {
 						init = evaluate(scope, init);
 				  	}
 
-				  	if(next instanceof Evaluatable) {
+				  	while (next instanceof Evaluatable) {
 						next = evaluate(scope, next);
 				  	}
 				  	
 				  	Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
 
 				  	if(flVarOp.expressionsToParse.isEmpty()) {
-						return newInit;
+						return evaluate(scope, newInit);
 				  	} else {
 						FL_VarOp newOp = new FL_VarOp();
 						newOp.initVar = newInit;
@@ -461,9 +475,9 @@ public class ForteLang {
 				  	}
 				}
 			}
-			System.out.println("Not implemented yet, could not evaluate: " + expression);
-			return null;
+			throw new Exception("Not implemented yet, could not evaluate: " + expression);
 	  	} else {
+//	  	  System.out.println("Primitive result: ");
 	  	  return expression;
 	  	}
 	}
@@ -707,7 +721,7 @@ Object expression() throws Exception : { Object result; } {
 	| result = numberExpression()   { return result; }
 	| result = stringExpression()   { return result; }
 	| result = booleanExpression()  { return result; }
-	| builtinFunctions()            { return "builtin"; }
+	| result = builtinFunctions()   { return result; }
 	| result = guards()             { return result; }
 }
 
@@ -856,10 +870,10 @@ List<Object> listExpression() throws Exception : { List<Object> list; Object exp
 	{ return list; }
 }
 
-void builtinFunctions() throws Exception : {} {
-	<IMPORT>  (<STRING> | <VAR_NAME>)
-    | <PRINT> (<STRING> | <VAR_NAME>)
-	| <EXEC>  (<STRING> | <VAR_NAME>)
+Object builtinFunctions() throws Exception : { Object param; } {
+	<IMPORT>  (param = <STRING> | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
+    | <PRINT> (param = <STRING> | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
+	| <EXEC>  (param = <STRING> | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {

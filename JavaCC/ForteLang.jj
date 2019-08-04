@@ -184,6 +184,21 @@ public class ForteLang {
 		}
 	}
 
+	static class FL_VarOp implements Evaluatable {
+		String initVar;
+		LinkedList<Token> operators;
+		LinkedList<Object> expressionsToParse;
+
+		public FL_VarOp() {
+		  	operators = new LinkedList<Token>();
+			expressionsToParse = new LinkedList<Object>();
+		}
+
+		@Override public String toString() {
+		  return "FL_VarOp[init=" + initVar + "]...";
+		}
+	}
+
 	/** Static fields */
 	static String fileName;
 
@@ -478,8 +493,11 @@ Object input() throws Exception : { Object expression; Object result; } {
   }
 }
 
-void anyOperator() throws Exception : {} {
-	<BOOLEAN_OP> | <OP> | <SET_OP> | <COMPARATOR_OP>
+Token anyOperator() throws Exception : { Token op; } {
+	  op = <BOOLEAN_OP>    { return op; }
+	| op = <OP>            { return op; }
+	| op = <SET_OP>        { return op; }
+	| op = <COMPARATOR_OP> { return op; }
 }
 
 FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object expression; FL_Set set; } {
@@ -634,18 +652,23 @@ Object variableExpression() throws Exception : { Object result; Token varName; }
 }
 
 // <VARNAME> <OP> <EXPRESSION> 
-Object variableOperator(Token varName) throws Exception : { Token operator; } {
+FL_VarOp variableOperator(Token varName) throws Exception : { Token operator; Object expr; FL_VarOp varop; } {
+  	{
+  	  varop = new FL_VarOp();
+  	  varop.initVar = varName.image;
+  	}
 	(
 	  LOOKAHEAD(2)
-	  anyOperator()
+	  operator = anyOperator()
+	  { varop.operators.add(operator); }
 	  (
 	    LOOKAHEAD(3)
-	    expression()
-	    | enclosedExpression()
+	      expr = expression()         { varop.expressionsToParse.add(expr); }
+	    | expr = enclosedExpression() { varop.expressionsToParse.add(expr); }
 	  )
 	)*
 	{
-	  return "Variable operator";
+	  return varop;
 	}
 } 
 

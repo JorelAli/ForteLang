@@ -143,6 +143,10 @@ public class ForteLang {
 		Object finalStatement;
 
 		public FL_Guards() { statements = new LinkedHashMap<Object, Object>(); }
+
+		@Override public String toString() {
+		  return "FL_Guards[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
+		}
 	}
 
 	static class FL_Matches implements Evaluatable {
@@ -218,7 +222,7 @@ public class ForteLang {
 
 	static class OperatorParser {
 
-		enum Operator { BOOLEAN, NUMERICAL, SET };
+		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR };
 
 		Operator operatorKind;
 		String op;
@@ -234,11 +238,32 @@ public class ForteLang {
 				case ForteLangConstants.SET_OP:
 					operatorKind = Operator.SET;
 					break;
+				case ForteLangConstants.COMPARATOR_OP:
+					operatorKind = Operator.COMPARATOR;
+					break;
 				default:
 					operatorKind = null;
 					break;
 			}
 			op = operator.image;
+		}
+
+		public boolean applyComparator(Object o1, Object o2) throws Exception {
+			switch(op) {
+				case ">":
+					return (double) o1 > (double) o2;
+				case "<":
+					return (double) o1 < (double) o2;
+				case "<=":
+					return (double) o1 <= (double) o2;
+				case ">=":
+					return (double) o1 >= (double) o2;
+				case "==":
+					return o1.equals(o2);
+				case "!=":
+					return !o1.equals(o2);
+			}
+			throw new Exception ("Invalid operator (expected comparator operator");
 		}
 
 		public double applyDouble(double f1, double f2) throws Exception {
@@ -316,8 +341,8 @@ public class ForteLang {
 	public static Object evaluate(FL_Set scope, Object expression) {
 	  	scope = scope.clone();
 	  	System.out.println();
-	  	System.out.println("Current scope:");
-	  	System.out.println(scope);
+//	  	System.out.println("Current scope:");
+//	  	System.out.println(scope);
 	  	System.out.println();
 	  	if(expression instanceof Evaluatable) {
 	  	  	System.out.println("Evaluating expression...");
@@ -341,15 +366,13 @@ public class ForteLang {
 					System.out.println("Applied parameters");
 					System.out.println(function);
 	
-					
+					return evaluate(scope, function);
 				} else {
 					System.err.println("Tried to perform a function call on something that's not a function");
 				}
 
-				
-				
-				
 			}
+			System.out.println("Not implemented yet, could not evaluate: " + expression);
 			return null;
 	  	} else {
 	  	  return expression;
@@ -592,9 +615,25 @@ Object variableExpression() throws Exception : { Object result; Token varName; }
 		  <CAPS> { return null; }
 		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))* { return "enum selection"; }
 		)
-		| (LOOKAHEAD(2) anyOperator() (LOOKAHEAD(3) expression() | enclosedExpression()))* { return "variable operator"; }
+		| result = variableOperator(varName) { return result; }
 	  )
 }
+
+// <VARNAME> <OP> <EXPRESSION> 
+Object variableOperator(Token varName) throws Exception : { Token operator; } {
+	(
+	  LOOKAHEAD(2)
+	  anyOperator()
+	  (
+	    LOOKAHEAD(3)
+	    expression()
+	    | enclosedExpression()
+	  )
+	)*
+	{
+	  return "Variable operator";
+	}
+} 
 
 FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Call result; Object param; } {
   	{

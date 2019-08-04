@@ -15,7 +15,7 @@ include impure {
     # Example with guards
     max = x -> y -> 
         | x > y ->> x
-        | ->> y;
+        | ->> y ;
 
     # Set operations
     union =      set1 -> set2 -> set1 /+ set2;
@@ -75,7 +75,7 @@ include impure {
         xs = tail a;
     } in [x] ++ xs;
 
-    guard = | x ->> y | ->> y;
+    guard = | x ->> y | ->> y ;
 
     # Import an expression
     a = import "./someFile.fl";
@@ -121,7 +121,7 @@ include impure {
 
     parenthesis = a * (b + c);
 
-    advancedList = [a, (a + b), (x -> | x ->> y | ->> x)];
+    advancedList = [a, (a + b), (x -> | x ->> y | ->> x )];
 
     otherStrings = "hi\" hello";
 
@@ -147,4 +147,5 @@ include impure {
 
     awvew = "Hello, " ++ "world!";
 
-} in x -> | x == x ->> true
+} in | x ->> x 
+     | ->> | x ->> t | ->> x

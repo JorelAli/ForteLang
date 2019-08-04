@@ -489,7 +489,6 @@ Object functionResult() throws Exception : { Object result; } {
 	  LOOKAHEAD(2)
 	    result = lambda()
 	  | result = expression()
-	  | result = guards()
 	  | result = enumeration()
 	  | result = matches()
 	)
@@ -510,7 +509,6 @@ FL_Function lambda() throws Exception : { FL_Function function; Token paramName;
 
 	(
 	    innerExpression = expression()
-	  | innerExpression = guards()
 	  | innerExpression = matches()
 	)
 
@@ -566,6 +564,7 @@ Object expression() throws Exception : { Object result; } {
 	| result = stringExpression()   { return result; }
 	| result = booleanExpression()  { return result; }
 	| builtinFunctions()            { return "builtin"; }
+	| result = guards()             { return result; }
 }
 
 Object variableExpression() throws Exception : { Object result; Token varName; } {
@@ -715,6 +714,8 @@ FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Obje
 	  	<GUARD_ARROW>
 	  	finalExpression = expression()
 	  	{ guards.finalStatement = finalExpression; }
+
+	  	
 	)
 
 	{ return guards; }

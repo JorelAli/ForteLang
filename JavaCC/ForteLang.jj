@@ -159,57 +159,9 @@ public class ForteLang {
 		}
 	}
 
-	/** Scope system */
-
-	static class Scope implements Iterable<Scope> {
-
-		String attributeName;
-		boolean isPrivateScope;
-		
-		List<Scope> children;
-		Scope parent;
-
-		public Scope addAttribute(String attributeName) {
-		  	Scope newScope = new Scope();
-		  	newScope.attributeName = attributeName;
-			newScope.parent = this;
-			newScope.children = new LinkedList<Scope>();
-			newScope.isPrivateScope = false;
-
-			children.add(newScope);
-			return newScope;
-		}
-
-		public Scope addIncludedAttribute(String attributeName) {
-		  	Scope newScope = new Scope();
-		  	newScope.attributeName = attributeName;
-			newScope.parent = this;
-			newScope.children = new LinkedList<Scope>();
-			newScope.isPrivateScope = true;
-
-			children.add(newScope);
-			return newScope;
-		}
-
-		@Override
-    	public Iterator<Scope> iterator() {
-       		return children.iterator();
-    	}
-
-		@Override
-    	public String toString() {
-			return attributeName + children.toString() /*+ "(" + (parent == null ? "" : parent.attributeName) + ")"*/;
-    	}
-	}
-
 	/** Static fields */
 	static String fileName;
 
-	/*
-	The "scope" of what's visible where.
-	*/
-	static Scope root;
-	static Scope currentScope;
 
 	/** Main method */
 	public static void main(String[] args) throws ParseException, FileNotFoundException {
@@ -222,12 +174,7 @@ public class ForteLang {
 	  	fileName = file.getName();
 		try {
 		  	/* Run the parser */
-			root = new Scope();
-			root.children = new LinkedList<Scope>();
-			root.isPrivateScope = false;
-			root.parent = null;
-			
-			currentScope = root;
+
 			new ForteLang(new FileInputStream(file)).input();
 			
 		} catch(Exception e) {

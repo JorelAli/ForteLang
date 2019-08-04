@@ -248,6 +248,20 @@ public class ForteLang {
 			op = operator.image;
 		}
 
+		public Object apply(Object o1, Object o2) throws Exception {
+			switch(operatorKind) {
+				case BOOLEAN:
+					return applyBoolean((boolean) o1, (boolean) o2);
+				case NUMERICAL:
+					return applyDouble((double) o1, (double) o2);
+				case SET:
+					return applySetObjects((FL_Set) o1, (FL_Set) o2);
+				case COMPARATOR:
+					return applyComparator(o1, o2); 
+			}
+			throw new Exception ("Failed to apply any operators");
+		}
+
 		public boolean applyComparator(Object o1, Object o2) throws Exception {
 			switch(op) {
 				case ">":

@@ -455,7 +455,11 @@ public class ForteLang {
 				return evaluate(scope, guards.finalStatement);
 			} else if(expression instanceof FL_Var) {
 				FL_Var flVar = (FL_Var) expression;
-				return evaluate(scope, scope.attributes.get(flVar.name));
+				Object var = scope.attributes.get(flVar.name);
+				if(var == null) {
+					throw new Exception("Could not find function \"" + flVar.name + "\" in the program!");
+				}
+				return evaluate(scope, var);
 			} else if(expression instanceof FL_VarOp) {
 				FL_VarOp flVarOp = (FL_VarOp) expression;
 				if(flVarOp.isSingle()) {

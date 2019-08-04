@@ -450,7 +450,11 @@ public class ForteLang implements ForteLangConstants {
                                 return evaluate(scope, guards.finalStatement);
                         } else if(expression instanceof FL_Var) {
                                 FL_Var flVar = (FL_Var) expression;
-                                return evaluate(scope, scope.attributes.get(flVar.name));
+                                Object var = scope.attributes.get(flVar.name);
+                                if(var == null) {
+                                        throw new Exception("Could not find function \u005c"" + flVar.name + "\u005c" in the program!");
+                                }
+                                return evaluate(scope, var);
                         } else if(expression instanceof FL_VarOp) {
                                 FL_VarOp flVarOp = (FL_VarOp) expression;
                                 if(flVarOp.isSingle()) {
@@ -1404,17 +1408,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(13, xla); }
   }
 
-  private boolean jj_3_5() {
-    if (jj_3R_18()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_6()) {
-    jj_scanpos = xsp;
-    if (jj_3R_19()) return true;
-    }
-    return false;
-  }
-
   private boolean jj_3R_81() {
     if (jj_scan_token(VAR_NAME)) return true;
     return false;
@@ -2041,6 +2034,17 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3_6() {
     if (jj_3R_20()) return true;
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_3R_18()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_6()) {
+    jj_scanpos = xsp;
+    if (jj_3R_19()) return true;
+    }
     return false;
   }
 

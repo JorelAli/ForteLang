@@ -410,12 +410,25 @@ public class ForteLang {
 	
 					return evaluate(scope, function);
 				} else {
-					System.err.println("Tried to perform a function call on something that's not a function");
+					throw new Exception("Tried to perform a function call on something that's not a function");
 				}
 
 			} else if(expression instanceof FL_Guards) {
 				FL_Guards guards = (FL_Guards) expression;
-				
+				for(Object guardExpr : guards.statements.keySet()) {
+					Object result = evaluate(scope, guardExpr);
+					if(result instanceof Boolean) {
+						boolean resultBool = (boolean) result;
+						if(!resultBool) {
+							continue;
+						} else {
+							return evaluate(scope, guards.statements.get(guardExpr));
+						}
+					} else {
+						throw new Exception(result + " is not a valid Boolean object in guard expression!");
+					}
+				}
+				return evaluate(scope, guards.finalStatement);
 			} else if(expression instanceof FL_Var) {
 				FL_Var flVar = (FL_Var) expression;
 				return scope.attributes.get(flVar.name);

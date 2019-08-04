@@ -409,12 +409,25 @@ public class ForteLang implements ForteLangConstants {
 
                                         return evaluate(scope, function);
                                 } else {
-                                        System.err.println("Tried to perform a function call on something that's not a function");
+                                        throw new Exception("Tried to perform a function call on something that's not a function");
                                 }
 
                         } else if(expression instanceof FL_Guards) {
                                 FL_Guards guards = (FL_Guards) expression;
-
+                                for(Object guardExpr : guards.statements.keySet()) {
+                                        Object result = evaluate(scope, guardExpr);
+                                        if(result instanceof Boolean) {
+                                                boolean resultBool = (boolean) result;
+                                                if(!resultBool) {
+                                                        continue;
+                                                } else {
+                                                        return evaluate(scope, guards.statements.get(guardExpr));
+                                                }
+                                        } else {
+                                                throw new Exception(result + " is not a valid Boolean object in guard expression!");
+                                        }
+                                }
+                                return evaluate(scope, guards.finalStatement);
                         } else if(expression instanceof FL_Var) {
                                 FL_Var flVar = (FL_Var) expression;
                                 return scope.attributes.get(flVar.name);
@@ -1371,43 +1384,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(13, xla); }
   }
 
-  static private boolean jj_3R_53() {
-    if (jj_scan_token(STRING)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_61()) {
-    jj_scanpos = xsp;
-    if (jj_3R_62()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_82() {
-    if (jj_3R_17()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_81() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_7()) {
-    jj_scanpos = xsp;
-    if (jj_3R_82()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3_7() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_50() {
-    if (jj_scan_token(INCLUDE)) return true;
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_29() {
     if (jj_scan_token(COMPARATOR_OP)) return true;
     return false;
@@ -1993,6 +1969,43 @@ public class ForteLang implements ForteLangConstants {
       if (jj_3R_67()) { jj_scanpos = xsp; break; }
     }
     if (jj_scan_token(CLOSECBRACKET)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_53() {
+    if (jj_scan_token(STRING)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_61()) {
+    jj_scanpos = xsp;
+    if (jj_3R_62()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_82() {
+    if (jj_3R_17()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_81() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_7()) {
+    jj_scanpos = xsp;
+    if (jj_3R_82()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3_7() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_50() {
+    if (jj_scan_token(INCLUDE)) return true;
+    if (jj_3R_22()) return true;
     return false;
   }
 

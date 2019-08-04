@@ -158,4 +158,4 @@ include impure {
 
     otherTestCase = x -> x + 2;
 
-} in otherTestCase 2 #maxOr0 5 10
+} in maxOr0 5 10 #otherTestCase 2 #maxOr0 5 10

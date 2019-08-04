@@ -149,11 +149,11 @@ include impure {
 
     guardTests = [] ++ | x == true ->> [] | ->> [x];
 
-} in 
-x -> 
+    maxOr0 = x -> 
     y ->
         | x > y ->> x 
         | ->> 
             | y > x ->> y
-            | ->> 0
+            | ->> 0;
 
+} in maxOr0 5 10

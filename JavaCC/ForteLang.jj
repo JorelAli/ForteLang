@@ -11,6 +11,8 @@ public class ForteLang {
 	static interface Evaluatable { }
 
 	/** Class declarations */
+
+	//Function declaration, e.g. x -> y -> x + y
 	static class FL_Function implements Evaluatable {
 		String parameter;
 		Object expression;
@@ -43,11 +45,30 @@ public class ForteLang {
 		}
 	}
 
+	//Function call, e.g. myFunc 2 3
+	static class FL_Function_Call implements Evaluatable {
+		FL_Var functionName;
+		LinkedList<Object> arguments;
+
+		public FL_Function_Call() {
+			arguments = new LinkedList<Object>();
+		}
+
+		@Override public String toString() { return "FL_Function_Call(" + functionName + ") " + arguments; }
+	}
+
 	static class FL_Set implements Evaluatable {
 		boolean impure;
 		LinkedHashMap<String, Object> attributes;
 
 		public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
+
+		public FL_Set clone() {
+			FL_Set newSet = new FL_Set();
+			newSet.impure = impure;
+			newSet.attributes = new LinkedHashMap<String, Object>(attributes);
+			return newSet;
+		}
 
 		public void checkPurity(Token setDeclaration) throws Exception {
 		  //TODO: Make this code WAY more elegant, like seriously... what even
@@ -293,12 +314,42 @@ public class ForteLang {
 	}
 
 	public static Object evaluate(FL_Set scope, Object expression) {
+	  	scope = scope.clone();
 	  	System.out.println();
 	  	System.out.println("Current scope:");
 	  	System.out.println(scope);
 	  	System.out.println();
 	  	if(expression instanceof Evaluatable) {
-			System.out.println(expression);
+	  	  	System.out.println("Evaluating expression...");
+
+			if(expression instanceof FL_Function_Call) {
+				FL_Function_Call call = (FL_Function_Call) expression;
+				Object function = scope.attributes.get(call.functionName.name);
+				if(function instanceof FL_Function) {
+					//FL_Function func = (FL_Function) function;
+
+					System.out.println("About to evaluate the following: ");
+					System.out.println(function);
+					System.out.println("With parameters " + call.arguments);
+
+					while(function instanceof FL_Function) {
+					  	FL_Function func = (FL_Function) function;
+						scope.attributes.put(func.parameter, call.arguments.pop());
+						function = func.expression;
+					}
+
+					System.out.println("Applied parameters");
+					System.out.println(function);
+	
+					
+				} else {
+					System.err.println("Tried to perform a function call on something that's not a function");
+				}
+
+				
+				
+				
+			}
 			return null;
 	  	} else {
 	  	  return expression;
@@ -397,7 +448,7 @@ void anyOperator() throws Exception : {} {
 FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object expression; FL_Set set; } {
   	{ result = new FL_IncludedSet(); }
 	<INCLUDE>
-	set = set(true)
+	set = set()
 	<IN>
 	expression = expression()
 
@@ -408,7 +459,7 @@ FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object 
 	}
 }
 
-FL_Set set(boolean isPrivate) throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {
+FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {
   	{ set = new FL_Set(); }
 	(
 	  <IMPURE>
@@ -536,7 +587,7 @@ Object expression() throws Exception : { Object result; } {
 Object variableExpression() throws Exception : { Object result; Token varName; } {
   	  LOOKAHEAD(2) result = lambda() { return result; }
 	  | varName = <VAR_NAME> (
-		(LOOKAHEAD(2) singleExpression() | enclosedExpression())+ { return "function call"; }
+		result = functionCall(varName) { return result; }
 		| <SELECT> (
 		  <CAPS> { return null; }
 		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))* { return "enum selection"; }
@@ -545,12 +596,27 @@ Object variableExpression() throws Exception : { Object result; Token varName; }
 	  )
 }
 
+FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Call result; Object param; } {
+  	{
+  	   	result = new FL_Function_Call();
+		result.functionName = new FL_Var(varName.image);
+  	}
+  	
+	(
+	  LOOKAHEAD(2)
+	    param = singleExpression()   { result.arguments.add(param); }
+	  | param = enclosedExpression() { result.arguments.add(param); }
+	)+
+
+	{ return result; }
+}
+
 Object stringExpression() throws Exception : { Token initString; Token nextToken; StringBuilder builder; FL_Set setExistance; } {
 	initString = <STRING>
 	{ builder = new StringBuilder(parseString(initString)); }
 	(
 	    <CONTAINS> (
-	        setExistance = set(false) /*TODO: |<VAR_NAME> */
+	        setExistance = set() /*TODO: |<VAR_NAME> */
 		) { return setExistance.attributes.containsKey(parseString(initString)); }
 	    |
 	    (
@@ -566,7 +632,7 @@ Object setExpression() throws Exception : {
   FL_Set initSet; Token setParam; Object accessed;
   FL_Set secondSet; Token setOp;
 } {
-	initSet = set(false)
+	initSet = set()
 	{ accessed = initSet; }
 	(
 	  (
@@ -583,7 +649,7 @@ Object setExpression() throws Exception : {
 	  | (
 	    LOOKAHEAD(2)
 	    setOp = <SET_OP>
-	    secondSet = set(false)
+	    secondSet = set()
 	    {
 	      initSet = new OperatorParser(setOp).applySetObjects(initSet, secondSet);
 	    }
@@ -649,12 +715,12 @@ void builtinFunctions() throws Exception : {} {
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
-	  result = set(false) { return result; }
-	| token = <VAR_NAME> { return new FL_Var(token.image); } //TODO
+	  result = set() { return result; }
+	| token = <VAR_NAME> { return new FL_Var(token.image); }
 	| result = list() { return result; }
 	| result = number() { return result; }
 	| token = <STRING> { return parseString(token); }
-	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); } //TODO: parse boolean
+	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 }
 
 FL_Matches matches() throws Exception : { FL_Matches matches; } {

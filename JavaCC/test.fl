@@ -156,4 +156,6 @@ include impure {
             | y > x ->> y
             | ->> 0;
 
-} in maxOr0 5 10
+    otherTestCase = x -> x + 2;
+
+} in otherTestCase 2 #maxOr0 5 10

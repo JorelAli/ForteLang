@@ -185,7 +185,7 @@ public class ForteLang {
 	}
 
 	static class FL_VarOp implements Evaluatable {
-		String initVar;
+		Object initVar;
 		LinkedList<Token> operators;
 		LinkedList<Object> expressionsToParse;
 
@@ -195,7 +195,20 @@ public class ForteLang {
 		}
 
 		@Override public String toString() {
-		  return "FL_VarOp[init=" + initVar + "]...";
+		  if(isSingle()) {
+			return "FL_VarOp[" + getSingle() + "]";
+		  } else {
+		  	return "FL_VarOp[init=" + initVar + "" + operators + "" + expressionsToParse + "]";
+		  }
+		}
+
+		//Whether there's only an initVar and no operators/expressionsToParse
+		public boolean isSingle() {
+			return operators.isEmpty() && expressionsToParse.isEmpty();
+		}
+
+		public Object getSingle() {
+			return initVar;
 		}
 	}
 
@@ -367,7 +380,7 @@ public class ForteLang {
 		} 
 	}
 
-	public static Object evaluate(FL_Set scope, Object expression) {
+	public static Object evaluate(FL_Set scope, Object expression) throws Exception {
 	  	scope = scope.clone();
 	  	System.out.println();
 //	  	System.out.println("Current scope:");
@@ -400,6 +413,40 @@ public class ForteLang {
 					System.err.println("Tried to perform a function call on something that's not a function");
 				}
 
+			} else if(expression instanceof FL_Guards) {
+				FL_Guards guards = (FL_Guards) expression;
+				
+			} else if(expression instanceof FL_Var) {
+				FL_Var flVar = (FL_Var) expression;
+				return scope.attributes.get(flVar.name);
+			} else if(expression instanceof FL_VarOp) {
+				FL_VarOp flVarOp = (FL_VarOp) expression;
+				if(flVarOp.isSingle()) {
+					return evaluate(scope, flVarOp.getSingle());
+				} else {
+				  	Object init = flVarOp.initVar;
+				  	Object next = flVarOp.expressionsToParse.pop();
+
+				  	if(init instanceof Evaluatable) {
+						init = evaluate(scope, init);
+				  	}
+
+				  	if(next instanceof Evaluatable) {
+						next = evaluate(scope, next);
+				  	}
+				  	
+				  	Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
+
+				  	if(flVarOp.expressionsToParse.isEmpty()) {
+						return newInit;
+				  	} else {
+						FL_VarOp newOp = new FL_VarOp();
+						newOp.initVar = newInit;
+						newOp.operators = flVarOp.operators;
+						newOp.expressionsToParse = flVarOp.expressionsToParse;
+						return evaluate(scope, newOp);
+				  	}
+				}
 			}
 			System.out.println("Not implemented yet, could not evaluate: " + expression);
 			return null;
@@ -530,6 +577,18 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 			System.out.println("'" + attrName.image + "' already exists in the set... overriding");
 	    }
 	    set.attributes.put(attrName.image, attrValue);
+
+	    //Extra purity checks
+	    if(attrValue instanceof FL_Function) {
+			/*
+				For example, this code is invalid:
+				  print' = x -> @print "hello";
+				Because it calls the impure function @print.
+				This means that print' should be @print' to
+				maintain impurities
+			*/
+	    }
+	    
 	  }
 	)*
 	<CLOSECBRACKET>
@@ -655,7 +714,7 @@ Object variableExpression() throws Exception : { Object result; Token varName; }
 FL_VarOp variableOperator(Token varName) throws Exception : { Token operator; Object expr; FL_VarOp varop; } {
   	{
   	  varop = new FL_VarOp();
-  	  varop.initVar = varName.image;
+  	  varop.initVar = new FL_Var(varName.image);
   	}
 	(
 	  LOOKAHEAD(2)

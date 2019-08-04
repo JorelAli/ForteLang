@@ -11,16 +11,35 @@ public class ForteLang implements ForteLangConstants {
 
         /** Class declarations */
         static class FL_Function implements Evaluatable {
-                List<String> parameters;
+                String parameter;
                 Object expression;
 
-                public FL_Function() { parameters = new LinkedList<String>(); }
-                @Override public String toString() { return "FL_Function" + parameters; }
+                @Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
 
                 /*
 		Don't forget currying!
 		x -> y -> true is actually equal to x -> (y -> true)
 		*/
+
+                static class FL_Function_Builder {
+                        Stack<String> parameters;
+                        Object expression;
+
+                        public FL_Function_Builder() {
+                                parameters = new Stack<String>();
+                        }
+
+                        public FL_Function build() {
+                                Object currentExpression = expression;
+                                while(!parameters.empty()) {
+                                        FL_Function newExpression = new FL_Function();
+                                        newExpression.parameter = parameters.pop();
+                                        newExpression.expression = currentExpression;
+                                        currentExpression = newExpression;
+                                }
+                                return (FL_Function) currentExpression;
+                        }
+                }
         }
 
         static class FL_Set implements Evaluatable {
@@ -496,12 +515,12 @@ public class ForteLang implements ForteLangConstants {
   }
 
   static final public FL_Function lambda() throws ParseException, Exception {
-                                          FL_Function function; Token paramName; Object innerExpression;
-          function = new FL_Function();
+                                          FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression;
+          function = new FL_Function.FL_Function_Builder();
     label_3:
     while (true) {
       paramName = jj_consume_token(VAR_NAME);
-            function.parameters.add(paramName.image);
+            function.parameters.push(paramName.image);
       jj_consume_token(FUNCTION_ARROW);
       if (jj_2_2(3)) {
         ;
@@ -534,7 +553,7 @@ public class ForteLang implements ForteLangConstants {
       throw new ParseException();
     }
           function.expression = innerExpression;
-          {if (true) return function;}
+          {if (true) return function.build();}
     throw new Error("Missing return statement in function");
   }
 
@@ -951,6 +970,12 @@ public class ForteLang implements ForteLangConstants {
         if(expr instanceof List) {
                         list.addAll((List) expr);
         } else {
+
+                        /*TODO: Say expr is an instanceof FL_Guards, which evaluates to a list.
+			These need to be properly evaluated before concatenation is declared,
+			so return type should be something like a "completeable future", which
+			SHOULD return a list */
+
                 //TODO: Handle list concat with new stuff
                         //throw new Exception("Tried to concat a list with unknown expression");
         }
@@ -1208,72 +1233,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(13, xla); }
   }
 
-  static private boolean jj_3R_33() {
-    if (jj_3R_46()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_32() {
-    if (jj_3R_45()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_21() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_33()) {
-    jj_scanpos = xsp;
-    if (jj_3R_34()) {
-    jj_scanpos = xsp;
-    if (jj_3R_35()) {
-    jj_scanpos = xsp;
-    if (jj_3R_36()) {
-    jj_scanpos = xsp;
-    if (jj_3R_37()) {
-    jj_scanpos = xsp;
-    if (jj_3R_38()) {
-    jj_scanpos = xsp;
-    if (jj_3R_39()) {
-    jj_scanpos = xsp;
-    if (jj_3R_40()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_43() {
-    if (jj_scan_token(FLOATING_POINT_NUMBER)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_23() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_42()) {
-    jj_scanpos = xsp;
-    if (jj_3R_43()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_42() {
-    if (jj_scan_token(NUMBER)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_25() {
-    if (jj_3R_18()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_24() {
     if (jj_scan_token(OPENBRACKET)) return true;
     if (jj_3R_21()) return true;
@@ -1323,6 +1282,13 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  static private boolean jj_3R_65() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_21()) return true;
+    if (jj_scan_token(GUARD_ARROW)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_71() {
     if (jj_3R_75()) return true;
     return false;
@@ -1333,13 +1299,6 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  static private boolean jj_3R_65() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_21()) return true;
-    if (jj_scan_token(GUARD_ARROW)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_53() {
     Token xsp;
     if (jj_3R_65()) return true;
@@ -1347,12 +1306,6 @@ public class ForteLang implements ForteLangConstants {
       xsp = jj_scanpos;
       if (jj_3R_65()) { jj_scanpos = xsp; break; }
     }
-    return false;
-  }
-
-  static private boolean jj_3_2() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
     return false;
   }
 
@@ -1368,18 +1321,9 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  static private boolean jj_3R_16() {
-    Token xsp;
-    if (jj_3_2()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_2()) { jj_scanpos = xsp; break; }
-    }
-    xsp = jj_scanpos;
-    if (jj_3R_70()) {
-    jj_scanpos = xsp;
-    if (jj_3R_71()) return true;
-    }
+  static private boolean jj_3_2() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
     return false;
   }
 
@@ -1395,6 +1339,21 @@ public class ForteLang implements ForteLangConstants {
 
   static private boolean jj_3R_30() {
     if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_16() {
+    Token xsp;
+    if (jj_3_2()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_2()) { jj_scanpos = xsp; break; }
+    }
+    xsp = jj_scanpos;
+    if (jj_3R_70()) {
+    jj_scanpos = xsp;
+    if (jj_3R_71()) return true;
+    }
     return false;
   }
 
@@ -1440,11 +1399,6 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  static private boolean jj_3_1() {
-    if (jj_3R_16()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_64() {
     if (jj_scan_token(EXEC)) return true;
     Token xsp;
@@ -1453,6 +1407,11 @@ public class ForteLang implements ForteLangConstants {
     jj_scanpos = xsp;
     if (jj_scan_token(31)) return true;
     }
+    return false;
+  }
+
+  static private boolean jj_3_1() {
+    if (jj_3R_16()) return true;
     return false;
   }
 
@@ -1800,6 +1759,72 @@ public class ForteLang implements ForteLangConstants {
 
   static private boolean jj_3R_34() {
     if (jj_3R_47()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_33() {
+    if (jj_3R_46()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_32() {
+    if (jj_3R_45()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_21() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_33()) {
+    jj_scanpos = xsp;
+    if (jj_3R_34()) {
+    jj_scanpos = xsp;
+    if (jj_3R_35()) {
+    jj_scanpos = xsp;
+    if (jj_3R_36()) {
+    jj_scanpos = xsp;
+    if (jj_3R_37()) {
+    jj_scanpos = xsp;
+    if (jj_3R_38()) {
+    jj_scanpos = xsp;
+    if (jj_3R_39()) {
+    jj_scanpos = xsp;
+    if (jj_3R_40()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_43() {
+    if (jj_scan_token(FLOATING_POINT_NUMBER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_23() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_42()) {
+    jj_scanpos = xsp;
+    if (jj_3R_43()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_42() {
+    if (jj_scan_token(NUMBER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_25() {
+    if (jj_3R_18()) return true;
     return false;
   }
 

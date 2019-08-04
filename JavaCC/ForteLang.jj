@@ -12,16 +12,35 @@ public class ForteLang {
 
 	/** Class declarations */
 	static class FL_Function implements Evaluatable {
-		List<String> parameters;
+		String parameter;
 		Object expression;
 
-		public FL_Function() { parameters = new LinkedList<String>(); }
-		@Override public String toString() { return "FL_Function" + parameters; }
+		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
 
 		/*
 		Don't forget currying!
 		x -> y -> true is actually equal to x -> (y -> true)
 		*/
+
+		static class FL_Function_Builder {
+			Stack<String> parameters;
+			Object expression;
+		  
+			public FL_Function_Builder() {
+				parameters = new Stack<String>();
+			}
+
+			public FL_Function build() {
+			  	Object currentExpression = expression;
+			  	while(!parameters.empty()) {
+					FL_Function newExpression = new FL_Function();
+					newExpression.parameter = parameters.pop();
+					newExpression.expression = currentExpression;
+					currentExpression = newExpression;
+			  	}
+				return (FL_Function) currentExpression;
+			}
+		}
 	}
 
 	static class FL_Set implements Evaluatable {
@@ -497,13 +516,13 @@ Object functionResult() throws Exception : { Object result; } {
 	{ return result; }
 }
 
-FL_Function lambda() throws Exception : { FL_Function function; Token paramName; Object innerExpression; } {
-	{ function = new FL_Function(); }
+FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression; } {
+	{ function = new FL_Function.FL_Function_Builder(); }
 	
 	(
 	  LOOKAHEAD(3)
 	  paramName = <VAR_NAME>
-	  { function.parameters.add(paramName.image); }
+	  { function.parameters.push(paramName.image); }
 	  <FUNCTION_ARROW>
 	)+
 
@@ -514,7 +533,7 @@ FL_Function lambda() throws Exception : { FL_Function function; Token paramName;
 
 	{
 	  function.expression = innerExpression;
-	  return function;
+	  return function.build();
 	}
 }
 
@@ -555,7 +574,7 @@ double number() throws Exception : { Token value; double f; } {
 }
 
 /** Expressions */
-Object expression() throws Exception : { Object result; } {
+Object expression() throws Exception : { Object result; } {    
   	  result = variableExpression() { return result; }
 	| result = setExpression()      { return result; }
 	| result = includedSet()        { return result; }
@@ -662,6 +681,12 @@ List<Object> listExpression() throws Exception : { List<Object> list; Object exp
       	if(expr instanceof List) {
 			list.addAll((List) expr);
       	} else {
+
+			/*TODO: Say expr is an instanceof FL_Guards, which evaluates to a list.
+			These need to be properly evaluated before concatenation is declared,
+			so return type should be something like a "completeable future", which
+			SHOULD return a list */
+      	  	
       	  	//TODO: Handle list concat with new stuff
 			//throw new Exception("Tried to concat a list with unknown expression");
       	}

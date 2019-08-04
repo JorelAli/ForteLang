@@ -147,5 +147,13 @@ include impure {
 
     awvew = "Hello, " ++ "world!";
 
-} in | x ->> x 
-     | ->> | x ->> t | ->> x
+    guardTests = [] ++ | x == true ->> [] | ->> [x];
+
+} in 
+x -> 
+    y ->
+        | x > y ->> x 
+        | ->> 
+            | y > x ->> y
+            | ->> 0
+

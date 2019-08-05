@@ -31,4 +31,4 @@ include {
 #        | input == 0 ->> 1
 #        | ->> input * (factorial (input - 1)));
         
-} in "" ++ "hello!"
+} in 2 + 2

@@ -291,7 +291,7 @@ public class ForteLang implements ForteLangConstants {
                                 String s2 = (String) o2;
                                 return s1 + s2;
                         } else {
-                                throw new Exception("Cannot concatenate " + o1 + " with " + o2);
+                                throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
                         }
                 }
 
@@ -532,6 +532,12 @@ public class ForteLang implements ForteLangConstants {
                         }
                         throw new Exception("Not implemented yet, could not evaluate: " + expression);
                 } else {
+                  if(expression instanceof Double) {
+                        double d = (double) expression;
+                        if((d % 1) == 0) {
+                                return (long) d;
+                        }
+                  }
                   return expression;
                 }
         }
@@ -1075,26 +1081,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_39() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    if (jj_scan_token(IMPURE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_21() {
-    if (jj_3R_10()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_4()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
   private boolean jj_3R_29() {
     if (jj_scan_token(BOOLEAN)) return true;
     return false;
@@ -1383,6 +1369,26 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3_4() {
     if (jj_3R_9()) return true;
     if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_39() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    if (jj_scan_token(IMPURE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_21() {
+    if (jj_3R_10()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_4()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 

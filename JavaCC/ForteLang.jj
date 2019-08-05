@@ -296,7 +296,7 @@ public class ForteLang {
 				String s2 = (String) o2;
 				return s1 + s2;
 			} else {
-				throw new Exception("Cannot concatenate " + o1 + " with " + o2);
+				throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
 			}
 		}
 
@@ -537,6 +537,12 @@ public class ForteLang {
 			}
 			throw new Exception("Not implemented yet, could not evaluate: " + expression);
 	  	} else {
+	  	  if(expression instanceof Double) {
+			double d = (double) expression;
+			if((d % 1) == 0) {
+				return (long) d;
+			}
+	  	  }	
 	  	  return expression;
 	  	}
 	}

@@ -642,6 +642,7 @@ Token anyOperator() throws Exception : { Token op; } {
 	| op = <OP>            { return op; }
 	| op = <SET_OP>        { return op; }
 	| op = <COMPARATOR_OP> { return op; }
+	| op = <CONCAT>        { return op; }
 }
 
 FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object expression; FL_Set set; } {
@@ -790,31 +791,44 @@ double number() throws Exception : { Token value; double f; } {
 }
 
 /** Expressions */
-Object enclosedExpression() throws Exception : { Object result; } {
+Object enclosedExpression() throws Exception : { Object result; Token vName;  } {
 	( 
 	  <OPENBRACKET>
 	  result = vExpr() //expression() | opExpression()
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
+	|  LOOKAHEAD(2)  (
+	  vName = <VAR_NAME>
+	  result = functionCall(vName) //(LOOKAHEAD(2) expression())*
+	  ) { return result; }
+
 	| result = vExpr() {return result; }// LOOKAHEAD(3) expression() | opExpression() { return result; }
+	
 	//| result = expression() { return result; }
 }
 
-Object vExpr() throws Exception : { Object result; } {
-  result = opExpression()
-//  (
-//    LOOKAHEAD(3) 
-//	  result = expression()
-//	| result = opExpression()
-//  )
-  { return result; }
+Object vExpr() throws Exception : { Object result; Token vName;  } {
+//  	LOOKAHEAD(3)
+
+  	  result = opExpression() { return result; }
+//	| (
+//	  vName = <VAR_NAME>
+//	  result = functionCall(vName) //(LOOKAHEAD(2) expression())*
+//	  )
+////  (
+////    LOOKAHEAD(3) 
+////	  result = expression()
+////	| result = opExpression()
+////  )
+//  { return result; }
 }
 
 Object expression() throws Exception : { Object result; } {
  LOOKAHEAD(2) result = lambda()                          { return result; }  
   
 	| result = singleExpression()                { return result; }
+	
   
 //	| result = guards()                          { return result; }
 //	| result = builtinFunctions()                { return result; }

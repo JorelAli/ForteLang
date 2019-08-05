@@ -142,6 +142,15 @@ public class ForteLang {
 
 	/** Other declared objects */
 
+	static class FL_List implements Evaluatable {
+		LinkedList<Object> list;
+		public FL_List() { list = new LinkedList<Object>(); }
+		
+		@Override public String toString() {
+		  return "FL_List" + list;
+		}
+	}
+
 	static class FL_Guards implements Evaluatable {
 		LinkedHashMap<Object, Object> statements;
 		Object finalStatement;
@@ -218,7 +227,7 @@ public class ForteLang {
 
 	static class FL_Builtin implements Evaluatable {
 		Object param;
-		enum Builtin { IMPORT, PRINT, EXEC }
+		enum Builtin { IMPORT, PRINT, EXEC, HEAD, TAIL }
 
 		Builtin type;
 
@@ -403,20 +412,33 @@ public class ForteLang {
 	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
 				Object builtinParam = evaluate(scope, builtin.param);
-				//TODO: Fix for when builtins require non-String types
-				if(!(builtinParam instanceof String)) {
-					throw new Exception("Builtin parameter " + builtinParam + " did not evaluate to a String");
-				}
-				String builtinParamStr = (String) builtinParam;
+//				//TODO: Fix for when builtins require non-String types
+//				if(!(builtinParam instanceof String)) {
+//					throw new Exception("Builtin parameter " + builtinParam + " did not evaluate to a String");
+//				}
+//				String builtinParamStr = (String) builtinParam;
 				switch(builtin.type) {
 					case IMPORT:
-						File file = new File(builtinParamStr);
+						File file = new File((String) builtinParam);
 						return new ForteLang(new FileInputStream(file)).input();
 					case PRINT:
-						System.out.println(builtinParamStr);
+						System.out.println((String) builtinParam);
 						return builtinParam;
 					case EXEC:
 						break;
+					case HEAD:
+						if(!(builtinParam instanceof FL_List)) {
+							throw new Exception("head function requires a list as a parameter");
+						} else {
+						  	return ((FL_List) builtinParam).list.getFirst();
+						} 
+					case TAIL:
+						if(!(builtinParam instanceof FL_List)) {
+							throw new Exception("tail function requires a list as a parameter");
+						} else {
+						  	((FL_List) builtinParam).list.remove();
+						  	return builtinParam;
+						} 
 				}
 	  	  	  
 			} else if(expression instanceof FL_Function_Call) {
@@ -489,6 +511,18 @@ public class ForteLang {
 						return evaluate(scope, newOp);
 				  	}
 				}
+			} else if(expression instanceof FL_List) {
+				FL_List list = (FL_List) expression;
+				ListIterator<Object> iterator = list.list.listIterator(0);
+				while(iterator.hasNext()) {
+					Object expr = iterator.next();
+					iterator.set(evaluate(scope, expr));
+				}
+				return list;
+			} else if(expression instanceof FL_IncludedSet) {
+			  	FL_IncludedSet incSet = (FL_IncludedSet) expression;
+				scope.attributes.putAll(incSet.set.attributes);
+				return evaluate(scope, incSet.expression);
 			}
 			throw new Exception("Not implemented yet, could not evaluate: " + expression);
 	  	} else {
@@ -526,6 +560,8 @@ TOKEN : { < MATCH : "match" > }
 TOKEN : { < IMPORT : "import" > }
 TOKEN : { < EXEC : "@exec" > }
 TOKEN : { < PRINT : "@print" > }
+TOKEN : { < HEAD : "head" > }
+TOKEN : { < TAIL : "tail" > }
 
 //Brackets
 TOKEN : { < OPENBRACKET : "(" > }
@@ -683,8 +719,8 @@ FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder functi
 	}
 }
 
-List<Object> list() throws Exception : { List<Object> list; Object nextItem; } {
-	{ list = new LinkedList<Object>(); }
+FL_List list() throws Exception : { FL_List list; Object nextItem; } {
+	{ list = new FL_List(); }
 
   	//Open bracket
   	<OPENSBRACKET> (
@@ -693,11 +729,11 @@ List<Object> list() throws Exception : { List<Object> list; Object nextItem; } {
 		|
 		//Non-empty list
 		nextItem = enclosedExpression()
-		{ list.add(nextItem); }
+		{ list.list.add(nextItem); }
 		
 		(LOOKAHEAD(2) <COMMA>
 			nextItem = enclosedExpression()
-			{ list.add(nextItem); }
+			{ list.list.add(nextItem); }
 		)*
 		<CLOSESBRACKET>
 	)
@@ -712,6 +748,7 @@ Object enclosedExpression() throws Exception : { Object result; } {
 	   { return result; }
 	)
 	| result = singleExpression() { return result; }
+	
 }
 
 double number() throws Exception : { Token value; double f; } {
@@ -853,16 +890,20 @@ boolean booleanExpression() throws Exception : { Token first; boolean acc; Token
 	{ return acc; }
 }
 
-List<Object> listExpression() throws Exception : { List<Object> list; Object expr; } {
+FL_List listExpression() throws Exception : { FL_List list; Object expr; } {
     list = list()
     (
       LOOKAHEAD(2)
+      //Concat
       <CONCAT>
       expr = expression()
       {
-      	if(expr instanceof List) {
-			list.addAll((List) expr);
+      	if(expr instanceof FL_List) {
+			list.list.addAll((List) expr);
       	} else {
+
+			//This should be under that FL_VarOp, except it's not a VarOp...
+			//VarOps should just be named like "DoOpLater"
 
 			/*TODO: Say expr is an instanceof FL_Guards, which evaluates to a list.
 			These need to be properly evaluated before concatenation is declared,
@@ -881,6 +922,8 @@ Object builtinFunctions() throws Exception : { Object param; Token stringToken; 
 	<IMPORT>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
     | <PRINT> (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
 	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
+	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
+	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {

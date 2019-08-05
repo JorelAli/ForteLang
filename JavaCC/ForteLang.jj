@@ -23,11 +23,6 @@ public class ForteLang {
 
 		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
 
-		/*
-		Don't forget currying!
-		x -> y -> true is actually equal to x -> (y -> true)
-		*/
-
 		static class FL_Function_Builder {
 			Stack<String> parameters;
 			Object expression;
@@ -139,7 +134,6 @@ public class ForteLang {
 		return str.image.substring(1, str.image.length() - 1);
 	}
 
-
 	/** Other declared objects */
 
 	static class FL_List implements Evaluatable {
@@ -160,20 +154,6 @@ public class ForteLang {
 		@Override public String toString() {
 		  return "FL_Guards[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
 		}
-	}
-
-	static class FL_Matches implements Evaluatable {
-		LinkedHashMap<Object, Object> statements;
-		Object finalStatement;
-
-		public FL_Matches() { statements = new LinkedHashMap<Object, Object>(); }
-	}
-
-	static class FL_Enum implements Evaluatable {
-		List<String> elements;
-		
-		public FL_Enum() { elements = new LinkedList<String>(); }
-		@Override public String toString() { return "ENUM" + elements.toString(); }
 	}
 
 	static class FL_IncludedSet implements Evaluatable {
@@ -197,31 +177,18 @@ public class ForteLang {
 		}
 	}
 
-	static class FL_VarOp implements Evaluatable {
+	static class FL_OpExpr implements Evaluatable {
 		Object initVar;
 		LinkedList<Token> operators;
 		LinkedList<Object> expressionsToParse;
 
-		public FL_VarOp() {
+		public FL_OpExpr() {
 		  	operators = new LinkedList<Token>();
 			expressionsToParse = new LinkedList<Object>();
 		}
 
 		@Override public String toString() {
-		  if(isSingle()) {
-			return "FL_VarOp[" + getSingle() + "]";
-		  } else {
-		  	return "FL_VarOp[init=" + initVar + "" + operators + "" + expressionsToParse + "]";
-		  }
-		}
-
-		//Whether there's only an initVar and no operators/expressionsToParse
-		public boolean isSingle() {
-			return operators.isEmpty() || expressionsToParse.isEmpty();
-		}
-
-		public Object getSingle() {
-			return initVar;
+		  	return "FL_OpExpr[init=" + initVar + "" + operators + "" + expressionsToParse + "]";
 		}
 	}
 
@@ -260,8 +227,6 @@ public class ForteLang {
 		  	e.printStackTrace();
 		  	return;
 		}
-
-		//Begin interpreting system
 	}
 
 	public static <T> T print(T o) throws Exception {
@@ -413,7 +378,7 @@ public class ForteLang {
 	  	if(expression instanceof Evaluatable) {
 
 	  	  	//System.out.println(expression.getClass().getName());
-	  	  	System.out.println(expression);
+//	  	  	System.out.println(expression);
 	  	  	
 	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
@@ -506,38 +471,37 @@ public class ForteLang {
 				}
 				System.out.println(flVar.name + ": " + var);
 				return evaluate(scope, var);
-			} else if(expression instanceof FL_VarOp) {
-				FL_VarOp flVarOp = (FL_VarOp) expression;
+			} else if(expression instanceof FL_OpExpr) {
+				FL_OpExpr flVarOp = (FL_OpExpr) expression;
+
+				System.out.println("\n\nAbout to evaluate OpExpr:");
 				System.out.println(flVarOp);
-				if(flVarOp.isSingle()) {
-					return evaluate(scope, flVarOp.getSingle());
-				} else {
-				  	Object init = flVarOp.initVar;
-				  	Object next = flVarOp.expressionsToParse.pop();
+				
+			  	Object init = flVarOp.initVar;
+			  	Object next = flVarOp.expressionsToParse.pop();
 
-				  	while (init instanceof Evaluatable) {
-						init = evaluate(scope, init);
-				  	}
+			  	while (init instanceof Evaluatable) {
+					init = evaluate(scope, init);
+			  	}
 
-				  	while (next instanceof Evaluatable) {
-				  	  	System.out.println("Evaluating..." + next);
-						next = evaluate(scope, next);
-				  	}
+			  	while (next instanceof Evaluatable) {
+			  	  	System.out.println("Evaluating..." + next);
+					next = evaluate(scope, next);
+			  	}
 
-					//System.out.println(init + " " + next);
-				  	
-				  	Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
+				//System.out.println(init + " " + next);
+			  	
+			  	Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
 
-				  	if(flVarOp.expressionsToParse.isEmpty()) {
-						return evaluate(scope, newInit);
-				  	} else {
-						FL_VarOp newOp = new FL_VarOp();
-						newOp.initVar = newInit;
-						newOp.operators = flVarOp.operators;
-						newOp.expressionsToParse = flVarOp.expressionsToParse;
-						return evaluate(scope, newOp);
-				  	}
-				}
+			  	if(flVarOp.expressionsToParse.isEmpty()) {
+					return evaluate(scope, newInit);
+			  	} else {
+					FL_OpExpr newOp = new FL_OpExpr();
+					newOp.initVar = newInit;
+					newOp.operators = flVarOp.operators;
+					newOp.expressionsToParse = flVarOp.expressionsToParse;
+					return evaluate(scope, newOp);
+			  	}
 			} else if(expression instanceof FL_List) {
 				FL_List list = (FL_List) expression;
 				ListIterator<Object> iterator = list.list.listIterator(0);
@@ -669,26 +633,9 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	(
 	  attrName = <VAR_NAME>
 	  <EQUALS>
-	  attrValue = enclosedExpression() //functionResult()
+	  attrValue = enclosedExpression()
 	  <SEMICOLON>
-	  {
-	    if(set.attributes.containsKey(attrName.image)) {
-			System.out.println("'" + attrName.image + "' already exists in the set... overriding");
-	    }
-	    set.attributes.put(attrName.image, attrValue);
-
-	    //Extra purity checks
-	    if(attrValue instanceof FL_Function) {
-			/*
-				For example, this code is invalid:
-				  print' = x -> @print "hello";
-				Because it calls the impure function @print.
-				This means that print' should be @print' to
-				maintain impurities
-			*/
-	    }
-	    
-	  }
+	  { set.attributes.put(attrName.image, attrValue); }
 	)*
 	<CLOSECBRACKET>
 	{
@@ -697,70 +644,17 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	}
 }
 
-FL_Enum enumeration() throws Exception : { FL_Enum flEnum; Token element; } {
-    { flEnum = new FL_Enum(); }
-	<ENUM_OPEN>
-	
-	element = <CAPS>
-	{ flEnum.elements.add(element.image); }
-
-	(
-	  <COMMA>
-	  element = <CAPS>
-	  { flEnum.elements.add(element.image); }
-	)*
-
-	<ENUM_CLOSE>
-	{ return flEnum; } 
-}
-
-Object functionResult() throws Exception : { Object result; } {
-	(
-	  LOOKAHEAD(2)
-	   /* result = lambda()
-	  | */
-	  result = enclosedExpression()
-	  | result = enumeration()
-	  | result = matches()
-	)
-	<SEMICOLON>
-
-	{ return result; }
-}
-
 FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression; } {
 	{ function = new FL_Function.FL_Function_Builder(); }
 	
-	(
-	  //LOOKAHEAD(2)
-	  paramName = <VAR_NAME>
-	  { function.parameters.push(paramName.image); }
-	  <FUNCTION_ARROW>
-	)
-
-	(
-	    innerExpression = enclosedExpression()
-//	  | innerExpression = matches()
-	)
-
-	//TODO: Add expressions here
-	/*
-	include { 
-	    add = a -> b -> a + b;
-	    listOfOps = [add]; 
-	    op = head listOfOps; 
-	} in op 2 3
-	*/
-
-//	(
-//	  LOOKAHEAD(2)
-//	    param = singleExpression()   { result.arguments.add(param); }
-//	  | param = enclosedExpression() { result.arguments.add(param); }
-//	)*
-
+	paramName = <VAR_NAME>
+	<FUNCTION_ARROW>
+	innerExpression = enclosedExpression()
+	  
 	{
-	  function.expression = innerExpression;
-	  return function.build();
+	    function.parameters.push(paramName.image);
+	    function.expression = innerExpression;
+	    return function.build();
 	}
 }
 
@@ -794,18 +688,16 @@ double number() throws Exception : { Token value; double f; } {
 Object enclosedExpression() throws Exception : { Object result; Token vName;  } {
 	( 
 	  <OPENBRACKET>
-	  result = vExpr() //expression() | opExpression()
+	  result = vExpr()
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
 	|  LOOKAHEAD(2)  (
 	  vName = <VAR_NAME>
-	  result = functionCall(vName) //(LOOKAHEAD(2) expression())*
+	  result = functionCall(vName) 
 	  ) { return result; }
 
-	| result = vExpr() {return result; }// LOOKAHEAD(3) expression() | opExpression() { return result; }
-	
-	//| result = expression() { return result; }
+	| result = vExpr() {return result; }
 }
 
 Object vExpr() throws Exception : { Object result; Token vName;  } {
@@ -829,8 +721,11 @@ Object singleExpression() throws Exception : { Object result; Token token; } {
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 }
 
-Object opExpression() throws Exception : { FL_VarOp result; Object expr; Token operator; } {
-  	{ result = new FL_VarOp(); }
+Object opExpression() throws Exception : { FL_OpExpr result; Object expr; Token operator; boolean isOpExpr; } {
+  	{
+  	  	result = new FL_OpExpr();
+  		isOpExpr = false;
+  	}
 
   	expr = expression()
   	{ result.initVar = expr; }
@@ -841,20 +736,22 @@ Object opExpression() throws Exception : { FL_VarOp result; Object expr; Token o
 
 	  expr = expression()
 	  { result.expressionsToParse.add(expr); }
+
+	  { isOpExpr = true; }
 	)*
-	{ return result; }
+	{
+		if(isOpExpr) {
+			return result;
+		} else {
+			return expr;
+		}
+	}
 }
 
 Object variableExpression() throws Exception : { Object result; Token varName; } {
-  	  //LOOKAHEAD(2) result = lambda() { return result; }
-	  /*|*/ varName = <VAR_NAME> (
-		result = functionCall(varName) { return result; }
-		| <SELECT> (
-		  <CAPS> { return null; }
-		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))* { return "enum selection"; }
-		)
-		//| result = variableOperator(varName) { return result; }
-	  )
+  	varName = <VAR_NAME> 
+	result = functionCall(varName)
+	{ return result; }  
 }
 
 FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Call result; Object param; } {
@@ -878,16 +775,6 @@ Object builtinFunctions() throws Exception : { Object param; Token stringToken; 
 	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
 	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
 	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
-}
-
-FL_Matches matches() throws Exception : { FL_Matches matches; } {
-	{ matches = new FL_Matches();}
-  
-	<MATCH> <VAR_NAME> 
-	(LOOKAHEAD(2) <GUARD> enclosedExpression() <GUARD_ARROW> enclosedExpression())+
-	(LOOKAHEAD(2) <GUARD> <GUARD_ARROW> enclosedExpression())?
-
-	{ return matches; }
 }
 
 FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard; } {

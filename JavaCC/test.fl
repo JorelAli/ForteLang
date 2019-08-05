@@ -162,4 +162,4 @@ include impure {
 
     someTestVariable' = 2;
 
-} in maxOr0 1 (import "./test2.fl")
+} in maxOr0 1 (import (@print "./test2.fl") )

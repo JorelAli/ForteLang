@@ -413,7 +413,8 @@ public class ForteLang {
 						File file = new File(builtinParamStr);
 						return new ForteLang(new FileInputStream(file)).input();
 					case PRINT:
-						break;
+						System.out.println(builtinParamStr);
+						return builtinParam;
 					case EXEC:
 						break;
 				}
@@ -877,9 +878,9 @@ List<Object> listExpression() throws Exception : { List<Object> list; Object exp
 }
 
 Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
-	<IMPORT>  (stringToken = <STRING> { param = parseString(stringToken); } | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
-    | <PRINT> (stringToken = <STRING> { param = parseString(stringToken); } | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
-	| <EXEC>  (stringToken = <STRING> { param = parseString(stringToken); } | param = <VAR_NAME>) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
+	<IMPORT>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
+    | <PRINT> (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
+	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {

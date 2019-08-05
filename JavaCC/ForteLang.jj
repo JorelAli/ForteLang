@@ -409,7 +409,7 @@ public class ForteLang {
 	public static Object evaluate(FL_Set scope, Object expression) throws Exception {
 	  	scope = scope.clone();
 	  	System.out.println();
-	  	System.out.println(scope);
+	  	//System.out.println(scope);
 	  	if(expression instanceof Evaluatable) {
 
 	  	  	//System.out.println(expression.getClass().getName());
@@ -504,6 +504,7 @@ public class ForteLang {
 				if(var == null) {
 					throw new Exception("Could not find function \"" + flVar.name + "\" in the program!");
 				}
+				System.out.println(flVar.name + ": " + var);
 				return evaluate(scope, var);
 			} else if(expression instanceof FL_VarOp) {
 				FL_VarOp flVarOp = (FL_VarOp) expression;
@@ -788,24 +789,34 @@ double number() throws Exception : { Token value; double f; } {
 
 /** Expressions */
 Object enclosedExpression() throws Exception : { Object result; } {
-	(
+	( 
 	  <OPENBRACKET>
-	  result = expression()
+	  result = vExpr() //expression() | opExpression()
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
-	| result = expression() { return result; } 
+	| result = vExpr() {return result; }// LOOKAHEAD(3) expression() | opExpression() { return result; }
+	//| result = expression() { return result; }
+}
+
+Object vExpr() throws Exception : { Object result; } {
+  (
+    LOOKAHEAD(3) 
+	  result = expression()
+	| result = opExpression()
+  )
+  { return result; }
 }
 
 Object expression() throws Exception : { Object result; } {
 	  result = guards()             { return result; }  
   	| LOOKAHEAD(2) result = variableExpression() { return result; }
-	| LOOKAHEAD(3) result = setExpression()      { return result; }
+//	| LOOKAHEAD(3) result = setExpression()      { return result; }
 	| result = includedSet()                     { return result; }
 	| LOOKAHEAD(3) result = listExpression()     { return result; }
-	| LOOKAHEAD(2) result = numberExpression()   { return result; }
+//	| LOOKAHEAD(2) result = numberExpression()   { return result; }
 	| LOOKAHEAD(2) result = stringExpression()   { return result; }
-	| LOOKAHEAD(2) result = booleanExpression()  { return result; }
+//	| LOOKAHEAD(2) result = booleanExpression()  { return result; }
 	| result = builtinFunctions()                { return result; }
 	| result = singleExpression()                { return result; }
 }
@@ -819,6 +830,22 @@ Object singleExpression() throws Exception : { Object result; Token token; } {
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 }
 
+Object opExpression() throws Exception : { FL_VarOp result; Object expr; Token operator; } {
+  	{ result = new FL_VarOp(); }
+
+  	expr = expression()
+  	{ result.initVar = expr; }
+	(
+	  LOOKAHEAD(2) //TODO: Why is this lookahead here?
+	  operator = anyOperator()
+	  { result.operators.add(operator); }
+
+	  expr = expression()
+	  { result.expressionsToParse.add(expr); }
+	)+
+	{ return result; }
+}
+
 Object variableExpression() throws Exception : { Object result; Token varName; } {
   	  LOOKAHEAD(2) result = lambda() { return result; }
 	  | varName = <VAR_NAME> (
@@ -827,7 +854,7 @@ Object variableExpression() throws Exception : { Object result; Token varName; }
 		  <CAPS> { return null; }
 		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))* { return "enum selection"; }
 		)
-		| result = variableOperator(varName) { return result; }
+		//| result = variableOperator(varName) { return result; }
 	  )
 }
 

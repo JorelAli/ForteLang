@@ -168,6 +168,7 @@ include impure {
     factorial = (input ->
         | input == 0 ->> 1
         ->> input * (factorial (input - 1)));
+        
 
 } in factorial 5
 #maxOr0 (5) 10 #add 2 3 #maxOr0 1 (import (@print "./test2.fl") )

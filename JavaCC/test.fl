@@ -5,11 +5,9 @@ include {
     basicOperation = 123.25 + 2;
 
     # Lists
-    someList      = [x, y];
-    someOtherList = [x];
+    someList      = [1, 2];
+    someOtherList = [3];
     emptyList     = [];
-
-    x = 10;
 
     ### Example with guards
     max = x -> y -> 
@@ -33,4 +31,4 @@ include {
 
     head' = list -> list ++ [2, 3, (2 + 2)];
         
-} in head' [1]
+} in add 2 3 

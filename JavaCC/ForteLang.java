@@ -7,6 +7,37 @@ import java.io.*;
 
 public class ForteLang implements ForteLangConstants {
 
+        /** Static fields */
+        static String fileName;
+
+
+        /** Main method */
+        public static void main(String[] args) throws ParseException, FileNotFoundException {
+                if(args.length != 1) {
+                        System.out.println("Usage: java ForteLang <File>");
+                        return;
+                }
+
+                File file = new File(args[0]);
+                fileName = file.getName();
+                try {
+                        /* Run the parser */
+
+                        Object result = new ForteLang(new FileInputStream(file)).input();
+                        if(result instanceof Double) {
+                                double d = (double) result;
+                                if((d % 1) == 0) {
+                                        result = (long) d;
+                                }
+                        }
+                        System.out.println("Final result: " + result);
+
+                } catch(Exception e) {
+                        e.printStackTrace();
+                        return;
+                }
+        }
+
         static interface Evaluatable { }
 
         /** Class declarations */
@@ -199,31 +230,6 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        /** Static fields */
-        static String fileName;
-
-
-        /** Main method */
-        public static void main(String[] args) throws ParseException, FileNotFoundException {
-                if(args.length != 1) {
-                        System.out.println("Usage: java ForteLang <File>");
-                        return;
-                }
-
-                File file = new File(args[0]);
-                fileName = file.getName();
-                try {
-                        /* Run the parser */
-
-                        Object result = new ForteLang(new FileInputStream(file)).input();
-                        System.out.println("Final result: " + result);
-
-                } catch(Exception e) {
-                        e.printStackTrace();
-                        return;
-                }
-        }
-
         public static <T> T print(T o) throws Exception {
                 StringBuilder builder = new StringBuilder();
                 builder.append(o.getClass().getName() + "[");
@@ -389,7 +395,7 @@ public class ForteLang implements ForteLangConstants {
                 scope = scope.clone();
                 //System.out.println(scope);
                 if(expression instanceof Evaluatable) {
-
+                        System.out.println("Evaluating " + expression);
                         //System.out.println(expression.getClass().getName());
 //	  	  	System.out.println(expression);
 
@@ -534,12 +540,12 @@ public class ForteLang implements ForteLangConstants {
                         }
                         throw new Exception("Not implemented yet, could not evaluate: " + expression);
                 } else {
-                  if(expression instanceof Double) {
-                        double d = (double) expression;
-                        if((d % 1) == 0) {
-                                return (long) d;
-                        }
-                  }
+//	  	  if(expression instanceof Double) {
+//			double d = (double) expression;
+//			if((d % 1) == 0) {
+//				return (long) d;
+//			}
+//	  	  }	
                   return expression;
                 }
         }
@@ -964,49 +970,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3R_28() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_35()) jj_scanpos = xsp;
-    if (jj_scan_token(OPENCBRACKET)) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_39()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSECBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_27() {
-    if (jj_3R_34()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_26() {
-    if (jj_3R_33()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_25() {
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_24() {
-    if (jj_3R_31()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    return false;
-  }
-
   private boolean jj_3R_20() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1257,6 +1220,49 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_29() {
     if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_28() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_35()) jj_scanpos = xsp;
+    if (jj_scan_token(OPENCBRACKET)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_39()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSECBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_27() {
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_26() {
+    if (jj_3R_33()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_25() {
+    if (jj_3R_32()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_24() {
+    if (jj_3R_31()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_scan_token(VAR_NAME)) return true;
     return false;
   }
 

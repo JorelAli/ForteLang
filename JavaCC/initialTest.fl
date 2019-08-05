@@ -165,3 +165,33 @@ include impure {
     theFirstTest = x -> y -> x + y;
 
 } in add 2 3 #maxOr0 1 (import (@print "./test2.fl") )
+
+###
+#include { 
+#    add = a -> b -> a + b;
+#    listOfOps = [add]; 
+#    op = head listOfOps; 
+#} in op 2 3
+
+#include {
+#    sum = acc -> max ->
+#        | max == 0 ->> acc
+#        | ->> sum (acc + max) (max - 1);
+#} in sum 0 10 
+
+###
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+###
+
+#include {
+#    factorial = input ->
+#        | input == 0 ->> 1
+#        | ->> input 
+#            * 
+#            (factorial (input - 1));
+#} in factorial 5
+
+#Should be something like 55
+
+###

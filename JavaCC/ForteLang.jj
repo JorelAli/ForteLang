@@ -624,7 +624,7 @@ SKIP : { "\n" | "\r" | " " }
 
 /** Main endpoint */
 Object input() throws Exception : { Object expression; Object result; } {
-  expression = expression()
+  expression = enclosedExpression()
   <EOF>
   {
     if(expression instanceof FL_IncludedSet) {
@@ -648,7 +648,7 @@ FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object 
 	<INCLUDE>
 	set = set()
 	<IN>
-	expression = expression()
+	expression = enclosedExpression()
 
 	{
 	  result.set = set;
@@ -715,7 +715,7 @@ Object functionResult() throws Exception : { Object result; } {
 	(
 	  LOOKAHEAD(2)
 	    result = lambda()
-	  | result = expression()
+	  | result = enclosedExpression()
 	  | result = enumeration()
 	  | result = matches()
 	)
@@ -735,7 +735,7 @@ FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder functi
 	)+
 
 	(
-	    innerExpression = expression()
+	    innerExpression = enclosedExpression()
 	  | innerExpression = matches()
 	)
 
@@ -781,6 +781,12 @@ FL_List list() throws Exception : { FL_List list; Object nextItem; } {
 	{ return list; }
 }
 
+double number() throws Exception : { Token value; double f; } {
+	  value = <NUMBER> 				  { return Double.valueOf(value.image); }
+	| value = <FLOATING_POINT_NUMBER> { return Double.valueOf(value.image); }
+}
+
+/** Expressions */
 Object enclosedExpression() throws Exception : { Object result; } {
 	(
 	  <OPENBRACKET>
@@ -788,26 +794,29 @@ Object enclosedExpression() throws Exception : { Object result; } {
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
-	| result = singleExpression() { return result; }
-	
+	| result = expression() { return result; } 
 }
 
-double number() throws Exception : { Token value; double f; } {
-	  value = <NUMBER> 				  { return Double.valueOf(value.image); }
-	| value = <FLOATING_POINT_NUMBER> { return Double.valueOf(value.image); }
+Object expression() throws Exception : { Object result; } {
+	  result = guards()             { return result; }  
+  	| LOOKAHEAD(2) result = variableExpression() { return result; }
+	| LOOKAHEAD(3) result = setExpression()      { return result; }
+	| result = includedSet()                     { return result; }
+	| LOOKAHEAD(3) result = listExpression()     { return result; }
+	| LOOKAHEAD(2) result = numberExpression()   { return result; }
+	| LOOKAHEAD(2) result = stringExpression()   { return result; }
+	| LOOKAHEAD(2) result = booleanExpression()  { return result; }
+	| result = builtinFunctions()                { return result; }
+	| result = singleExpression()                { return result; }
 }
 
-/** Expressions */
-Object expression() throws Exception : { Object result; } {    
-  	  result = variableExpression() { return result; }
-	| result = setExpression()      { return result; }
-	| result = includedSet()        { return result; }
-	| result = listExpression()     { return result; }
-	| result = numberExpression()   { return result; }
-	| result = stringExpression()   { return result; }
-	| result = booleanExpression()  { return result; }
-	| result = builtinFunctions()   { return result; }
-	| result = guards()             { return result; }
+Object singleExpression() throws Exception : { Object result; Token token; } {
+	  result = set() { return result; }
+	| token = <VAR_NAME> { return new FL_Var(token.image); }
+	| result = list() { return result; }
+	| result = number() { return result; }
+	| token = <STRING> { return parseString(token); }
+	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 }
 
 Object variableExpression() throws Exception : { Object result; Token varName; } {
@@ -833,9 +842,9 @@ FL_VarOp variableOperator(Token varName) throws Exception : { Token operator; Ob
 	  operator = anyOperator()
 	  { varop.operators.add(operator); }
 	  (
-	    LOOKAHEAD(3)
-	      expr = expression()         { varop.expressionsToParse.add(expr); }
-	    | expr = enclosedExpression() { varop.expressionsToParse.add(expr); }
+//	    LOOKAHEAD(3)
+//	      expr = expression()         { varop.expressionsToParse.add(expr); }
+	    /*|*/ expr = enclosedExpression() { varop.expressionsToParse.add(expr); }
 	  )
 	)*
 	{
@@ -851,8 +860,8 @@ FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Ca
   	
 	(
 	  LOOKAHEAD(2)
-	    param = singleExpression()   { result.arguments.add(param); }
-	  | param = enclosedExpression() { result.arguments.add(param); }
+//	    param = singleExpression()   { result.arguments.add(param); }
+	  /*| */param = enclosedExpression() { result.arguments.add(param); }
 	)+
 
 	{ return result; }
@@ -937,7 +946,7 @@ FL_List listExpression() throws Exception : { FL_List list; Object expr; } {
       LOOKAHEAD(2)
       //Concat
       <CONCAT>
-      expr = expression()
+      expr = enclosedExpression()
       {
       	if(expr instanceof FL_List) {
 			list.list.addAll((List) expr);
@@ -967,47 +976,34 @@ Object builtinFunctions() throws Exception : { Object param; Token stringToken; 
 	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
 }
 
-Object singleExpression() throws Exception : { Object result; Token token; } {
-	  result = set() { return result; }
-	| token = <VAR_NAME> { return new FL_Var(token.image); }
-	| result = list() { return result; }
-	| result = number() { return result; }
-	| token = <STRING> { return parseString(token); }
-	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
-}
-
 FL_Matches matches() throws Exception : { FL_Matches matches; } {
 	{ matches = new FL_Matches();}
   
 	<MATCH> <VAR_NAME> 
-	(LOOKAHEAD(2) <GUARD> expression() <GUARD_ARROW> expression())+
-	(LOOKAHEAD(2) <GUARD> <GUARD_ARROW> expression())?
+	(LOOKAHEAD(2) <GUARD> enclosedExpression() <GUARD_ARROW> enclosedExpression())+
+	(LOOKAHEAD(2) <GUARD> <GUARD_ARROW> enclosedExpression())?
 
 	{ return matches; }
 }
 
 FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard; } {
-	{ guards = new FL_Guards(); }
+	{ guards = new FL_Guards(); expression = null; }
   
-	(firstGuard = <GUARD>
-		predicate = expression()
-		<GUARD_ARROW>
-		expression = expression()
-		try { 
-			<GUARD>
-		} catch(ParseException e) {
-			System.err.println("Guards doesn't have a default case, for example:\n  | ->> ...\n" + location(firstGuard));
-			System.exit(0);
-		}
+	(
+	  	firstGuard = <GUARD>
+		predicate = enclosedExpression()
+		expression = guardArrow()
 		{ guards.statements.put(predicate, expression); }
 	)+
-	(
-	  	<GUARD_ARROW>
-	  	finalExpression = expression()
-	  	{ guards.finalStatement = finalExpression; }
+	finalExpression = guardArrow()
+	{
+	  guards.finalStatement = finalExpression;
+	  return guards;
+	}
+}
 
-	  	
-	)
-
-	{ return guards; }
+Object guardArrow() throws Exception : {Object expression; } {
+	<GUARD_ARROW>
+	expression = enclosedExpression()
+	{ return expression; }
 }

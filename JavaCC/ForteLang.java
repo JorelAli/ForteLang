@@ -275,14 +275,24 @@ public class ForteLang implements ForteLangConstants {
                                 case COMPARATOR:
                                         return applyComparator(o1, o2);
                                 case CONCAT:
-                                        return applyConcat((FL_List) o1, (FL_List) o2);
+                                        return applyConcat(o1, o2);
                         }
                         throw new Exception ("Failed to apply any operators");
                 }
 
-                public FL_List applyConcat(FL_List l1, FL_List l2) throws Exception {
-                        l1.list.addAll(l2.list);
-                        return l1;
+                public Object applyConcat(Object o1, Object o2) throws Exception {
+                        if(o1 instanceof FL_List && o2 instanceof FL_List) {
+                                FL_List l1 = (FL_List) o1;
+                                FL_List l2 = (FL_List) o2;
+                                l1.list.addAll(l2.list);
+                                return l1;
+                        } else if(o1 instanceof String && o2 instanceof String) {
+                                String s1 = (String) o1;
+                                String s2 = (String) o2;
+                                return s1 + s2;
+                        } else {
+                                throw new Exception("Cannot concatenate " + o1 + " with " + o2);
+                        }
                 }
 
                 public boolean applyComparator(Object o1, Object o2) throws Exception {
@@ -377,7 +387,6 @@ public class ForteLang implements ForteLangConstants {
 
         public static Object evaluate(FL_Set scope, Object expression) throws Exception {
                 scope = scope.clone();
-                System.out.println();
                 //System.out.println(scope);
                 if(expression instanceof Evaluatable) {
 
@@ -473,7 +482,7 @@ public class ForteLang implements ForteLangConstants {
                                 if(var == null) {
                                         throw new Exception("Could not find function \u005c"" + flVar.name + "\u005c" in the program!");
                                 }
-                                System.out.println(flVar.name + ": " + var);
+                                System.out.println("Resolving: " + flVar.name + " => " + var);
                                 return evaluate(scope, var);
                         } else if(expression instanceof FL_OpExpr) {
                                 FL_OpExpr flVarOp = (FL_OpExpr) expression;
@@ -1066,12 +1075,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
   private boolean jj_3R_39() {
     if (jj_scan_token(VAR_NAME)) return true;
     return false;
@@ -1374,6 +1377,12 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3R_8() {
     if (jj_scan_token(VAR_NAME)) return true;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_3R_10()) return true;
     return false;
   }
 

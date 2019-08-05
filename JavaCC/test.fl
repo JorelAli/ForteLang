@@ -30,5 +30,7 @@ include {
 #    factorial = (input ->
 #        | input == 0 ->> 1
 #        | ->> input * (factorial (input - 1)));
+
+    head' = list -> list ++ [2, 3, (2 + 2)];
         
-} in 2 + 2
+} in head' [1]

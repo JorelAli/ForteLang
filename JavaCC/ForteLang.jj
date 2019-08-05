@@ -398,7 +398,7 @@ public class ForteLang {
 	  	  	//System.out.println(expression.getClass().getName());
 //	  	  	System.out.println(expression);
 	  	  	
-	  	  	if(expression instanceof FL_Builtin) {
+	  	  	/*if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
 				Object builtinParam = evaluate(scope, builtin.param);
 //				//TODO: Fix for when builtins require non-String types
@@ -428,7 +428,6 @@ public class ForteLang {
 						  	((FL_List) builtinParam).list.remove();
 						  	return builtinParam;
 						}
-						/*
 						TODO: 
 					
 					    ### Things to do
@@ -438,12 +437,17 @@ public class ForteLang {
 					    length = list -> 0;
 					    map = list;
 					    ###
-						*/
 				}
 	  	  	  
-			} else if(expression instanceof FL_Function_Call) {
+			} else*/
+			if(expression instanceof FL_Function_Call) {
 				FL_Function_Call call = (FL_Function_Call) expression;
 				Object function = scope.attributes.get(call.functionName.name);
+
+				if(function == null) {
+					throw new Exception("Function \"" + call.functionName.name + "\" has not been declared!");
+				}
+				
 				if(function instanceof FL_Function) {
 //					System.out.println("About to evaluate the following: ");
 //					System.out.println(function);
@@ -457,9 +461,7 @@ public class ForteLang {
 //					System.out.println(function);
 					return evaluate(scope, function);
 				} else {
-				  	System.out.println("Didn't get what I wanted, but proceeding anyway...");
-				  	return evaluate(scope, function);
-					//throw new Exception("Tried to perform a function call on something that's not a function, " + function.getClass().getName());
+				  	throw new Exception("Tried to perform a function call on something that's not a function, " + function.getClass().getName());
 				}
 
 			} else if(expression instanceof FL_Guards) {
@@ -794,13 +796,13 @@ FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Ca
 	{ return result; }
 }
 
-Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
-	<IMPORT>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
-    | <PRINT> (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
-	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
-	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
-	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
-}
+//Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
+//	<IMPORT>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
+//    | <PRINT> (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
+//	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
+//	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
+//	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
+//}
 
 FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard; } {
 	{ guards = new FL_Guards(); expression = null; }

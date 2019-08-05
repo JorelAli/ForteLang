@@ -236,12 +236,12 @@ public class ForteLang implements ForteLangConstants {
 
         static class OperatorParser {
 
-                enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR };
+                enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT };
 
                 Operator operatorKind;
                 String op;
 
-                public OperatorParser(Token operator) {
+                public OperatorParser(Token operator) throws Exception {
                         switch(operator.kind) {
                                 case ForteLangConstants.BOOLEAN_OP:
                                         operatorKind = Operator.BOOLEAN;
@@ -255,9 +255,11 @@ public class ForteLang implements ForteLangConstants {
                                 case ForteLangConstants.COMPARATOR_OP:
                                         operatorKind = Operator.COMPARATOR;
                                         break;
-                                default:
-                                        operatorKind = null;
+                                case ForteLangConstants.CONCAT:
+                                        operatorKind = Operator.CONCAT;
                                         break;
+                                default:
+                                        throw new Exception ("Invalid operator for OperatorParser: " + operator.image);
                         }
                         op = operator.image;
                 }
@@ -272,8 +274,15 @@ public class ForteLang implements ForteLangConstants {
                                         return applySetObjects((FL_Set) o1, (FL_Set) o2);
                                 case COMPARATOR:
                                         return applyComparator(o1, o2);
+                                case CONCAT:
+                                        return applyConcat((FL_List) o1, (FL_List) o2);
                         }
                         throw new Exception ("Failed to apply any operators");
+                }
+
+                public FL_List applyConcat(FL_List l1, FL_List l2) throws Exception {
+                        l1.list.addAll(l2.list);
+                        return l1;
                 }
 
                 public boolean applyComparator(Object o1, Object o2) throws Exception {
@@ -475,18 +484,20 @@ public class ForteLang implements ForteLangConstants {
                                 Object init = flVarOp.initVar;
                                 Object next = flVarOp.expressionsToParse.pop();
 
-                                while (init instanceof Evaluatable) {
+                                if (init instanceof Evaluatable) {
                                         init = evaluate(scope, init);
                                 }
 
-                                while (next instanceof Evaluatable) {
-                                        System.out.println("Evaluating..." + next);
+                                if (next instanceof Evaluatable) {
                                         next = evaluate(scope, next);
                                 }
 
-                                //System.out.println(init + " " + next);
 
-                                Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
+                                Token operatorToUse = flVarOp.operators.pop();
+
+                                System.out.println(init + " " + operatorToUse.image + " " + next);
+
+                                Object newInit = new OperatorParser(operatorToUse).apply(init, next);
 
                                 if(flVarOp.expressionsToParse.isEmpty()) {
                                         return evaluate(scope, newInit);
@@ -512,7 +523,6 @@ public class ForteLang implements ForteLangConstants {
                         }
                         throw new Exception("Not implemented yet, could not evaluate: " + expression);
                 } else {
-//	  	  System.out.println("Primitive result: ");
                   return expression;
                 }
         }
@@ -1056,12 +1066,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_8() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    return false;
-  }
-
   private boolean jj_3_4() {
     if (jj_3R_9()) return true;
     if (jj_3R_10()) return true;
@@ -1364,6 +1368,12 @@ public class ForteLang implements ForteLangConstants {
     jj_scanpos = xsp;
     if (jj_3R_41()) return true;
     }
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
     return false;
   }
 

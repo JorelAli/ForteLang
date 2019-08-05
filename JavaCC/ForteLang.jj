@@ -668,7 +668,8 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	(
 	  attrName = <VAR_NAME>
 	  <EQUALS>
-	  attrValue = functionResult()
+	  attrValue = enclosedExpression() //functionResult()
+	  <SEMICOLON>
 	  {
 	    if(set.attributes.containsKey(attrName.image)) {
 			System.out.println("'" + attrName.image + "' already exists in the set... overriding");
@@ -715,8 +716,9 @@ FL_Enum enumeration() throws Exception : { FL_Enum flEnum; Token element; } {
 Object functionResult() throws Exception : { Object result; } {
 	(
 	  LOOKAHEAD(2)
-	    result = lambda()
-	  | result = enclosedExpression()
+	   /* result = lambda()
+	  | */
+	  result = enclosedExpression()
 	  | result = enumeration()
 	  | result = matches()
 	)
@@ -729,15 +731,15 @@ FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder functi
 	{ function = new FL_Function.FL_Function_Builder(); }
 	
 	(
-	  LOOKAHEAD(3)
+	  //LOOKAHEAD(2)
 	  paramName = <VAR_NAME>
 	  { function.parameters.push(paramName.image); }
 	  <FUNCTION_ARROW>
-	)+
+	)
 
 	(
 	    innerExpression = enclosedExpression()
-	  | innerExpression = matches()
+//	  | innerExpression = matches()
 	)
 
 	//TODO: Add expressions here
@@ -800,32 +802,39 @@ Object enclosedExpression() throws Exception : { Object result; } {
 }
 
 Object vExpr() throws Exception : { Object result; } {
-  (
-    LOOKAHEAD(3) 
-	  result = expression()
-	| result = opExpression()
-  )
+  result = opExpression()
+//  (
+//    LOOKAHEAD(3) 
+//	  result = expression()
+//	| result = opExpression()
+//  )
   { return result; }
 }
 
 Object expression() throws Exception : { Object result; } {
-	  result = guards()             { return result; }  
-  	| LOOKAHEAD(2) result = variableExpression() { return result; }
-//	| LOOKAHEAD(3) result = setExpression()      { return result; }
-	| result = includedSet()                     { return result; }
-	| LOOKAHEAD(3) result = listExpression()     { return result; }
-//	| LOOKAHEAD(2) result = numberExpression()   { return result; }
-	| LOOKAHEAD(2) result = stringExpression()   { return result; }
-//	| LOOKAHEAD(2) result = booleanExpression()  { return result; }
-	| result = builtinFunctions()                { return result; }
+ LOOKAHEAD(2) result = lambda()                          { return result; }  
+  
 	| result = singleExpression()                { return result; }
+  
+//	| result = guards()                          { return result; }
+//	| result = builtinFunctions()                { return result; }
+	
+//	| result = includedSet()                     { return result; }
+//	| LOOKAHEAD(3) result = setExpression()      { return result; }
+//	| LOOKAHEAD(3) result = listExpression()     { return result; }
+//	| LOOKAHEAD(2) result = numberExpression()   { return result; }
+//	| LOOKAHEAD(2) result = stringExpression()   { return result; }
+//	| LOOKAHEAD(2) result = booleanExpression()  { return result; }
+//  | LOOKAHEAD(2) result = variableExpression()              { return result; }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
 	| token = <VAR_NAME> { return new FL_Var(token.image); }
+	| result = includedSet() { return result; }
 	| result = list() { return result; }
 	| result = number() { return result; }
+	| result = guards() { return result; }
 	| token = <STRING> { return parseString(token); }
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 }
@@ -842,13 +851,13 @@ Object opExpression() throws Exception : { FL_VarOp result; Object expr; Token o
 
 	  expr = expression()
 	  { result.expressionsToParse.add(expr); }
-	)+
+	)*
 	{ return result; }
 }
 
 Object variableExpression() throws Exception : { Object result; Token varName; } {
-  	  LOOKAHEAD(2) result = lambda() { return result; }
-	  | varName = <VAR_NAME> (
+  	  //LOOKAHEAD(2) result = lambda() { return result; }
+	  /*|*/ varName = <VAR_NAME> (
 		result = functionCall(varName) { return result; }
 		| <SELECT> (
 		  <CAPS> { return null; }

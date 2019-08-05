@@ -809,37 +809,13 @@ Object enclosedExpression() throws Exception : { Object result; Token vName;  } 
 }
 
 Object vExpr() throws Exception : { Object result; Token vName;  } {
-//  	LOOKAHEAD(3)
-
-  	  result = opExpression() { return result; }
-//	| (
-//	  vName = <VAR_NAME>
-//	  result = functionCall(vName) //(LOOKAHEAD(2) expression())*
-//	  )
-////  (
-////    LOOKAHEAD(3) 
-////	  result = expression()
-////	| result = opExpression()
-////  )
-//  { return result; }
+  	result = opExpression() { return result; }
 }
 
 Object expression() throws Exception : { Object result; } {
- LOOKAHEAD(2) result = lambda()                          { return result; }  
-  
+ 	LOOKAHEAD(2)
+ 	  result = lambda()                          { return result; }  
 	| result = singleExpression()                { return result; }
-	
-  
-//	| result = guards()                          { return result; }
-//	| result = builtinFunctions()                { return result; }
-	
-//	| result = includedSet()                     { return result; }
-//	| LOOKAHEAD(3) result = setExpression()      { return result; }
-//	| LOOKAHEAD(3) result = listExpression()     { return result; }
-//	| LOOKAHEAD(2) result = numberExpression()   { return result; }
-//	| LOOKAHEAD(2) result = stringExpression()   { return result; }
-//	| LOOKAHEAD(2) result = booleanExpression()  { return result; }
-//  | LOOKAHEAD(2) result = variableExpression()              { return result; }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
@@ -881,27 +857,6 @@ Object variableExpression() throws Exception : { Object result; Token varName; }
 	  )
 }
 
-// <VARNAME> <OP> <EXPRESSION> 
-FL_VarOp variableOperator(Token varName) throws Exception : { Token operator; Object expr; FL_VarOp varop; } {
-  	{
-  	  varop = new FL_VarOp();
-  	  varop.initVar = new FL_Var(varName.image);
-  	}
-	(
-	  LOOKAHEAD(2)
-	  operator = anyOperator()
-	  { varop.operators.add(operator); }
-	  (
-//	    LOOKAHEAD(3)
-//	      expr = expression()         { varop.expressionsToParse.add(expr); }
-	    /*|*/ expr = enclosedExpression() { varop.expressionsToParse.add(expr); }
-	  )
-	)*
-	{
-	  return varop;
-	}
-} 
-
 FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Call result; Object param; } {
   	{
   	   	result = new FL_Function_Call();
@@ -910,112 +865,11 @@ FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Ca
   	
 	(
 	  LOOKAHEAD(2)
-//	    param = singleExpression()   { result.arguments.add(param); }
-	  /*| */param = enclosedExpression() { result.arguments.add(param); }
+	  param = enclosedExpression()
+	  { result.arguments.add(param); }
 	)+
 
 	{ return result; }
-}
-
-Object stringExpression() throws Exception : { Token initString; Token nextToken; StringBuilder builder; FL_Set setExistance; } {
-	initString = <STRING>
-	{ builder = new StringBuilder(parseString(initString)); }
-	(
-	    <CONTAINS> (
-	        setExistance = set() /*TODO: |<VAR_NAME> */
-		) { return setExistance.attributes.containsKey(parseString(initString)); }
-	    |
-	    (
-	      LOOKAHEAD(2)
-	      <CONCAT>
-	      nextToken = <STRING> //TODO: This could ... just not be a String.
-	      { builder.append(parseString(nextToken)); }
-	    )* { return builder.toString(); }
-	)
-}
-
-Object setExpression() throws Exception : {
-  FL_Set initSet; Token setParam; Object accessed;
-  FL_Set secondSet; Token setOp;
-} {
-	initSet = set()
-	{ accessed = initSet; }
-	(
-	  (
-	    <SELECT>
-	    setParam = <VAR_NAME>
-	    {
-	      	if(accessed instanceof FL_Set) {
-				accessed = ((FL_Set) accessed).attributes.get(setParam.image);
-	    	} else {
-				throw new Exception ("Tried to access element " + setParam.image + " from something that's not a set" + location(setParam));
-	    	}	
-	    }
-	  )+ { return accessed; } //Set accessing
-	  | (
-	    LOOKAHEAD(2)
-	    setOp = <SET_OP>
-	    secondSet = set()
-	    {
-	      initSet = new OperatorParser(setOp).applySetObjects(initSet, secondSet);
-	    }
-	  )* { return initSet; } //"set operations"
-	)
-}
-
-double numberExpression() throws Exception : { double acc; Token op; double next; } {
-	acc = number()
-	(
-	  LOOKAHEAD(2)
-	  op = <OP>
-	  next = number()
-	  {
-		 acc = new OperatorParser(op).applyDouble(acc, next);
-	  }
-	)*
-	{ return acc; }
-}
-
-boolean booleanExpression() throws Exception : { Token first; boolean acc; Token op; Token next; } {
-  	first = <BOOLEAN>
-	{ acc = Boolean.parseBoolean(first.image); }
-	(
-	  LOOKAHEAD(2)
-	  op = <BOOLEAN_OP>
-	  next = <BOOLEAN>
-	  {
-		 acc = new OperatorParser(op).applyBoolean(acc, Boolean.parseBoolean(next.image));
-	  }
-	)*
-	{ return acc; }
-}
-
-FL_List listExpression() throws Exception : { FL_List list; Object expr; } {
-    list = list()
-    (
-      LOOKAHEAD(2)
-      //Concat
-      <CONCAT>
-      expr = enclosedExpression()
-      {
-      	if(expr instanceof FL_List) {
-			list.list.addAll((List) expr);
-      	} else {
-
-			//This should be under that FL_VarOp, except it's not a VarOp...
-			//VarOps should just be named like "DoOpLater"
-
-			/*TODO: Say expr is an instanceof FL_Guards, which evaluates to a list.
-			These need to be properly evaluated before concatenation is declared,
-			so return type should be something like a "completeable future", which
-			SHOULD return a list */
-      	  	
-      	  	//TODO: Handle list concat with new stuff
-			//throw new Exception("Tried to concat a list with unknown expression");
-      	}
-      }
-    )*
-	{ return list; }
 }
 
 Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {

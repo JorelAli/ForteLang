@@ -1,21 +1,24 @@
+#include { 
+#    add = a -> b -> a + b;
+#    listOfOps = [add]; 
+#    op = head listOfOps; 
+#} in op 2 3
+
+#include {
+#    sum = acc -> max ->
+#        | max == 0 ->> acc
+#        | ->> sum (acc + max) (max - 1);
+#} in sum 0 10 
+
+###
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+###
+
 include {
-    add = a -> b -> a + b;
-    sub = a -> b -> a - b;
-    mul = a -> b -> a * b;
-    div = a -> b -> a / b;
+    factorial = input ->
+        | input == 0 ->> 1
+        | ->> input * factorial (input - 1);
+} in factorial 5
 
-    # Things to do
-    all = list -> false; 
-    filter = list -> [];
-    foldl = op -> init -> list -> 2;
-
-    #head = list -> x;
-    #tail = list -> xs;
-    length = list -> 0;
-    map = list;
-
-    x = 5;
-
-} in include { y = 3; } in x + y
-
-##tail [(x + 2), 5, 0, -2]
+#Should be something like 55

@@ -217,7 +217,7 @@ public class ForteLang {
 
 		//Whether there's only an initVar and no operators/expressionsToParse
 		public boolean isSingle() {
-			return operators.isEmpty() && expressionsToParse.isEmpty();
+			return operators.isEmpty() || expressionsToParse.isEmpty();
 		}
 
 		public Object getSingle() {
@@ -408,7 +408,13 @@ public class ForteLang {
 
 	public static Object evaluate(FL_Set scope, Object expression) throws Exception {
 	  	scope = scope.clone();
+	  	System.out.println();
+	  	System.out.println(scope);
 	  	if(expression instanceof Evaluatable) {
+
+	  	  	//System.out.println(expression.getClass().getName());
+	  	  	System.out.println(expression);
+	  	  	
 	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
 				Object builtinParam = evaluate(scope, builtin.param);
@@ -438,7 +444,18 @@ public class ForteLang {
 						} else {
 						  	((FL_List) builtinParam).list.remove();
 						  	return builtinParam;
-						} 
+						}
+						/*
+						TODO: 
+					
+					    ### Things to do
+					    all = list -> false; 
+					    filter = list -> [];
+					    foldl = op -> init -> list -> 2;
+					    length = list -> 0;
+					    map = list;
+					    ###
+						*/
 				}
 	  	  	  
 			} else if(expression instanceof FL_Function_Call) {
@@ -457,7 +474,9 @@ public class ForteLang {
 //					System.out.println(function);
 					return evaluate(scope, function);
 				} else {
-					throw new Exception("Tried to perform a function call on something that's not a function");
+				  	System.out.println("Didn't get what I wanted, but proceeding anyway...");
+				  	return evaluate(scope, function);
+					//throw new Exception("Tried to perform a function call on something that's not a function, " + function.getClass().getName());
 				}
 
 			} else if(expression instanceof FL_Guards) {
@@ -479,12 +498,16 @@ public class ForteLang {
 			} else if(expression instanceof FL_Var) {
 				FL_Var flVar = (FL_Var) expression;
 				Object var = scope.attributes.get(flVar.name);
+				while(var instanceof FL_Var) {
+					var = scope.attributes.get(((FL_Var)var).name);
+				}
 				if(var == null) {
 					throw new Exception("Could not find function \"" + flVar.name + "\" in the program!");
 				}
 				return evaluate(scope, var);
 			} else if(expression instanceof FL_VarOp) {
 				FL_VarOp flVarOp = (FL_VarOp) expression;
+				System.out.println(flVarOp);
 				if(flVarOp.isSingle()) {
 					return evaluate(scope, flVarOp.getSingle());
 				} else {
@@ -496,8 +519,11 @@ public class ForteLang {
 				  	}
 
 				  	while (next instanceof Evaluatable) {
+				  	  	System.out.println("Evaluating..." + next);
 						next = evaluate(scope, next);
 				  	}
+
+					//System.out.println(init + " " + next);
 				  	
 				  	Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
 
@@ -712,6 +738,21 @@ FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder functi
 	    innerExpression = expression()
 	  | innerExpression = matches()
 	)
+
+	//TODO: Add expressions here
+	/*
+	include { 
+	    add = a -> b -> a + b;
+	    listOfOps = [add]; 
+	    op = head listOfOps; 
+	} in op 2 3
+	*/
+
+//	(
+//	  LOOKAHEAD(2)
+//	    param = singleExpression()   { result.arguments.add(param); }
+//	  | param = enclosedExpression() { result.arguments.add(param); }
+//	)*
 
 	{
 	  function.expression = innerExpression;

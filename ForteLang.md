@@ -69,3 +69,125 @@ To enter a double quote in a string, it must be escaped with a backslash:
 ```
 "String with a \"quote\" inside it"
 ```
+
+#### Guards (conditional statements)
+
+ForteLang doesn't have `if ... else` statements, instead it has guards:
+
+```
+max = x -> y ->
+	| x > y ->> x
+	| ->> y;
+```
+
+This is equivalent to the pseudocode:
+
+```
+max = x -> y ->
+	if (x > y):
+		return x;
+	else:
+		return y;
+```
+
+#### Comments
+
+ForteLang has single line comments:
+
+```
+max = x -> y ->
+	| x > y ->> x
+	| ->> y; # Note this semicolon which is the end of a function declaration
+```
+
+And block comments:
+
+```
+### max :: int -> int -> int
+This function determines which 
+of two parameters is the largest
+number ###
+
+max = x -> y -> 
+	| x > y ->> x
+	| ->> y;
+```
+
+#### Matching (Basic pattern matching)
+
+ForteLang can do basic pattern matching using the `match` keyword
+
+```
+isTrue = x -> match x
+	| true ->> true
+	| ->> false
+```
+
+#### Enums
+
+```
+myEnum = {| ENUM_ITEM, OTHER_ENUM_ITEM |};
+
+matchExample = x -> match x
+	| myEnum.ENUM_ITEM ->> true
+	| myEnum.OTHER_ENUM_ITEM ->> false
+```
+
+#### Sets
+
+Sets are where functions can be declared. Sets can be declared as pure, meaning that all elements within the sets perform pure operations, or impure, where one or more elements perform an impure operation. Sets are declared with curly brackets.
+
+Regular pure sets use regular syntax, as follows:
+
+```
+mySet = {
+    five = 5;
+    mul2 = x -> 2 * x;
+    mathLibrary = import "./math.fl";
+}
+```
+
+Impure sets require the `impure` keyword:
+
+```
+myImpureSet = impure {
+    @impureOperation = @print "hello"
+}
+```
+
+Impure set attributes names (such as `@impureOperation` in the example above) must be preceded with the `@` symbol to indicate that the function is impure. A function is impure if it calls any impure operations.
+
+#### Set accessing
+
+Set elements can be accessed using the `.` operator:
+
+```
+mySet = {
+    exampleItem = 5;
+}.exampleItem
+```
+
+#### Importing other files
+
+Other files can be imported using the `@import` function, which requires a String parameter:
+
+```
+someFile = @import "./blah.fl";
+```
+
+This will evaluate the imported `fl` file and assign it to an element of a set where it was declared.
+
+For example, if we have the following file `file1.fl`:
+
+```
+5 + (@import "file2.fl")
+```
+
+And the file `file2.fl`:
+
+```
+10
+```
+
+This will evaluate to 15.
+

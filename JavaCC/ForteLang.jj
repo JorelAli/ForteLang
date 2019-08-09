@@ -611,7 +611,7 @@ TOKEN : { < IMPURE : "impure" > }
 TOKEN : { < MATCH : "match" > }
 
 //Built-in functions
-TOKEN : { < IMPORT : "import" > }
+TOKEN : { < IMPORT : "@import" > }
 TOKEN : { < EXEC : "@exec" > }
 TOKEN : { < PRINT : "@print" > }
 TOKEN : { < HEAD : "head" > }

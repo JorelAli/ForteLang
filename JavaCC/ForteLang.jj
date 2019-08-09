@@ -402,14 +402,18 @@ public class ForteLang {
 		} 
 	}
 
-	public static Object secd(FL_Function_Call functionCall) {
+	public static Object secd(FL_Function_Call functionCall /*??? dump*/) {
 	  	Stack<Object> stack = new Stack<Object>();
 	  	HashMap<String, Object> environment = new HashMap<String, Object>();
 	  	Object control;
 	  	//? dump;
 
 	  	//Convert to reverse polish
-
+		for(Object arg : functionCall.arguments) {
+			stack.push(arg);
+		}
+		stack.push(functionCall.functionName);
+		
 	  	//
 		return null;
 	}

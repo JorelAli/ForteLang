@@ -31,4 +31,4 @@ include {
 
     head' = list -> list ++ [2, 3, (2 + 2)];
         
-} in add 2 3 
+} in add (add 2 3) 3

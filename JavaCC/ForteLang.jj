@@ -461,14 +461,14 @@ public class ForteLang {
 				}
 				
 				if(function instanceof FL_Function) {
-//					System.out.println("About to evaluate the following: ");
-//					System.out.println(function);
+					System.out.println("About to evaluate the following: ");
+					System.out.println(function);
 //					System.out.println("With parameters " + call.arguments);
-					while(function instanceof FL_Function) {
-					  	FL_Function func = (FL_Function) function;
-						scope.attributes.put(func.parameter, call.arguments.pop());
-						function = func.expression;
-					}
+//					while(function instanceof FL_Function) {
+//					  	FL_Function func = (FL_Function) function;
+//						scope.attributes.put(func.parameter, call.arguments.pop());
+//						function = func.expression;
+//					}
 //					System.out.println("Applied parameters");
 //					System.out.println(function);
 					return evaluate(scope, function);
@@ -727,31 +727,23 @@ double number() throws Exception : { Token value; double f; } {
 Object enclosedExpression() throws Exception : { Object result; Token vName;  } {
 	( 
 	  <OPENBRACKET>
-	  result = vExpr()
+	  result = opExpression()
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
-	|  LOOKAHEAD(2)  (
-	  vName = <VAR_NAME>
-	  result = functionCall(vName) 
-	  ) { return result; }
-
-	| result = vExpr() {return result; }
-}
-
-Object vExpr() throws Exception : { Object result; Token vName;  } {
-  	result = opExpression() { return result; }
+	| result = opExpression() {return result; }
 }
 
 Object expression() throws Exception : { Object result; } {
- 	LOOKAHEAD(2)
- 	  result = lambda()                          { return result; }  
-	| result = singleExpression()                { return result; }
+ 	  LOOKAHEAD(2) result = lambda()                 { return result; }  
+	| LOOKAHEAD(2) result = singleExpression()       { return result; }
+//	| result = functionCall()                        { return result; }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
-	| token = <VAR_NAME> { return new FL_Var(token.image); }
+//	| token = <VAR_NAME> { return new FL_Var(token.image); }
+  |  result = functionCall() { return result; }
 	| result = includedSet() { return result; }
 	| result = list() { return result; }
 	| result = number() { return result; }
@@ -787,23 +779,20 @@ Object opExpression() throws Exception : { FL_OpExpr result; Object expr; Token 
 	}
 }
 
-Object variableExpression() throws Exception : { Object result; Token varName; } {
-  	varName = <VAR_NAME> 
-	result = functionCall(varName)
-	{ return result; }  
-}
+FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Object param; Token varName; } {
+  	varName = <VAR_NAME>
 
-FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Call result; Object param; } {
   	{
   	   	result = new FL_Function_Call();
 		result.functionName = new FL_Var(varName.image);
   	}
   	
+  	
 	(
 	  LOOKAHEAD(2)
 	  param = enclosedExpression()
 	  { result.arguments.add(param); }
-	)+
+	)*
 
 	{ return result; }
 }

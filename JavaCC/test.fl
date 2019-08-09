@@ -30,5 +30,7 @@ include {
 #        | ->> input * (factorial (input - 1)));
 
     head' = list -> list ++ [2, 3, (2 + 2)];
+
+    const = 4;
         
-} in add (add 2 3) 3
+} in const #add (add 1 2) 3 #Expect 6 

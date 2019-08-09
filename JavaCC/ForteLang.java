@@ -44,8 +44,14 @@ public class ForteLang implements ForteLangConstants {
 
         //Function declaration, e.g. x -> y -> x + y
         static class FL_Function implements Evaluatable {
+                //Basically the closure of parameters
+                Map<String, Object> functionScope;
                 String parameter;
                 Object expression;
+
+                public FL_Function() {
+                        functionScope = new HashMap<String, Object>();
+                }
 
                 @Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
 
@@ -970,44 +976,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3R_20() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_22()) {
-    jj_scanpos = xsp;
-    if (jj_3R_23()) {
-    jj_scanpos = xsp;
-    if (jj_3R_24()) {
-    jj_scanpos = xsp;
-    if (jj_3R_25()) {
-    jj_scanpos = xsp;
-    if (jj_3R_26()) {
-    jj_scanpos = xsp;
-    if (jj_3R_27()) {
-    jj_scanpos = xsp;
-    if (jj_3R_28()) {
-    jj_scanpos = xsp;
-    if (jj_3R_29()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_3R_30()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_18() {
-    if (jj_3R_20()) return true;
-    return false;
-  }
-
   private boolean jj_3R_10() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1263,6 +1231,44 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_23() {
     if (jj_scan_token(VAR_NAME)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_20() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_22()) {
+    jj_scanpos = xsp;
+    if (jj_3R_23()) {
+    jj_scanpos = xsp;
+    if (jj_3R_24()) {
+    jj_scanpos = xsp;
+    if (jj_3R_25()) {
+    jj_scanpos = xsp;
+    if (jj_3R_26()) {
+    jj_scanpos = xsp;
+    if (jj_3R_27()) {
+    jj_scanpos = xsp;
+    if (jj_3R_28()) {
+    jj_scanpos = xsp;
+    if (jj_3R_29()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_22() {
+    if (jj_3R_30()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_18() {
+    if (jj_3R_20()) return true;
     return false;
   }
 

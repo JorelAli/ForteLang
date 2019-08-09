@@ -49,8 +49,14 @@ public class ForteLang {
 
 	//Function declaration, e.g. x -> y -> x + y
 	static class FL_Function implements Evaluatable {
+	  	//Basically the closure of parameters
+	  	Map<String, Object> functionScope; 
 		String parameter;
 		Object expression;
+
+		public FL_Function() {
+			functionScope = new HashMap<String, Object>();
+		}
 
 		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
 

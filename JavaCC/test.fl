@@ -15,6 +15,12 @@ include {
         | x < y ->> y 
         | ->> 0;
 
+    nestedGuard = x -> |>
+        | x == 0 ->> 0
+        | ->> |>
+            | x == 1 ->> 1
+            | ->> -1;
+
     inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
 
     # Set operations
@@ -41,7 +47,7 @@ include {
 
     a = lambda -> lambda 2 3;
         
-} in maxOr0 2 3
+} in maxOr0 (nestedGuard 2) -2
 
 #union {} {}
 

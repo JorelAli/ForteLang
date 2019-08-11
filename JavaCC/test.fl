@@ -33,4 +33,5 @@ include {
 
     const = 4;
         
-} in const #add (add 1 2) 3 #Expect 6 
+} in add 1 2
+#const + 10 #add (add 1 2) 3 #Expect 6 

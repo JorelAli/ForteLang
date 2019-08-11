@@ -397,13 +397,43 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        public static Object secd(FL_Function_Call functionCall) {
+        static class Dump {
+                Stack<Object> stack;
+                LinkedList<Object> control;
+                HashMap<String, Object> environment;
+
+                public Dump(Stack<Object> s, LinkedList<Object> control, HashMap<String, Object> env) {
+                        this.stack = s;
+                        this.control = control;
+                        this.environment = env;
+                }
+        }
+
+        //Placeholder for "applying" an object
+        static class ApplyObj { @Override public String toString() { return "ap"; }}
+
+        public static Object secd(FL_Function_Call functionCall, FL_Set globalScope) throws Exception {
                 Stack<Object> stack = new Stack<Object>();
                 HashMap<String, Object> environment = new HashMap<String, Object>();
-                Object control;
-                //? dump;
+                LinkedList<Object> control = new LinkedList<Object>();
+                Stack<Dump> dump = new Stack<Dump>();
 
                 //Convert to reverse polish
+                control.add(functionCall.functionName);
+                for(Object object : functionCall.arguments) {
+                        control.add(object);
+                        control.add(new ApplyObj());
+                }
+                System.out.println("Initial control: " + control);
+
+                Object controlItem = control.pop();
+                if(controlItem instanceof Evaluatable) {
+                        controlItem = evaluate(globalScope, controlItem);
+                        System.out.println("Returned value from control pop: " + controlItem);
+                } else {
+                        stack.push(controlItem);
+                }
+
 
                 //
                 return null;
@@ -459,7 +489,12 @@ public class ForteLang implements ForteLangConstants {
 				}
 	  	  	  
 			} else*/
-                        if(expression instanceof FL_Function_Call) {
+
+                        if(expression instanceof FL_Function) {
+                                FL_Function function = (FL_Function) expression;
+                                //System.out.println("Lambda found: " + expression);
+                                return "Some lambda, " + function;
+                        } else if(expression instanceof FL_Function_Call) {
                                 FL_Function_Call call = (FL_Function_Call) expression;
                                 Object function = scope.attributes.get(call.functionName.name);
 
@@ -474,6 +509,13 @@ public class ForteLang implements ForteLangConstants {
                                 if(function instanceof FL_Function) {
                                         System.out.println("About to evaluate the following: ");
                                         System.out.println(function);
+
+                                        System.out.println();
+                                        System.out.println("Starting SECD machine");
+                                        System.out.println();
+
+                                        return secd(call, scope);
+
 //					System.out.println("With parameters " + call.arguments);
 //					while(function instanceof FL_Function) {
 //					  	FL_Function func = (FL_Function) function;
@@ -482,7 +524,7 @@ public class ForteLang implements ForteLangConstants {
 //					}
 //					System.out.println("Applied parameters");
 //					System.out.println(function);
-                                        return evaluate(scope, function);
+//					return evaluate(scope, function);
                                 } else {
                                         if(function instanceof Evaluatable) {
                                                 return evaluate(scope, function);
@@ -957,90 +999,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3R_11() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_3R_26()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_6() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_11()) {
-    jj_scanpos = xsp;
-    if (jj_3R_12()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_38() {
-    if (jj_scan_token(FLOATING_POINT_NUMBER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_37() {
-    if (jj_scan_token(NUMBER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_31() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_37()) {
-    jj_scanpos = xsp;
-    if (jj_3R_38()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_39() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_36() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_32() {
-    Token xsp;
-    if (jj_3R_39()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_39()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    if (jj_scan_token(OPENSBRACKET)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_35()) {
-    jj_scanpos = xsp;
-    if (jj_3R_36()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_5() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   private boolean jj_3R_7() {
     if (jj_scan_token(VAR_NAME)) return true;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
@@ -1236,6 +1194,90 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_12() {
     if (jj_3R_26()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_3R_26()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_6() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_11()) {
+    jj_scanpos = xsp;
+    if (jj_3R_12()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_38() {
+    if (jj_scan_token(FLOATING_POINT_NUMBER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_37() {
+    if (jj_scan_token(NUMBER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_31() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_37()) {
+    jj_scanpos = xsp;
+    if (jj_3R_38()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_39() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_36() {
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_32() {
+    Token xsp;
+    if (jj_3R_39()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_39()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    if (jj_scan_token(OPENSBRACKET)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_35()) {
+    jj_scanpos = xsp;
+    if (jj_3R_36()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_3R_6()) return true;
     return false;
   }
 

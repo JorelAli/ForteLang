@@ -865,7 +865,7 @@ Object expression() throws Exception : { Object result; } {
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
-  |  result = functionCall() { return result; }
+    | result = functionCall() { return result; }
 	| result = includedSet() { return result; }
 	| result = list() { return result; }
 	| result = number() { return result; }

@@ -32,6 +32,15 @@ include {
     head' = list -> list ++ [2, 3, (2 + 2)];
 
     const = 4;
+
+    p = x -> x;
+
+    a = lambda -> lambda 2 3;
         
-} in add 1 2
+} in a add
+#add (p 2) 3
+#head' [] []
+#head'
+#head' [5, 6, 1, 0]
+#add 1 2
 #const + 10 #add (add 1 2) 3 #Expect 6 

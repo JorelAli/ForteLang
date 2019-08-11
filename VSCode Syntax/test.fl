@@ -28,10 +28,16 @@ include {
     intersect =  set1 -> set2 -> set1 /- set2;
     difference = set1 -> set2 -> set1 // set2;
 
+    a = true;
+
     # Adds sets to scope of expressions
     myFunctions2 = include {
         myAdd = x -> y -> x + y;
     } in myAdd 2;
+
+    blah = impure {
+        @impureFunction = 2;
+    };
 
     head' = list -> list ++ [2, 3, (2 + 2)];
 
@@ -50,6 +56,10 @@ include {
         | ->> input * factorial (input - 1);
         
 } in factorial 1
+
+###
+block comment
+###
 
 #maxOr0 (nestedGuard 2) -2
 

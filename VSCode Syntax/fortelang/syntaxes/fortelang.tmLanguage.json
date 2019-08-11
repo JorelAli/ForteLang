@@ -7,13 +7,28 @@
 		},
 		{
 			"include": "#strings"
+		},
+		{
+			"include": "#comments"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.fortelang",
-				"match": "\\b(include|in|for|return)\\b"
+				"match": "->>|->|\\|>|\\|"
+			}, {
+				"name": "invalid.illegal",
+				"match": "impure|@[a-zA-Z0-9'_]+"
+			}, {
+				"name": "storage.type.fortelang",
+				"match": "\\b(include|in|match)\\b"
+			}, {
+				"name": "entity.name.function",
+				"match": "[a-zA-Z0-9'_]+(?=\\s+\\=)"
+			}, {
+				"name": "constant.language",
+				"match": "true|false"
 			}]
 		},
 		"strings": {
@@ -25,6 +40,21 @@
 					"name": "constant.character.escape.fortelang",
 					"match": "\\\\."
 				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.number-sign",
+					"begin": "#",
+					"end": "\n"
+				},
+				{
+					"name": "comment.block.number-sign",
+					"begin": "###",
+					"end": "###"
+				}
+
 			]
 		}
 	},

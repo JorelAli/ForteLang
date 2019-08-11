@@ -1,4 +1,4 @@
-include {
+include impure {
     # Adds two parameters together
     add = x -> y -> x + y;
 
@@ -57,6 +57,11 @@ include {
     stringExample = "hello";
 
     p = x -> x;
+
+    example = head [] ++ tail [];
+
+    importExample = @import "exec";
+    importExample = @print "hello!";
 
     a = lambda -> lambda 2 3;
 

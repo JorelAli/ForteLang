@@ -56,8 +56,8 @@ include {
 # Adding elements of a list (the sum function)
 {
 	sum = list ->
-		| x:xs ->> x + sum xs
-		| ->> 0
+		| [] ->> 0
+		| ->> head list ++ tail list
 }
 
 # Builtin functions

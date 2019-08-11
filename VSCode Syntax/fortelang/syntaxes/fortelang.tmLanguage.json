@@ -38,6 +38,9 @@
 			}, {
 				"name": "constant.numeric.fortelang",
 				"match": "\\b([0-9]+(\\.[0-9]+)*)\\b"
+			}, {
+				"name": "support.function.fortelang",
+				"match": "\\b(head|tail|@import|@exec|@print)\\b"
 			}]
 		},
 		"strings": {

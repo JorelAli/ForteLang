@@ -102,7 +102,7 @@ public interface ForteLangConstants {
     "\"in\"",
     "\"impure\"",
     "\"match\"",
-    "\"@import\"",
+    "\"import\"",
     "\"@exec\"",
     "\"@print\"",
     "\"head\"",

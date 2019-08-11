@@ -11,6 +11,37 @@ import java.lang.reflect.Field;
 import java.io.*;
 
 public class ForteLang {
+	
+	/** Static fields */
+	static String fileName;
+
+
+	/** Main method */
+	public static void main(String[] args) throws ParseException, FileNotFoundException {
+	  	if(args.length != 1) {
+	  	  	System.out.println("Usage: java ForteLang <File>");
+			return;
+	  	}
+
+	  	File file = new File(args[0]);
+	  	fileName = file.getName();
+		try {
+		  	/* Run the parser */
+
+			Object result = new ForteLang(new FileInputStream(file)).input();
+			if(result instanceof Double) {
+			  	double d = (double) result;
+				if((d % 1) == 0) {
+					result = (long) d;
+				}
+			}
+			System.out.println("Final result: " + result);
+			
+		} catch(Exception e) {
+		  	e.printStackTrace();
+		  	return;
+		}
+	}
 
 	static interface Evaluatable { }
 
@@ -18,15 +49,16 @@ public class ForteLang {
 
 	//Function declaration, e.g. x -> y -> x + y
 	static class FL_Function implements Evaluatable {
+	  	//Basically the closure of parameters
+	  	Map<String, Object> functionScope; 
 		String parameter;
 		Object expression;
 
-		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
+		public FL_Function() {
+			functionScope = new HashMap<String, Object>();
+		}
 
-		/*
-		Don't forget currying!
-		x -> y -> true is actually equal to x -> (y -> true)
-		*/
+		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
 
 		static class FL_Function_Builder {
 			Stack<String> parameters;
@@ -51,21 +83,24 @@ public class ForteLang {
 
 	//Function call, e.g. myFunc 2 3
 	static class FL_Function_Call implements Evaluatable {
-		FL_Var functionName;
+		Object initFunction;
 		LinkedList<Object> arguments;
 
 		public FL_Function_Call() {
 			arguments = new LinkedList<Object>();
 		}
 
-		@Override public String toString() { return "FL_Function_Call(" + functionName + ") " + arguments; }
+		@Override public String toString() { return "FL_Function_Call(" + initFunction + ") " + arguments; }
 	}
 
 	static class FL_Set implements Evaluatable {
 		boolean impure;
 		LinkedHashMap<String, Object> attributes;
 
-		public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
+		public FL_Set() {
+		  attributes = new LinkedHashMap<String, Object>();
+		  impure = false;
+		}
 
 		public FL_Set clone() {
 			FL_Set newSet = new FL_Set();
@@ -139,7 +174,6 @@ public class ForteLang {
 		return str.image.substring(1, str.image.length() - 1);
 	}
 
-
 	/** Other declared objects */
 
 	static class FL_List implements Evaluatable {
@@ -160,20 +194,6 @@ public class ForteLang {
 		@Override public String toString() {
 		  return "FL_Guards[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
 		}
-	}
-
-	static class FL_Matches implements Evaluatable {
-		LinkedHashMap<Object, Object> statements;
-		Object finalStatement;
-
-		public FL_Matches() { statements = new LinkedHashMap<Object, Object>(); }
-	}
-
-	static class FL_Enum implements Evaluatable {
-		List<String> elements;
-		
-		public FL_Enum() { elements = new LinkedList<String>(); }
-		@Override public String toString() { return "ENUM" + elements.toString(); }
 	}
 
 	static class FL_IncludedSet implements Evaluatable {
@@ -197,31 +217,18 @@ public class ForteLang {
 		}
 	}
 
-	static class FL_VarOp implements Evaluatable {
+	static class FL_OpExpr implements Evaluatable {
 		Object initVar;
 		LinkedList<Token> operators;
 		LinkedList<Object> expressionsToParse;
 
-		public FL_VarOp() {
+		public FL_OpExpr() {
 		  	operators = new LinkedList<Token>();
 			expressionsToParse = new LinkedList<Object>();
 		}
 
 		@Override public String toString() {
-		  if(isSingle()) {
-			return "FL_VarOp[" + getSingle() + "]";
-		  } else {
-		  	return "FL_VarOp[init=" + initVar + "" + operators + "" + expressionsToParse + "]";
-		  }
-		}
-
-		//Whether there's only an initVar and no operators/expressionsToParse
-		public boolean isSingle() {
-			return operators.isEmpty() || expressionsToParse.isEmpty();
-		}
-
-		public Object getSingle() {
-			return initVar;
+		  	return "FL_OpExpr[init=" + initVar + "" + operators + "" + expressionsToParse + "]";
 		}
 	}
 
@@ -237,33 +244,6 @@ public class ForteLang {
 		}
 	}
 
-	/** Static fields */
-	static String fileName;
-
-
-	/** Main method */
-	public static void main(String[] args) throws ParseException, FileNotFoundException {
-	  	if(args.length != 1) {
-	  	  	System.out.println("Usage: java ForteLang <File>");
-			return;
-	  	}
-
-	  	File file = new File(args[0]);
-	  	fileName = file.getName();
-		try {
-		  	/* Run the parser */
-
-			Object result = new ForteLang(new FileInputStream(file)).input();
-			System.out.println("Final result: " + result);
-			
-		} catch(Exception e) {
-		  	e.printStackTrace();
-		  	return;
-		}
-
-		//Begin interpreting system
-	}
-
 	public static <T> T print(T o) throws Exception {
 	  	StringBuilder builder = new StringBuilder();
 	  	builder.append(o.getClass().getName() + "[");
@@ -276,12 +256,12 @@ public class ForteLang {
 
 	static class OperatorParser {
 
-		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR };
+		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT };
 
 		Operator operatorKind;
 		String op;
 	  
-		public OperatorParser(Token operator) {
+		public OperatorParser(Token operator) throws Exception {
 			switch(operator.kind) {
 				case ForteLangConstants.BOOLEAN_OP:
 					operatorKind = Operator.BOOLEAN;
@@ -295,9 +275,11 @@ public class ForteLang {
 				case ForteLangConstants.COMPARATOR_OP:
 					operatorKind = Operator.COMPARATOR;
 					break;
-				default:
-					operatorKind = null;
+				case ForteLangConstants.CONCAT:
+					operatorKind = Operator.CONCAT;
 					break;
+				default:
+					throw new Exception ("Invalid operator for OperatorParser: " + operator.image);
 			}
 			op = operator.image;
 		}
@@ -311,9 +293,26 @@ public class ForteLang {
 				case SET:
 					return applySetObjects((FL_Set) o1, (FL_Set) o2);
 				case COMPARATOR:
-					return applyComparator(o1, o2); 
+					return applyComparator(o1, o2);
+				case CONCAT:
+					return applyConcat(o1, o2); 
 			}
 			throw new Exception ("Failed to apply any operators");
+		}
+
+		public Object applyConcat(Object o1, Object o2) throws Exception {
+		  	if(o1 instanceof FL_List && o2 instanceof FL_List) {
+		  	  	FL_List l1 = (FL_List) o1;
+		  	  	FL_List l2 = (FL_List) o2;
+				l1.list.addAll(l2.list);
+				return l1;
+			} else if(o1 instanceof String && o2 instanceof String) {
+				String s1 = (String) o1;
+				String s2 = (String) o2;
+				return s1 + s2;
+			} else {
+				throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
+			}
 		}
 
 		public boolean applyComparator(Object o1, Object o2) throws Exception {
@@ -406,16 +405,121 @@ public class ForteLang {
 		} 
 	}
 
-	public static Object evaluate(FL_Set scope, Object expression) throws Exception {
-	  	scope = scope.clone();
-	  	System.out.println();
-	  	System.out.println(scope);
-	  	if(expression instanceof Evaluatable) {
+	static class Dump {
+		Stack<Object> stack;
+		LinkedList<Object> control;
+		HashMap<String, Object> environment;
 
+		public Dump(Stack<Object> s, LinkedList<Object> control, HashMap<String, Object> env) {
+			this.stack = s;
+			this.control = control;
+			this.environment = env;
+		}
+	}
+
+	//Placeholder for "applying" an object
+	static class ApplyObj { @Override public String toString() { return "ap"; }}
+
+	public static Object secd(FL_Function_Call functionCall, FL_Set globalScope) throws Exception {
+	  	Stack<Object> stack = new Stack<Object>();
+	  	HashMap<String, Object> environment = new HashMap<String, Object>();
+	  	LinkedList<Object> control = new LinkedList<Object>();
+	  	Stack<Dump> dump = new Stack<Dump>();
+
+	  	//Convert to reverse polish
+		control.add(functionCall.initFunction);
+		for(Object object : functionCall.arguments) {
+			control.add(object);
+			control.add(new ApplyObj());
+		}
+		System.out.println("Initial control: " + control);
+
+		Object controlItem = null;
+
+		do {
+			while(!control.isEmpty()) {
+				controlItem = control.pop();
+
+	
+				if(controlItem instanceof ApplyObj) {
+					//Begin application
+					System.out.println();
+					System.out.println("Applying...");
+	
+					//Pop two items from the top of the stack
+					Object value = stack.pop();
+
+					Object potentialFunction = stack.pop();
+					
+					FL_Function lambda = null;
+					if(potentialFunction instanceof FL_Function) {
+						lambda = (FL_Function) potentialFunction;
+					} else if(potentialFunction instanceof FL_Function_Call) {
+						FL_Function_Call lambdaCall = (FL_Function_Call) potentialFunction;
+						lambda = (FL_Function) lambdaCall.initFunction;
+					}
+					
+	
+					//Bind it properly in the current environment
+					environment.put(lambda.parameter, value);
+					Object result = lambda.expression;
+	
+					//If the result is an abstraction, dump it
+					if(result instanceof FL_Function) {
+					    //Dump
+					  	System.out.println("Beginning dump");
+						Dump newDump = new Dump((Stack<Object>) stack.clone(), (LinkedList<Object>) control.clone(), (HashMap<String, Object>) environment.clone());
+						dump.push(newDump);
+			
+						stack.clear();
+						control.clear();
+						environment.clear();
+			
+						control.add(result);
+					} else {
+					  	//Push result on the stack
+						stack.push(result);
+					}
+				} else {
+					//If it's a FL_Var, evaluate it
+					if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
+						controlItem = evaluate(globalScope, controlItem);
+					}
+					//Otherwise, don't. Push the control item on the stack
+					stack.push(controlItem);
+				}
+			}
+
+			if(!dump.isEmpty()) {
+			  	System.out.println("Restoring from dump");
+			  	Dump restoredDump = dump.pop();
+
+			  	while(!stack.isEmpty()) {
+					restoredDump.stack.push(stack.pop());
+			  	}
+
+			  	stack = restoredDump.stack;
+			  	control = restoredDump.control;
+			  	environment.putAll(restoredDump.environment);
+			  	System.out.println("Dump restored");
+			}
+
+		} while(!control.isEmpty() || !dump.isEmpty());
+
+		FL_Set newEnv = new FL_Set();
+		newEnv.attributes.putAll(environment);
+		return evaluate(newEnv, stack.pop());
+	}
+
+	public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
+	  	scope = scope.clone();
+//		System.out.println(scope);
+	  	if(expression instanceof Evaluatable) {
+			System.out.println("Evaluating " + expression);
 	  	  	//System.out.println(expression.getClass().getName());
-	  	  	System.out.println(expression);
+//	  	  	System.out.println(expression);
 	  	  	
-	  	  	if(expression instanceof FL_Builtin) {
+	  	  	/*if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
 				Object builtinParam = evaluate(scope, builtin.param);
 //				//TODO: Fix for when builtins require non-String types
@@ -445,7 +549,6 @@ public class ForteLang {
 						  	((FL_List) builtinParam).list.remove();
 						  	return builtinParam;
 						}
-						/*
 						TODO: 
 					
 					    ### Things to do
@@ -455,28 +558,70 @@ public class ForteLang {
 					    length = list -> 0;
 					    map = list;
 					    ###
-						*/
 				}
 	  	  	  
-			} else if(expression instanceof FL_Function_Call) {
+			} else*/
+
+			if(expression instanceof FL_Function) {
+			  	FL_Function function = (FL_Function) expression;
+			  	FL_Function_Call newFunctionCall = new FL_Function_Call();
+			  	newFunctionCall.initFunction = function;
+			  	
+				return newFunctionCall;
+			} else
+			if(expression instanceof FL_Function_Call) {
+				System.out.println();
 				FL_Function_Call call = (FL_Function_Call) expression;
-				Object function = scope.attributes.get(call.functionName.name);
-				if(function instanceof FL_Function) {
-//					System.out.println("About to evaluate the following: ");
-//					System.out.println(function);
-//					System.out.println("With parameters " + call.arguments);
-					while(function instanceof FL_Function) {
-					  	FL_Function func = (FL_Function) function;
-						scope.attributes.put(func.parameter, call.arguments.pop());
-						function = func.expression;
+
+				if(!(call.initFunction instanceof FL_Function)) {
+				  	// It's a function name, which needs to be resolved
+				  	FL_Var functionName = (FL_Var) call.initFunction; 
+					Object function = scope.attributes.get(functionName.name);
+
+					if(function == null) {
+						throw new Exception("Function \"" + functionName.name + "\" has not been declared!");
+					} else {
+						if(function instanceof FL_Function_Call) {
+							call.initFunction = ((FL_Function_Call) function).initFunction;
+						} else {
+							System.out.println("Reading from closure... " + function.getClass().getName());
+						}
 					}
+				}
+				
+				if(call.arguments.isEmpty()) {
+//				  	System.out.println("Evaluating because arguments are empty...");
+					return evaluate(scope, call.initFunction);
+				}
+
+				
+				
+				if(call.initFunction instanceof FL_Function) {
+					System.out.println("About to evaluate the following: ");
+					System.out.println(call.initFunction);
+
+					System.out.println();
+					System.out.println("Starting SECD machine");
+					System.out.println();
+
+					return secd(call, scope);
+					
+//					System.out.println("With parameters " + call.arguments);
+//					while(function instanceof FL_Function) {
+//					  	FL_Function func = (FL_Function) function;
+//						scope.attributes.put(func.parameter, call.arguments.pop());
+//						function = func.expression;
+//					}
 //					System.out.println("Applied parameters");
 //					System.out.println(function);
-					return evaluate(scope, function);
+//					return evaluate(scope, function);
 				} else {
-				  	System.out.println("Didn't get what I wanted, but proceeding anyway...");
-				  	return evaluate(scope, function);
-					//throw new Exception("Tried to perform a function call on something that's not a function, " + function.getClass().getName());
+				  	System.out.println("Avoiding the SECD machine, because of type " + call.initFunction.getClass().getName());
+				  	if(call.initFunction instanceof Evaluatable) {
+						return evaluate(scope, call.initFunction);
+				  	} else {
+						return call.initFunction;
+				  	}
 				}
 
 			} else if(expression instanceof FL_Guards) {
@@ -504,39 +649,46 @@ public class ForteLang {
 				if(var == null) {
 					throw new Exception("Could not find function \"" + flVar.name + "\" in the program!");
 				}
-				return evaluate(scope, var);
-			} else if(expression instanceof FL_VarOp) {
-				FL_VarOp flVarOp = (FL_VarOp) expression;
-				System.out.println(flVarOp);
-				if(flVarOp.isSingle()) {
-					return evaluate(scope, flVarOp.getSingle());
-				} else {
-				  	Object init = flVarOp.initVar;
-				  	Object next = flVarOp.expressionsToParse.pop();
-
-				  	while (init instanceof Evaluatable) {
-						init = evaluate(scope, init);
-				  	}
-
-				  	while (next instanceof Evaluatable) {
-				  	  	System.out.println("Evaluating..." + next);
-						next = evaluate(scope, next);
-				  	}
-
-					//System.out.println(init + " " + next);
-				  	
-				  	Object newInit = new OperatorParser(flVarOp.operators.pop()).apply(init, next);
-
-				  	if(flVarOp.expressionsToParse.isEmpty()) {
-						return evaluate(scope, newInit);
-				  	} else {
-						FL_VarOp newOp = new FL_VarOp();
-						newOp.initVar = newInit;
-						newOp.operators = flVarOp.operators;
-						newOp.expressionsToParse = flVarOp.expressionsToParse;
-						return evaluate(scope, newOp);
-				  	}
+				if(var instanceof FL_Function) {
+					System.out.println("\"" + flVar.name + "\" evaluates to a lambda, therefore not resolving");
+					return var;
+				} else { 
+					System.out.println("Resolving: " + flVar.name + " => " + var);
+					return evaluate(scope, var);
 				}
+			} else if(expression instanceof FL_OpExpr) {
+				FL_OpExpr flVarOp = (FL_OpExpr) expression;
+
+				System.out.println("\n\nAbout to evaluate OpExpr:");
+				System.out.println(flVarOp);
+				
+			  	Object init = flVarOp.initVar;
+			  	Object next = flVarOp.expressionsToParse.pop();
+
+			  	if (init instanceof Evaluatable) {
+					init = evaluate(scope, init);
+			  	}
+
+			  	if (next instanceof Evaluatable) {
+					next = evaluate(scope, next);
+			  	}
+
+				
+				Token operatorToUse = flVarOp.operators.pop();
+
+				System.out.println(init + " " + operatorToUse.image + " " + next);
+			  	
+			  	Object newInit = new OperatorParser(operatorToUse).apply(init, next);
+
+			  	if(flVarOp.expressionsToParse.isEmpty()) {
+					return evaluate(scope, newInit);
+			  	} else {
+					FL_OpExpr newOp = new FL_OpExpr();
+					newOp.initVar = newInit;
+					newOp.operators = flVarOp.operators;
+					newOp.expressionsToParse = flVarOp.expressionsToParse;
+					return evaluate(scope, newOp);
+			  	}
 			} else if(expression instanceof FL_List) {
 				FL_List list = (FL_List) expression;
 				ListIterator<Object> iterator = list.list.listIterator(0);
@@ -545,6 +697,9 @@ public class ForteLang {
 					iterator.set(evaluate(scope, expr));
 				}
 				return list;
+			} else if(expression instanceof FL_Set) {
+			  	// TODO: Handle purity tests here!
+				return expression;
 			} else if(expression instanceof FL_IncludedSet) {
 			  	FL_IncludedSet incSet = (FL_IncludedSet) expression;
 				scope.attributes.putAll(incSet.set.attributes);
@@ -552,7 +707,12 @@ public class ForteLang {
 			}
 			throw new Exception("Not implemented yet, could not evaluate: " + expression);
 	  	} else {
-//	  	  System.out.println("Primitive result: ");
+//	  	  if(expression instanceof Double) {
+//			double d = (double) expression;
+//			if((d % 1) == 0) {
+//				return (long) d;
+//			}
+//	  	  }	
 	  	  return expression;
 	  	}
 	}
@@ -583,7 +743,7 @@ TOKEN : { < IMPURE : "impure" > }
 TOKEN : { < MATCH : "match" > }
 
 //Built-in functions
-TOKEN : { < IMPORT : "import" > }
+TOKEN : { < IMPORT : "@import" > }
 TOKEN : { < EXEC : "@exec" > }
 TOKEN : { < PRINT : "@print" > }
 TOKEN : { < HEAD : "head" > }
@@ -641,6 +801,7 @@ Token anyOperator() throws Exception : { Token op; } {
 	| op = <OP>            { return op; }
 	| op = <SET_OP>        { return op; }
 	| op = <COMPARATOR_OP> { return op; }
+	| op = <CONCAT>        { return op; }
 }
 
 FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object expression; FL_Set set; } {
@@ -667,96 +828,39 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	(
 	  attrName = <VAR_NAME>
 	  <EQUALS>
-	  attrValue = functionResult()
-	  {
-	    if(set.attributes.containsKey(attrName.image)) {
-			System.out.println("'" + attrName.image + "' already exists in the set... overriding");
-	    }
-	    set.attributes.put(attrName.image, attrValue);
-
-	    //Extra purity checks
-	    if(attrValue instanceof FL_Function) {
-			/*
-				For example, this code is invalid:
-				  print' = x -> @print "hello";
-				Because it calls the impure function @print.
-				This means that print' should be @print' to
-				maintain impurities
-			*/
-	    }
-	    
-	  }
+	  attrValue = enclosedExpression()
+	  <SEMICOLON>
+	  { set.attributes.put(attrName.image, attrValue); }
 	)*
 	<CLOSECBRACKET>
 	{
 	  set.checkPurity(setDeclaration);
-	  return set;//print(set); //TODO: Remove this
+	  return set;
 	}
-}
-
-FL_Enum enumeration() throws Exception : { FL_Enum flEnum; Token element; } {
-    { flEnum = new FL_Enum(); }
-	<ENUM_OPEN>
-	
-	element = <CAPS>
-	{ flEnum.elements.add(element.image); }
-
-	(
-	  <COMMA>
-	  element = <CAPS>
-	  { flEnum.elements.add(element.image); }
-	)*
-
-	<ENUM_CLOSE>
-	{ return flEnum; } 
-}
-
-Object functionResult() throws Exception : { Object result; } {
-	(
-	  LOOKAHEAD(2)
-	    result = lambda()
-	  | result = enclosedExpression()
-	  | result = enumeration()
-	  | result = matches()
-	)
-	<SEMICOLON>
-
-	{ return result; }
 }
 
 FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression; } {
 	{ function = new FL_Function.FL_Function_Builder(); }
-	
-	(
-	  LOOKAHEAD(3)
-	  paramName = <VAR_NAME>
-	  { function.parameters.push(paramName.image); }
-	  <FUNCTION_ARROW>
-	)+
 
 	(
-	    innerExpression = enclosedExpression()
-	  | innerExpression = matches()
+		(			paramName = <VAR_NAME>
+			<FUNCTION_ARROW>
+			innerExpression = enclosedExpression()
+		)
+		|
+		(
+			<OPENBRACKET>
+			paramName = <VAR_NAME>
+			<FUNCTION_ARROW>
+			innerExpression = enclosedExpression()
+			<CLOSEBRACKET>
+		)
 	)
-
-	//TODO: Add expressions here
-	/*
-	include { 
-	    add = a -> b -> a + b;
-	    listOfOps = [add]; 
-	    op = head listOfOps; 
-	} in op 2 3
-	*/
-
-//	(
-//	  LOOKAHEAD(2)
-//	    param = singleExpression()   { result.arguments.add(param); }
-//	  | param = enclosedExpression() { result.arguments.add(param); }
-//	)*
-
+	  
 	{
-	  function.expression = innerExpression;
-	  return function.build();
+	    function.parameters.push(paramName.image);
+	    function.expression = innerExpression;
+	    return function.build();
 	}
 }
 
@@ -787,204 +891,94 @@ double number() throws Exception : { Token value; double f; } {
 }
 
 /** Expressions */
-Object enclosedExpression() throws Exception : { Object result; } {
-	(
+Object enclosedExpression() throws Exception : { Object result; Token vName;  } {
+	LOOKAHEAD(3)
+	result = opExpression() {return result; }
+	| (
 	  <OPENBRACKET>
-	  result = expression()
+	  result = opExpression() 
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
-	| result = expression() { return result; } 
 }
 
 Object expression() throws Exception : { Object result; } {
-	  result = guards()             { return result; }  
-  	| LOOKAHEAD(2) result = variableExpression() { return result; }
-	| LOOKAHEAD(3) result = setExpression()      { return result; }
-	| result = includedSet()                     { return result; }
-	| LOOKAHEAD(3) result = listExpression()     { return result; }
-	| LOOKAHEAD(2) result = numberExpression()   { return result; }
-	| LOOKAHEAD(2) result = stringExpression()   { return result; }
-	| LOOKAHEAD(2) result = booleanExpression()  { return result; }
-	| result = builtinFunctions()                { return result; }
-	| result = singleExpression()                { return result; }
+    LOOKAHEAD(3) result = functionCall() { return result; }
+	| result = singleExpression()       { return result; }
+	
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
-	| token = <VAR_NAME> { return new FL_Var(token.image); }
+	| result = lambda() { return result; }
+//    | result = functionCall() { return result; }
+	| result = includedSet() { return result; }
 	| result = list() { return result; }
 	| result = number() { return result; }
+	| result = guards() { return result; }
 	| token = <STRING> { return parseString(token); }
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 }
 
-Object variableExpression() throws Exception : { Object result; Token varName; } {
-  	  LOOKAHEAD(2) result = lambda() { return result; }
-	  | varName = <VAR_NAME> (
-		result = functionCall(varName) { return result; }
-		| <SELECT> (
-		  <CAPS> { return null; }
-		  | <VAR_NAME> (<SELECT> (<VAR_NAME>|<CAPS>))* { return "enum selection"; }
-		)
-		| result = variableOperator(varName) { return result; }
-	  )
-}
-
-// <VARNAME> <OP> <EXPRESSION> 
-FL_VarOp variableOperator(Token varName) throws Exception : { Token operator; Object expr; FL_VarOp varop; } {
+Object opExpression() throws Exception : { FL_OpExpr result; Object expr; Token operator; boolean isOpExpr; } {
   	{
-  	  varop = new FL_VarOp();
-  	  varop.initVar = new FL_Var(varName.image);
+  	  	result = new FL_OpExpr();
+  		isOpExpr = false;
   	}
+
+  	expr = expression()
+  	{ result.initVar = expr; }
 	(
-	  LOOKAHEAD(2)
+	  LOOKAHEAD(2) //TODO: Why is this lookahead here?
 	  operator = anyOperator()
-	  { varop.operators.add(operator); }
-	  (
-//	    LOOKAHEAD(3)
-//	      expr = expression()         { varop.expressionsToParse.add(expr); }
-	    /*|*/ expr = enclosedExpression() { varop.expressionsToParse.add(expr); }
-	  )
+	  { result.operators.add(operator); }
+
+	  expr = expression()
+	  { result.expressionsToParse.add(expr); }
+
+	  { isOpExpr = true; }
 	)*
 	{
-	  return varop;
+		if(isOpExpr) {
+			return result;
+		} else {
+			return expr;
+		}
 	}
-} 
+}
 
-FL_Function_Call functionCall(Token varName) throws Exception : { FL_Function_Call result; Object param; } {
+FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Object param; Token varName; Object lambda; } {
+  	{
+		varName = null;
+		lambda = null;
+  	}
+  	(
+  	  LOOKAHEAD(2)
+  	  lambda = lambda()  	  | varName = <VAR_NAME> 
+  	)
   	{
   	   	result = new FL_Function_Call();
-		result.functionName = new FL_Var(varName.image);
+  	   	if(varName != null) { 
+			result.initFunction = new FL_Var(varName.image);
+		} else {
+			result.initFunction = lambda;
+		}
   	}
-  	
 	(
 	  LOOKAHEAD(2)
-//	    param = singleExpression()   { result.arguments.add(param); }
-	  /*| */param = enclosedExpression() { result.arguments.add(param); }
-	)+
-
+	  param = enclosedExpression()
+	  { result.arguments.add(param); }
+	)*
 	{ return result; }
 }
 
-Object stringExpression() throws Exception : { Token initString; Token nextToken; StringBuilder builder; FL_Set setExistance; } {
-	initString = <STRING>
-	{ builder = new StringBuilder(parseString(initString)); }
-	(
-	    <CONTAINS> (
-	        setExistance = set() /*TODO: |<VAR_NAME> */
-		) { return setExistance.attributes.containsKey(parseString(initString)); }
-	    |
-	    (
-	      LOOKAHEAD(2)
-	      <CONCAT>
-	      nextToken = <STRING> //TODO: This could ... just not be a String.
-	      { builder.append(parseString(nextToken)); }
-	    )* { return builder.toString(); }
-	)
-}
-
-Object setExpression() throws Exception : {
-  FL_Set initSet; Token setParam; Object accessed;
-  FL_Set secondSet; Token setOp;
-} {
-	initSet = set()
-	{ accessed = initSet; }
-	(
-	  (
-	    <SELECT>
-	    setParam = <VAR_NAME>
-	    {
-	      	if(accessed instanceof FL_Set) {
-				accessed = ((FL_Set) accessed).attributes.get(setParam.image);
-	    	} else {
-				throw new Exception ("Tried to access element " + setParam.image + " from something that's not a set" + location(setParam));
-	    	}	
-	    }
-	  )+ { return accessed; } //Set accessing
-	  | (
-	    LOOKAHEAD(2)
-	    setOp = <SET_OP>
-	    secondSet = set()
-	    {
-	      initSet = new OperatorParser(setOp).applySetObjects(initSet, secondSet);
-	    }
-	  )* { return initSet; } //"set operations"
-	)
-}
-
-double numberExpression() throws Exception : { double acc; Token op; double next; } {
-	acc = number()
-	(
-	  LOOKAHEAD(2)
-	  op = <OP>
-	  next = number()
-	  {
-		 acc = new OperatorParser(op).applyDouble(acc, next);
-	  }
-	)*
-	{ return acc; }
-}
-
-boolean booleanExpression() throws Exception : { Token first; boolean acc; Token op; Token next; } {
-  	first = <BOOLEAN>
-	{ acc = Boolean.parseBoolean(first.image); }
-	(
-	  LOOKAHEAD(2)
-	  op = <BOOLEAN_OP>
-	  next = <BOOLEAN>
-	  {
-		 acc = new OperatorParser(op).applyBoolean(acc, Boolean.parseBoolean(next.image));
-	  }
-	)*
-	{ return acc; }
-}
-
-FL_List listExpression() throws Exception : { FL_List list; Object expr; } {
-    list = list()
-    (
-      LOOKAHEAD(2)
-      //Concat
-      <CONCAT>
-      expr = enclosedExpression()
-      {
-      	if(expr instanceof FL_List) {
-			list.list.addAll((List) expr);
-      	} else {
-
-			//This should be under that FL_VarOp, except it's not a VarOp...
-			//VarOps should just be named like "DoOpLater"
-
-			/*TODO: Say expr is an instanceof FL_Guards, which evaluates to a list.
-			These need to be properly evaluated before concatenation is declared,
-			so return type should be something like a "completeable future", which
-			SHOULD return a list */
-      	  	
-      	  	//TODO: Handle list concat with new stuff
-			//throw new Exception("Tried to concat a list with unknown expression");
-      	}
-      }
-    )*
-	{ return list; }
-}
-
-Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
-	<IMPORT>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
-    | <PRINT> (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
-	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
-	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
-	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
-}
-
-FL_Matches matches() throws Exception : { FL_Matches matches; } {
-	{ matches = new FL_Matches();}
-  
-	<MATCH> <VAR_NAME> 
-	(LOOKAHEAD(2) <GUARD> enclosedExpression() <GUARD_ARROW> enclosedExpression())+
-	(LOOKAHEAD(2) <GUARD> <GUARD_ARROW> enclosedExpression())?
-
-	{ return matches; }
-}
+//Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
+//	<IMPORT>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
+//    | <PRINT> (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
+//	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
+//	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
+//	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
+//}
 
 FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard; } {
 	{ guards = new FL_Guards(); expression = null; }

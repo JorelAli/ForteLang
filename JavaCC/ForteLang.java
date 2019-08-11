@@ -428,52 +428,53 @@ public class ForteLang implements ForteLangConstants {
 
                 Object controlItem = null;
 
-                //While it's not an ApplyObj, 
-                while(!(controlItem instanceof ApplyObj)) {
+                while(!control.isEmpty()) {
                         controlItem = control.pop();
 
                         if(controlItem instanceof ApplyObj) {
-                                break;
-                        }
+                                //Begin application
+                                System.out.println();
+                                System.out.println("Applying...");
 
-                        //If it's a variable name, parse it first
-                        if(controlItem instanceof Evaluatable) {
-                                controlItem = evaluate(globalScope, controlItem);
-                                System.out.println("Returned value from control pop: " + controlItem);
-                        }
+                                //Pop two items from the top of the stack
+                                Object value = stack.pop();
+                                FL_Function lambda = (FL_Function) stack.pop();
 
-                        //Put it on the stack
-                        stack.push(controlItem);
-                        System.out.println("Adding " + controlItem + " to the top of the stack");
+                                //Bind it properly in the current environment
+                                environment.put(lambda.parameter, value);
+                                Object result = lambda.expression;
+
+                                //If the result is an abstraction, dump it
+                                if(result instanceof FL_Function) {
+                                    //Dump
+                                        System.out.println("Beginning dump");
+                                        Dump newDump = new Dump((Stack<Object>) stack.clone(), (LinkedList<Object>) control.clone(), (HashMap<String, Object>) environment.clone());
+                                        dump.push(newDump);
+
+                                        stack.clear();
+                                        control.clear();
+                                        environment.clear();
+
+                                        control.add(result);
+                                } else {
+                                        //Push result on the stack
+                                        stack.push(result);
+                                }
+                        } else {
+                                //If it's a FL_Var, evaluate it
+                                if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
+                                        controlItem = evaluate(globalScope, controlItem);
+                                }
+                                //Otherwise, don't. Push the control item on the stack
+                                stack.push(controlItem);
+                        }
                 }
 
-                //Begin application
-                System.out.println();
-                System.out.println("Applying...");
-
-                Object value = stack.pop();
-                FL_Function lambda = (FL_Function) stack.pop();
-
-                environment.put(lambda.parameter, value);
-                Object result = lambda.expression;
-
-                if(result instanceof FL_Function) {
-                        System.out.println("Beginning dump");
-                        Dump newDump = new Dump((Stack<Object>) stack.clone(), control, environment);
-                        dump.push(newDump);
-
-                        stack.clear();
-                        //TODO: Sort out control
-                        environment.clear();
-//			control = 
+                if(dump.isEmpty()) {
+                        return stack.pop();
                 } else {
-                        //TODO:
+                        //Restore from dump
                 }
-
-
-
-
-                //
                 return null;
         }
 

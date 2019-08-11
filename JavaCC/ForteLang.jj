@@ -433,65 +433,58 @@ public class ForteLang {
 
 		Object controlItem = null;
 
-		//While it's not an ApplyObj, 
-		while(!(controlItem instanceof ApplyObj)) { 
+		while(!control.isEmpty() && !dump.isEmpty()) {
+			//TODO
+		}
+
+		while(!control.isEmpty()) {
 			controlItem = control.pop();
 
 			if(controlItem instanceof ApplyObj) {
-				break;
-			}
-		  
-		  	//If it's a variable name, parse it first
-			if(controlItem instanceof Evaluatable) {
-				controlItem = evaluate(globalScope, controlItem);
-				System.out.println("Returned value from control pop: " + controlItem);
-			}
+				//Begin application
+				System.out.println();
+				System.out.println("Applying...");
 
-			//Put it on the stack
-			stack.push(controlItem);
-			System.out.println("Adding " + controlItem + " to the top of the stack");
-		}	
+				//Pop two items from the top of the stack
+				Object value = stack.pop();
+				FL_Function lambda = (FL_Function) stack.pop();
 
-		//Begin application
-		System.out.println();
-		System.out.println("Applying...");
+				//Bind it properly in the current environment
+				environment.put(lambda.parameter, value);
+				Object result = lambda.expression;
+
+				//If the result is an abstraction, dump it
+				if(result instanceof FL_Function) {
+				    //Dump
+				  	System.out.println("Beginning dump");
+					Dump newDump = new Dump((Stack<Object>) stack.clone(), (LinkedList<Object>) control.clone(), (HashMap<String, Object>) environment.clone());
+					dump.push(newDump);
 		
-		Object value = stack.pop();
-		FL_Function lambda = (FL_Function) stack.pop();
+					stack.clear();
+					control.clear();
+					environment.clear();
+		
+					control.add(result);
+				} else {
+				  	//Push result on the stack
+					stack.push(result);
+				}
+			} else {
+				//If it's a FL_Var, evaluate it
+				if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
+					controlItem = evaluate(globalScope, controlItem);
+				}
+				//Otherwise, don't. Push the control item on the stack
+				stack.push(controlItem);
+			}
+		}
 
-		environment.put(lambda.parameter, value);
-		Object result = lambda.expression;
-
-		if(result instanceof FL_Function) {
-		    //Dump
-		  	System.out.println("Beginning dump");
-			Dump newDump = new Dump((Stack<Object>) stack.clone(), (LinkedList<Object>) control.clone(), (HashMap<String, Object>) environment.clone());
-			dump.push(newDump);
-
-			stack.clear();
-			control.clear();
-			environment.clear();
-
-			control.add(result);
+		if(dump.isEmpty()) {
+			return stack.pop();
 		} else {
-			stack.push(result);
+			//Restore from dump
+			return null;
 		}
-
-		
-		while(!control.isEmpty()) {
-			Object cItem = control.pop();
-
-			if(!(cItem instanceof Evaluatable)) {
-				stack.push(cItem);
-			}
-			
-		}
-		//Control is now empty
-		
-		
-		
-	  	//
-		return null;
 	}
 
 	public static Object evaluate(FL_Set scope, Object expression) throws Exception {

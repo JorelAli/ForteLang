@@ -2,14 +2,71 @@
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
-import java.util.logging.*;
+import java.util.Map.*;
 import java.io.*;
 
 public class ForteLang implements ForteLangConstants {
 
         /** Static fields */
         static String fileName;
-        static Logger SECD = Logger.getLogger("SECD");
+        final static boolean JSON_MODE = true;
+
+        static String objToJson(Object val) {
+                if(val instanceof JSON) {
+                        return ((JSON) val).toJSON();
+                } else if (val instanceof Collection) {
+                        return listToJson((Collection<Object>) val);
+                } else if (val instanceof Map) {
+                        return mapToJson((Map) val);
+                } else {
+                        return String.valueOf(val);
+                }
+        }
+
+        static String listToJson(Collection<Object> col) {
+                StringBuilder b = new StringBuilder("[");
+                for(Object o : col) {
+                        b.append(objToJson(o));
+                        b.append(",");
+                }
+                if(!col.isEmpty())
+                        b.deleteCharAt(b.lastIndexOf(","));
+                return b.append("]").toString();
+        }
+
+        static String mapToJson(Map col) {
+                StringBuilder b = new StringBuilder("");
+                for(Object o : col.entrySet()) {
+                        Entry<Object, Object> e = (Entry<Object, Object>) o;
+                        b.append(objToJson(e.getKey()));
+                        b.append(":");
+                        b.append(objToJson(e.getValue()));
+                        b.append(",");
+                }
+                if(!col.isEmpty())
+                        b.deleteCharAt(b.lastIndexOf(","));
+                return b.toString();
+        }
+
+        static void printSECD() {print("SECD"); }
+        static void printSECD(Object o) { print("SECD", o); }
+        static void printSECD(String s, Object o) { print("SECD", s, o); }
+
+        static void printEVAL() {print("EVAL"); }
+        static void printEVAL(Object o) { print("EVAL", o); }
+        static void printEVAL(String s, Object o) { print("EVAL", s, o); }
+
+        static void print(String title) { System.out.println("[" + title + "] "); }
+        static void print(String title, Object val) { print(title, "", val); }
+        static void print(String title, String init, Object val) {
+                String text = null;
+                if(JSON_MODE) {
+                        text = objToJson(val);
+                } else {
+                        text = String.valueOf(val);
+                }
+                System.out.println("[" + title + "] " + init + " " + text);
+        }
 
 
         /** Main method */
@@ -40,11 +97,12 @@ public class ForteLang implements ForteLangConstants {
         }
 
         static interface Evaluatable { }
+        static interface JSON { public String toJSON(); }
 
         /** Class declarations */
 
         //Function declaration, e.g. x -> y -> x + y
-        static class FL_Function implements Evaluatable {
+        static class FL_Function implements Evaluatable, JSON {
                 //Basically the closure of parameters
                 Map<String, Object> functionScope;
                 String parameter;
@@ -75,10 +133,18 @@ public class ForteLang implements ForteLangConstants {
                                 return (FL_Function) currentExpression;
                         }
                 }
+
+                public String toJSON() {
+                        StringBuilder builder = new StringBuilder("{");
+                        builder.append("\u005c"function\u005c" : { ");
+                        builder.append("\u005c"param\u005c" : \u005c"" + parameter + "\u005c",");
+                        builder.append("\u005c"expression\u005c" : \u005c"" + objToJson(expression) + "\u005c" } }");
+                        return builder.toString();
+                }
         }
 
         //Function call, e.g. myFunc 2 3
-        static class FL_Function_Call implements Evaluatable {
+        static class FL_Function_Call implements Evaluatable, JSON {
                 Object initFunction;
                 LinkedList<Object> arguments;
 
@@ -87,9 +153,17 @@ public class ForteLang implements ForteLangConstants {
                 }
 
                 @Override public String toString() { return "FL_Function_Call(" + initFunction + ") " + arguments; }
+
+                public String toJSON() {
+                        StringBuilder builder = new StringBuilder("{");
+                        builder.append("\u005c"function call\u005c" : { ");
+                        builder.append("\u005c"initFunction\u005c" : \u005c"" + objToJson(initFunction) + "\u005c",");
+                        builder.append("\u005c"arguments\u005c" : " + objToJson(arguments) + " } }");
+                        return builder.toString();
+                }
         }
 
-        static class FL_Set implements Evaluatable {
+        static class FL_Set implements Evaluatable, JSON {
                 boolean impure;
                 LinkedHashMap<String, Object> attributes;
 
@@ -158,6 +232,14 @@ public class ForteLang implements ForteLangConstants {
                 @Override public String toString() {
                   return "FL_Set[impure=" + impure + ", attrs=" + attributes + "]";
                 }
+
+                public String toJSON() {
+                        StringBuilder builder = new StringBuilder("{");
+                        builder.append("\u005c"set\u005c" : { ");
+                        builder.append("\u005c"impure\u005c" : " + impure + ",");
+                        builder.append("\u005c"attributes\u005c" : " + objToJson(attributes) + " } }");
+                        return builder.toString();
+                }
         }
 
         /** Helper functions */
@@ -172,12 +254,16 @@ public class ForteLang implements ForteLangConstants {
 
         /** Other declared objects */
 
-        static class FL_List implements Evaluatable {
+        static class FL_List implements Evaluatable, JSON {
                 LinkedList<Object> list;
                 public FL_List() { list = new LinkedList<Object>(); }
 
                 @Override public String toString() {
                   return "FL_List" + list;
+                }
+
+                public String toJSON() {
+                        return objToJson(list);
                 }
         }
 
@@ -201,7 +287,7 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        static class FL_Var implements Evaluatable {
+        static class FL_Var implements Evaluatable, JSON {
                 String name;
 
                 public FL_Var(String name) {
@@ -210,6 +296,10 @@ public class ForteLang implements ForteLangConstants {
 
                 @Override public String toString() {
                   return "FL_Var[name=" + name + "]";
+                }
+
+                public String toJSON() {
+                        return "\u005c"var:\u005c"" + name;
                 }
         }
 
@@ -406,9 +496,6 @@ public class ForteLang implements ForteLangConstants {
         //Placeholder for "applying" an object
         static class ApplyObj { @Override public String toString() { return "ap"; }}
 
-        static void printSECD() { System.out.println("[SECD] "); }
-        static void printSECD(Object o) { System.out.println("[SECD] " + o); }
-
         public static Object secd(FL_Function_Call functionCall, FL_Set globalScope) throws Exception {
                 Stack<Object> stack = new Stack<Object>();
                 HashMap<String, Object> environment = new HashMap<String, Object>();
@@ -422,7 +509,7 @@ public class ForteLang implements ForteLangConstants {
                         control.add(object);
                         control.add(new ApplyObj());
                 }
-                printSECD("Initial control: " + control);
+                printSECD("Initial control: ", control);
 
                 Object controlItem = null;
 
@@ -433,8 +520,8 @@ public class ForteLang implements ForteLangConstants {
 
                                 if(controlItem instanceof ApplyObj) {
                                         //Begin application
-                                        SECD.info("");
-                                        SECD.info("Applying...");
+                                        printSECD();
+                                        printSECD("Applying...");
 
                                         //Pop two items from the top of the stack
                                         Object value = stack.pop();
@@ -454,7 +541,7 @@ public class ForteLang implements ForteLangConstants {
                                         environment.put(lambda.parameter, value);
                                         Object result = lambda.expression;
 
-                                        printSECD("Added complete. Result: " + result);
+                                        printSECD("Added complete. Result: ", result);
 
                                         //If the result is an abstraction, dump it
                                         if(result instanceof FL_Function) {
@@ -483,7 +570,7 @@ public class ForteLang implements ForteLangConstants {
                         }
 
                         if(!dump.isEmpty()) {
-                                SECD.info("Restoring from dump");
+                                printSECD("Restoring from dump");
                                 Dump restoredDump = dump.pop();
 
                                 while(!stack.isEmpty()) {
@@ -503,14 +590,11 @@ public class ForteLang implements ForteLangConstants {
                 return evaluate(newEnv, stack.pop());
         }
 
-        static void printEVAL() { System.out.println("[EVAL] "); }
-        static void printEVAL(Object o) { System.out.println("[EVAL] " + o); }
-
         public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
                 scope = scope.clone();
 //		System.out.println(scope);
                 if(expression instanceof Evaluatable) {
-                        printEVAL("Evaluating " + expression);
+                        printEVAL("Evaluating ", expression);
                         //System.out.println(expression.getClass().getName());
 //	  	  	System.out.println(expression);
 
@@ -579,7 +663,7 @@ public class ForteLang implements ForteLangConstants {
                                                 if(function instanceof FL_Function_Call) {
                                                         call.initFunction = ((FL_Function_Call) function).initFunction;
                                                 } else {
-                                                        printEVAL("Reading from closure... " + function.getClass().getName());
+                                                        printEVAL("Reading from closure... ", function.getClass().getName());
                                                 }
                                         }
                                 }
@@ -611,7 +695,7 @@ public class ForteLang implements ForteLangConstants {
 //					System.out.println(function);
 //					return evaluate(scope, function);
                                 } else {
-                                        printEVAL("Avoiding the SECD machine, because of type " + call.initFunction.getClass().getName());
+                                        printEVAL("Avoiding the SECD machine, because of type ", call.initFunction.getClass().getName());
                                         if(call.initFunction instanceof Evaluatable) {
                                                 return evaluate(scope, call.initFunction);
                                         } else {
@@ -648,10 +732,11 @@ public class ForteLang implements ForteLangConstants {
                                         printEVAL("\u005c"" + flVar.name + "\u005c" evaluates to a lambda, therefore not resolving");
                                         return var;
                                 } else {
-                                        printEVAL("Resolving: " + flVar.name + " => " + var);
+                                        printEVAL("Resolving: " + flVar.name + " => ", var);
                                         return evaluate(scope, var);
                                 }
                         } else if(expression instanceof FL_OpExpr) {
+                                //TODO: Operator precedence occurs HERE
                                 FL_OpExpr flVarOp = (FL_OpExpr) expression;
 
                                 printEVAL("\u005cn\u005cnAbout to evaluate OpExpr:");
@@ -674,7 +759,7 @@ public class ForteLang implements ForteLangConstants {
 
                                 Object newInit = new OperatorParser(operatorToUse).apply(init, next);
 
-                                printEVAL("OpExpr eval result: " + newInit);
+                                printEVAL("OpExpr eval result: ", newInit);
 
                                 if(flVarOp.expressionsToParse.isEmpty()) {
                                         return evaluate(scope, newInit);
@@ -1013,8 +1098,7 @@ public class ForteLang implements ForteLangConstants {
       } else {
         break label_3;
       }
-      //TODO: Why is this lookahead here?
-                operator = anyOperator();
+      operator = anyOperator();
             result.operators.add(operator);
       expr = expression();
             result.expressionsToParse.add(expr);
@@ -1144,6 +1228,22 @@ public class ForteLang implements ForteLangConstants {
     try { return !jj_3_7(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(6, xla); }
+  }
+
+  private boolean jj_3R_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_19()) {
+    jj_scanpos = xsp;
+    if (jj_3R_20()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_3R_10()) return true;
+    return false;
   }
 
   private boolean jj_3R_38() {
@@ -1444,22 +1544,6 @@ public class ForteLang implements ForteLangConstants {
     if (jj_scan_token(VAR_NAME)) return true;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
     if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_19()) {
-    jj_scanpos = xsp;
-    if (jj_3R_20()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_3R_10()) return true;
     return false;
   }
 

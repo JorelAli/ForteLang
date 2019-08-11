@@ -15,22 +15,28 @@
 	"repository": {
 		"keywords": {
 			"patterns": [{
-				"name": "keyword.control.fortelang",
-				"match": "->>|->|\\|>|\\|"
+				"name": "constant.character.fortelang",
+				"match": "(\\|\\|)|(&&)"
 			}, {
-				"name": "invalid.illegal",
+				"name": "keyword.control.fortelang",
+				"match": "->>|->|\\|>|\\||\\b(match)\\b"
+			}, {
+				"name": "constant.character.fortelang",
+				"match": "==|\\+|-|\\*|%|/|<|>|(<=)|(>=)"
+			}, {
+				"name": "invalid.illegal.fortelang",
 				"match": "impure|@[a-zA-Z0-9'_]+"
 			}, {
 				"name": "storage.type.fortelang",
-				"match": "\\b(include|in|match)\\b"
+				"match": "\\b(include|in)\\b"
 			}, {
-				"name": "entity.name.function",
+				"name": "entity.name.function.fortelang",
 				"match": "[a-zA-Z0-9'_]+(?=\\s+\\=)"
 			}, {
-				"name": "constant.language",
+				"name": "constant.language.fortelang",
 				"match": "true|false"
 			}, {
-				"name": "constant.numeric",
+				"name": "constant.numeric.fortelang",
 				"match": "\\b([0-9]+(\\.[0-9]+)*)\\b"
 			}]
 		},
@@ -48,12 +54,12 @@
 		"comments": {
 			"patterns": [
 				{
-					"name": "comment.block.blah",
+					"name": "comment.block.fortelang",
 					"begin": "###",
 					"end": "###"
 				},
 				{
-					"name": "comment.line.number-sign",
+					"name": "comment.line.number-sign.fortelang",
 					"begin": "#",
 					"end": "\n"
 				}

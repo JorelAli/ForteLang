@@ -570,27 +570,24 @@ public class ForteLang {
 				System.out.println();
 				FL_Function_Call call = (FL_Function_Call) expression;
 
-				if(call.initFunction instanceof FL_Function) {
-					//Then it's a lambda.
-					System.out.println("PARSE LAMBDA HERE");
-				} else {
-				  	// It's a function name
+				if(!(call.initFunction instanceof FL_Function)) {
+				  	// It's a function name, which needs to be resolved
 				  	FL_Var functionName = (FL_Var) call.initFunction; 
 					Object function = scope.attributes.get(functionName.name);
 
 					if(function == null) {
 						throw new Exception("Function \"" + functionName.name + "\" has not been declared!");
 					} else {
-//						call.initFunction = function;
 						if(function instanceof FL_Function_Call) {
 							call.initFunction = ((FL_Function_Call) function).initFunction;
 						} else {
-							System.out.println("PANIC");
+							System.out.println("Reading from closure... " + function.getClass().getName());
 						}
 					}
 				}
 				
 				if(call.arguments.isEmpty()) {
+//				  	System.out.println("Evaluating because arguments are empty...");
 					return evaluate(scope, call.initFunction);
 				}
 

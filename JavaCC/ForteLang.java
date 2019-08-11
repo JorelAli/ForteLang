@@ -565,27 +565,24 @@ public class ForteLang implements ForteLangConstants {
                                 System.out.println();
                                 FL_Function_Call call = (FL_Function_Call) expression;
 
-                                if(call.initFunction instanceof FL_Function) {
-                                        //Then it's a lambda.
-                                        System.out.println("PARSE LAMBDA HERE");
-                                } else {
-                                        // It's a function name
+                                if(!(call.initFunction instanceof FL_Function)) {
+                                        // It's a function name, which needs to be resolved
                                         FL_Var functionName = (FL_Var) call.initFunction;
                                         Object function = scope.attributes.get(functionName.name);
 
                                         if(function == null) {
                                                 throw new Exception("Function \u005c"" + functionName.name + "\u005c" has not been declared!");
                                         } else {
-//						call.initFunction = function;
                                                 if(function instanceof FL_Function_Call) {
                                                         call.initFunction = ((FL_Function_Call) function).initFunction;
                                                 } else {
-                                                        System.out.println("PANIC");
+                                                        System.out.println("Reading from closure... " + function.getClass().getName());
                                                 }
                                         }
                                 }
 
                                 if(call.arguments.isEmpty()) {
+//				  	System.out.println("Evaluating because arguments are empty...");
                                         return evaluate(scope, call.initFunction);
                                 }
 
@@ -1143,6 +1140,11 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(6, xla); }
   }
 
+  private boolean jj_3_1() {
+    if (jj_scan_token(CLOSEBRACKET)) return true;
+    return false;
+  }
+
   private boolean jj_3R_8() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1448,11 +1450,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3_6() {
     if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_scan_token(CLOSEBRACKET)) return true;
     return false;
   }
 

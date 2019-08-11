@@ -78,14 +78,14 @@ public class ForteLang implements ForteLangConstants {
 
         //Function call, e.g. myFunc 2 3
         static class FL_Function_Call implements Evaluatable {
-                FL_Var functionName;
+                Object initFunction;
                 LinkedList<Object> arguments;
 
                 public FL_Function_Call() {
                         arguments = new LinkedList<Object>();
                 }
 
-                @Override public String toString() { return "FL_Function_Call(" + functionName + ") " + arguments; }
+                @Override public String toString() { return "FL_Function_Call(" + initFunction + ") " + arguments; }
         }
 
         static class FL_Set implements Evaluatable {
@@ -422,7 +422,7 @@ public class ForteLang implements ForteLangConstants {
                 Stack<Dump> dump = new Stack<Dump>();
 
                 //Convert to reverse polish
-                control.add(functionCall.functionName);
+                control.add(functionCall.initFunction);
                 for(Object object : functionCall.arguments) {
                         control.add(object);
                         control.add(new ApplyObj());
@@ -553,19 +553,28 @@ public class ForteLang implements ForteLangConstants {
 //			} else
                         if(expression instanceof FL_Function_Call) {
                                 FL_Function_Call call = (FL_Function_Call) expression;
-                                Object function = scope.attributes.get(call.functionName.name);
 
-                                if(function == null) {
-                                        throw new Exception("Function \u005c"" + call.functionName.name + "\u005c" has not been declared!");
+                                if(call.initFunction instanceof FL_Function) {
+                                        //Then it's a lambda.
+                                } else {
+                                        // It's a function name
+                                        FL_Var functionName = (FL_Var) call.initFunction;
+                                        Object function = scope.attributes.get(functionName.name);
+
+                                        if(function == null) {
+                                                throw new Exception("Function \u005c"" + functionName.name + "\u005c" has not been declared!");
+                                        } else {
+                                                call.initFunction = function;
+                                        }
                                 }
 
                                 if(call.arguments.isEmpty()) {
-                                        return evaluate(scope, function);
+                                        return evaluate(scope, call.initFunction);
                                 }
 
-                                if(function instanceof FL_Function) {
+                                if(call.initFunction instanceof FL_Function) {
                                         System.out.println("About to evaluate the following: ");
-                                        System.out.println(function);
+                                        System.out.println(call.initFunction);
 
                                         System.out.println();
                                         System.out.println("Starting SECD machine");
@@ -583,10 +592,10 @@ public class ForteLang implements ForteLangConstants {
 //					System.out.println(function);
 //					return evaluate(scope, function);
                                 } else {
-                                        if(function instanceof Evaluatable) {
-                                                return evaluate(scope, function);
+                                        if(call.initFunction instanceof Evaluatable) {
+                                                return evaluate(scope, call.initFunction);
                                         } else {
-                                                return function;
+                                                return call.initFunction;
                                         }
                                 }
 
@@ -905,7 +914,7 @@ public class ForteLang implements ForteLangConstants {
       break;
     case VAR_NAME:
       result = functionCall();
-                               {if (true) return result;}
+                                {if (true) return result;}
       break;
     case INCLUDE:
       result = includedSet();
@@ -972,7 +981,7 @@ public class ForteLang implements ForteLangConstants {
                                                      FL_Function_Call result; Object param; Token varName;
     varName = jj_consume_token(VAR_NAME);
                 result = new FL_Function_Call();
-                result.functionName = new FL_Var(varName.image);
+                result.initFunction = new FL_Var(varName.image);
     label_4:
     while (true) {
       if (jj_2_5(2)) {
@@ -1059,22 +1068,6 @@ public class ForteLang implements ForteLangConstants {
     try { return !jj_3_5(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(4, xla); }
-  }
-
-  private boolean jj_3R_39() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_36() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
   }
 
   private boolean jj_3R_32() {
@@ -1242,13 +1235,13 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_22() {
-    if (jj_scan_token(OP)) return true;
+  private boolean jj_3R_14() {
+    if (jj_3R_28()) return true;
     return false;
   }
 
-  private boolean jj_3R_14() {
-    if (jj_3R_28()) return true;
+  private boolean jj_3R_22() {
+    if (jj_scan_token(OP)) return true;
     return false;
   }
 
@@ -1340,6 +1333,22 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3_1() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_39() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_36() {
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    if (jj_scan_token(CLOSESBRACKET)) return true;
     return false;
   }
 

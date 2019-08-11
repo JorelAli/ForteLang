@@ -83,14 +83,14 @@ public class ForteLang {
 
 	//Function call, e.g. myFunc 2 3
 	static class FL_Function_Call implements Evaluatable {
-		FL_Var functionName;
+		Object initFunction;
 		LinkedList<Object> arguments;
 
 		public FL_Function_Call() {
 			arguments = new LinkedList<Object>();
 		}
 
-		@Override public String toString() { return "FL_Function_Call(" + functionName + ") " + arguments; }
+		@Override public String toString() { return "FL_Function_Call(" + initFunction + ") " + arguments; }
 	}
 
 	static class FL_Set implements Evaluatable {
@@ -427,7 +427,7 @@ public class ForteLang {
 	  	Stack<Dump> dump = new Stack<Dump>();
 
 	  	//Convert to reverse polish
-		control.add(functionCall.functionName);
+		control.add(functionCall.initFunction);
 		for(Object object : functionCall.arguments) {
 			control.add(object);
 			control.add(new ApplyObj());
@@ -558,19 +558,28 @@ public class ForteLang {
 //			} else
 			if(expression instanceof FL_Function_Call) {
 				FL_Function_Call call = (FL_Function_Call) expression;
-				Object function = scope.attributes.get(call.functionName.name);
 
-				if(function == null) {
-					throw new Exception("Function \"" + call.functionName.name + "\" has not been declared!");
-				}
+				if(call.initFunction instanceof FL_Function) {
+					//Then it's a lambda.
+				} else {
+				  	// It's a function name
+				  	FL_Var functionName = (FL_Var) call.initFunction; 
+					Object function = scope.attributes.get(functionName.name);
 
-				if(call.arguments.isEmpty()) {
-					return evaluate(scope, function);
+					if(function == null) {
+						throw new Exception("Function \"" + functionName.name + "\" has not been declared!");
+					} else {
+						call.initFunction = function;
+					}
 				}
 				
-				if(function instanceof FL_Function) {
+				if(call.arguments.isEmpty()) {
+					return evaluate(scope, call.initFunction);
+				}
+				
+				if(call.initFunction instanceof FL_Function) {
 					System.out.println("About to evaluate the following: ");
-					System.out.println(function);
+					System.out.println(call.initFunction);
 
 					System.out.println();
 					System.out.println("Starting SECD machine");
@@ -588,10 +597,10 @@ public class ForteLang {
 //					System.out.println(function);
 //					return evaluate(scope, function);
 				} else {
-				  	if(function instanceof Evaluatable) {
-						return evaluate(scope, function);
+				  	if(call.initFunction instanceof Evaluatable) {
+						return evaluate(scope, call.initFunction);
 				  	} else {
-						return function;
+						return call.initFunction;
 				  	}
 				}
 
@@ -905,7 +914,7 @@ FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Ob
   	varName = <VAR_NAME>
   	{
   	   	result = new FL_Function_Call();
-		result.functionName = new FL_Var(varName.image);
+		result.initFunction = new FL_Var(varName.image);
   	}
 	(
 	  LOOKAHEAD(2)

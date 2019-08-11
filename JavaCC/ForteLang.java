@@ -92,7 +92,10 @@ public class ForteLang implements ForteLangConstants {
                 boolean impure;
                 LinkedHashMap<String, Object> attributes;
 
-                public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
+                public FL_Set() {
+                  attributes = new LinkedHashMap<String, Object>();
+                  impure = false;
+                }
 
                 public FL_Set clone() {
                         FL_Set newSet = new FL_Set();
@@ -432,6 +435,7 @@ public class ForteLang implements ForteLangConstants {
                         while(!control.isEmpty()) {
                                 controlItem = control.pop();
 
+
                                 if(controlItem instanceof ApplyObj) {
                                         //Begin application
                                         System.out.println();
@@ -472,15 +476,27 @@ public class ForteLang implements ForteLangConstants {
                         }
 
                         if(!dump.isEmpty()) {
-                          System.out.println("Restore from dump");
-                                return null;
+                                System.out.println("Restoring from dump");
+                                Dump restoredDump = dump.pop();
+
+                                while(!stack.isEmpty()) {
+                                        restoredDump.stack.push(stack.pop());
+                                }
+
+                                stack = restoredDump.stack;
+                                control = restoredDump.control;
+                                environment.putAll(restoredDump.environment);
+                                System.out.println("Dump restored");
                         }
 
-                } while(!control.isEmpty() && !dump.isEmpty());
-                return stack.pop();
+                } while(!control.isEmpty() || !dump.isEmpty());
+
+                FL_Set newEnv = new FL_Set();
+                newEnv.attributes.putAll(environment);
+                return evaluate(newEnv, stack.pop());
         }
 
-        public static Object evaluate(FL_Set scope, Object expression) throws Exception {
+        public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
                 scope = scope.clone();
                 //System.out.println(scope);
                 if(expression instanceof Evaluatable) {
@@ -1045,53 +1061,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3R_12() {
-    if (jj_3R_26()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_11() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_3R_26()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_6() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_11()) {
-    jj_scanpos = xsp;
-    if (jj_3R_12()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_38() {
-    if (jj_scan_token(FLOATING_POINT_NUMBER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_37() {
-    if (jj_scan_token(NUMBER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_31() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_37()) {
-    jj_scanpos = xsp;
-    if (jj_3R_38()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   private boolean jj_3R_39() {
     if (jj_scan_token(GUARD)) return true;
     if (jj_3R_6()) return true;
@@ -1324,6 +1293,53 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3_2() {
     if (jj_3R_7()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_12() {
+    if (jj_3R_26()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_3R_26()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_6() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_11()) {
+    jj_scanpos = xsp;
+    if (jj_3R_12()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_38() {
+    if (jj_scan_token(FLOATING_POINT_NUMBER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_37() {
+    if (jj_scan_token(NUMBER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_31() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_37()) {
+    jj_scanpos = xsp;
+    if (jj_3R_38()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_6()) return true;
     return false;
   }
 

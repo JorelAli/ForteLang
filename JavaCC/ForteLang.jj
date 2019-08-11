@@ -97,7 +97,10 @@ public class ForteLang {
 		boolean impure;
 		LinkedHashMap<String, Object> attributes;
 
-		public FL_Set() { attributes = new LinkedHashMap<String, Object>(); }
+		public FL_Set() {
+		  attributes = new LinkedHashMap<String, Object>();
+		  impure = false;
+		}
 
 		public FL_Set clone() {
 			FL_Set newSet = new FL_Set();
@@ -433,9 +436,10 @@ public class ForteLang {
 
 		Object controlItem = null;
 
-		do { 
+		do {
 			while(!control.isEmpty()) {
 				controlItem = control.pop();
+
 	
 				if(controlItem instanceof ApplyObj) {
 					//Begin application
@@ -477,15 +481,27 @@ public class ForteLang {
 			}
 
 			if(!dump.isEmpty()) {
-			  System.out.println("Restore from dump");
-				return null;
+			  	System.out.println("Restoring from dump");
+			  	Dump restoredDump = dump.pop();
+
+			  	while(!stack.isEmpty()) {
+					restoredDump.stack.push(stack.pop());
+			  	}
+
+			  	stack = restoredDump.stack;
+			  	control = restoredDump.control;
+			  	environment.putAll(restoredDump.environment);
+			  	System.out.println("Dump restored");
 			}
 
-		} while(!control.isEmpty() && !dump.isEmpty());
-		return stack.pop();
+		} while(!control.isEmpty() || !dump.isEmpty());
+
+		FL_Set newEnv = new FL_Set();
+		newEnv.attributes.putAll(environment);
+		return evaluate(newEnv, stack.pop());
 	}
 
-	public static Object evaluate(FL_Set scope, Object expression) throws Exception {
+	public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
 	  	scope = scope.clone();
 	  	//System.out.println(scope);
 	  	if(expression instanceof Evaluatable) {

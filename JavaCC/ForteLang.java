@@ -443,7 +443,17 @@ public class ForteLang implements ForteLangConstants {
 
                                         //Pop two items from the top of the stack
                                         Object value = stack.pop();
-                                        FL_Function lambda = (FL_Function) stack.pop();
+
+                                        Object potentialFunction = stack.pop();
+
+                                        FL_Function lambda = null;
+                                        if(potentialFunction instanceof FL_Function) {
+                                                lambda = (FL_Function) potentialFunction;
+                                        } else if(potentialFunction instanceof FL_Function_Call) {
+                                                FL_Function_Call lambdaCall = (FL_Function_Call) potentialFunction;
+                                                lambda = (FL_Function) lambdaCall.initFunction;
+                                        }
+
 
                                         //Bind it properly in the current environment
                                         environment.put(lambda.parameter, value);
@@ -498,7 +508,7 @@ public class ForteLang implements ForteLangConstants {
 
         public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
                 scope = scope.clone();
-                //System.out.println(scope);
+//		System.out.println(scope);
                 if(expression instanceof Evaluatable) {
                         System.out.println("Evaluating " + expression);
                         //System.out.println(expression.getClass().getName());
@@ -552,6 +562,7 @@ public class ForteLang implements ForteLangConstants {
 //				return function;
 //			} else
                         if(expression instanceof FL_Function_Call) {
+                                System.out.println();
                                 FL_Function_Call call = (FL_Function_Call) expression;
 
                                 if(call.initFunction instanceof FL_Function) {
@@ -565,13 +576,20 @@ public class ForteLang implements ForteLangConstants {
                                         if(function == null) {
                                                 throw new Exception("Function \u005c"" + functionName.name + "\u005c" has not been declared!");
                                         } else {
-                                                call.initFunction = function;
+//						call.initFunction = function;
+                                                if(function instanceof FL_Function_Call) {
+                                                        call.initFunction = ((FL_Function_Call) function).initFunction;
+                                                } else {
+                                                        System.out.println("PANIC");
+                                                }
                                         }
                                 }
 
                                 if(call.arguments.isEmpty()) {
                                         return evaluate(scope, call.initFunction);
                                 }
+
+
 
                                 if(call.initFunction instanceof FL_Function) {
                                         System.out.println("About to evaluate the following: ");
@@ -593,6 +611,7 @@ public class ForteLang implements ForteLangConstants {
 //					System.out.println(function);
 //					return evaluate(scope, function);
                                 } else {
+                                        System.out.println("Avoiding the SECD machine, because of type " + call.initFunction.getClass().getName());
                                         if(call.initFunction instanceof Evaluatable) {
                                                 return evaluate(scope, call.initFunction);
                                         } else {
@@ -1124,27 +1143,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(6, xla); }
   }
 
-  private boolean jj_3R_30() {
-    if (jj_scan_token(OPENSBRACKET)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_38()) {
-    jj_scanpos = xsp;
-    if (jj_3R_39()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_scan_token(CLOSEBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3R_8() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1434,6 +1432,27 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3_7() {
     if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    if (jj_scan_token(OPENSBRACKET)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_38()) {
+    jj_scanpos = xsp;
+    if (jj_3R_39()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(CLOSEBRACKET)) return true;
     return false;
   }
 

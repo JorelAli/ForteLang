@@ -772,6 +772,7 @@ TOKEN : { < CLOSECBRACKET : "}" > }
 //Functions
 TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
 TOKEN : { < FUNCTION_ARROW : "->" > }
+TOKEN : { < GUARD_START : "|>" > }
 TOKEN : { < GUARD : "|" > }
 TOKEN : { < GUARD_ARROW : "->>" > }
 
@@ -787,6 +788,11 @@ Object input() throws Exception : { Object expression; Object result; } {
   expression = enclosedExpression()
   <EOF>
   {
+
+	System.out.println();
+	System.out.println("=== Parsing complete ===");
+	System.out.println();
+    
     if(expression instanceof FL_IncludedSet) {
     	FL_IncludedSet flIS = (FL_IncludedSet) expression;
     	return evaluate(flIS.set, flIS.expression);
@@ -911,7 +917,6 @@ Object expression() throws Exception : { Object result; } {
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
 	| result = lambda() { return result; }
-//    | result = functionCall() { return result; }
 	| result = includedSet() { return result; }
 	| result = list() { return result; }
 	| result = number() { return result; }
@@ -982,22 +987,20 @@ FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Ob
 
 FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard; } {
 	{ guards = new FL_Guards(); expression = null; }
-  
+  	<GUARD_START>
 	(
+	  	LOOKAHEAD(2)
 	  	firstGuard = <GUARD>
 		predicate = enclosedExpression()
-		expression = guardArrow()
+		<GUARD_ARROW>
+		expression = enclosedExpression()
 		{ guards.statements.put(predicate, expression); }
 	)+
-	finalExpression = guardArrow()
+	<GUARD>
+	<GUARD_ARROW>
+	finalExpression = enclosedExpression()
 	{
 	  guards.finalStatement = finalExpression;
 	  return guards;
 	}
-}
-
-Object guardArrow() throws Exception : {Object expression; } {
-	<GUARD_ARROW>
-	expression = enclosedExpression()
-	{ return expression; }
 }

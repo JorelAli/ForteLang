@@ -9,11 +9,13 @@ include {
     someOtherList = [3];
     emptyList     = [];
 
-    ### Example with guards
-    max = x -> y -> 
-        | x > y ->> x
-        | y > x ->> s
-        | ->> y;###
+    #Example with guards
+    maxOr0 = x -> y -> |>
+        | x > y ->> x 
+        | x < y ->> y 
+        | ->> 0;
+
+    inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
 
     # Set operations
     union =      set1 -> set2 -> set1 /+ set2;
@@ -31,13 +33,17 @@ include {
 
     head' = list -> list ++ [2, 3, (2 + 2)];
 
+    nestedList = [2, [3]];
+
     const = 4;
 
     p = x -> x;
 
     a = lambda -> lambda 2 3;
         
-} in union {} {}
+} in maxOr0 2 3
+
+#union {} {}
 
 #(x -> x -> x) 2 3
 

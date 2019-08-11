@@ -431,10 +431,16 @@ public class ForteLang {
 		}
 		System.out.println("Initial control: " + control);
 
-		Object controlItem = control.pop();
+		Object controlItem = null;
 
 		//While it's not an ApplyObj, 
-		while(!(controlItem instanceof ApplyObj)) {
+		while(!(controlItem instanceof ApplyObj)) { 
+			controlItem = control.pop();
+
+			if(controlItem instanceof ApplyObj) {
+				break;
+			}
+		  
 		  	//If it's a variable name, parse it first
 			if(controlItem instanceof Evaluatable) {
 				controlItem = evaluate(globalScope, controlItem);
@@ -443,17 +449,28 @@ public class ForteLang {
 
 			//Put it on the stack
 			stack.push(controlItem);
-		}
+			System.out.println("Adding " + controlItem + " to the top of the stack");
+		}	
 
 		//Begin application
+		System.out.println();
+		System.out.println("Applying...");
+		
 		Object value = stack.pop();
-		Object lambda = stack.pop();
+		FL_Function lambda = (FL_Function) stack.pop();
 
 		environment.put(lambda.parameter, value);
 		Object result = lambda.expression;
 
 		if(result instanceof FL_Function) {
-			//Dump
+		  	System.out.println("Beginning dump");
+			Dump newDump = new Dump(stack, control, environment);
+			dump.push(newDump);
+
+			stack.clear();
+			//TODO: Sort out control
+			environment.clear();
+			stack.push(result);
 		} else {
 			//TODO:
 		}
@@ -518,8 +535,7 @@ public class ForteLang {
 
 			if(expression instanceof FL_Function) {
 			  	FL_Function function = (FL_Function) expression;
-			  	//System.out.println("Lambda found: " + expression);
-				return "Some lambda, " + function;
+				return function;
 			} else if(expression instanceof FL_Function_Call) {
 				FL_Function_Call call = (FL_Function_Call) expression;
 				Object function = scope.attributes.get(call.functionName.name);

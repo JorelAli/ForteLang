@@ -868,12 +868,13 @@ Object enclosedExpression() throws Exception : { Object result; Token vName;  } 
 }
 
 Object expression() throws Exception : { Object result; } {
- 	  LOOKAHEAD(2) result = lambda()                 { return result; }  
-	| LOOKAHEAD(2) result = singleExpression()       { return result; }
+ 	  /*LOOKAHEAD(2) result = lambda()                 { return result; }  
+	| LOOKAHEAD(2) */result = singleExpression()       { return result; }
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
+	| LOOKAHEAD(3) result = lambda() { return result; }
     | result = functionCall() { return result; }
 	| result = includedSet() { return result; }
 	| result = list() { return result; }
@@ -910,11 +911,22 @@ Object opExpression() throws Exception : { FL_OpExpr result; Object expr; Token 
 	}
 }
 
-FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Object param; Token varName; } {
-  	varName = <VAR_NAME>
+FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Object param; Token varName; Object lambda; } {
+  	{
+		varName = null;
+		lambda = null;
+  	}
+  	(
+  	  LOOKAHEAD(2)  	  varName = <VAR_NAME>
+  	  | lambda = lambda()
+  	)
   	{
   	   	result = new FL_Function_Call();
-		result.initFunction = new FL_Var(varName.image);
+  	   	if(varName != null) { 
+			result.initFunction = new FL_Var(varName.image);
+		} else {
+			result.initFunction = lambda;
+		}
   	}
 	(
 	  LOOKAHEAD(2)

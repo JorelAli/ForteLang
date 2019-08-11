@@ -37,7 +37,10 @@ include {
 
     a = lambda -> lambda 2 3;
         
-} in a add
+} in add (
+    2) 3
+
+#a add
 #add (p 2) 3
 #head' [] []
 #head'

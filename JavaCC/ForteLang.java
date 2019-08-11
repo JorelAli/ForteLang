@@ -557,10 +557,13 @@ public class ForteLang implements ForteLangConstants {
 	  	  	  
 			} else*/
 
-//			if(expression instanceof FL_Function) {
-//			  	FL_Function function = (FL_Function) expression;
-//				return function;
-//			} else
+                        if(expression instanceof FL_Function) {
+                                FL_Function function = (FL_Function) expression;
+                                FL_Function_Call newFunctionCall = new FL_Function_Call();
+                                newFunctionCall.initFunction = function;
+
+                                return newFunctionCall;
+                        } else
                         if(expression instanceof FL_Function_Call) {
                                 System.out.println();
                                 FL_Function_Call call = (FL_Function_Call) expression;
@@ -1140,11 +1143,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(6, xla); }
   }
 
-  private boolean jj_3_1() {
-    if (jj_scan_token(CLOSEBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3R_8() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1450,6 +1448,11 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3_6() {
     if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(CLOSEBRACKET)) return true;
     return false;
   }
 

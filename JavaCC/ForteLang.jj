@@ -562,10 +562,13 @@ public class ForteLang {
 	  	  	  
 			} else*/
 
-//			if(expression instanceof FL_Function) {
-//			  	FL_Function function = (FL_Function) expression;
-//				return function;
-//			} else
+			if(expression instanceof FL_Function) {
+			  	FL_Function function = (FL_Function) expression;
+			  	FL_Function_Call newFunctionCall = new FL_Function_Call();
+			  	newFunctionCall.initFunction = function;
+			  	
+				return newFunctionCall;
+			} else
 			if(expression instanceof FL_Function_Call) {
 				System.out.println();
 				FL_Function_Call call = (FL_Function_Call) expression;

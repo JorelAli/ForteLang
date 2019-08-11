@@ -37,7 +37,8 @@ include {
 
     a = lambda -> lambda 2 3;
         
-} in add ((x -> x) 2) 3
+} in# a add 
+add ((x -> x) 2) 3
 
 #add 2 3 #(x -> x) 2
 

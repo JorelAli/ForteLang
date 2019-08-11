@@ -9,7 +9,7 @@ public class ForteLang implements ForteLangConstants {
 
         /** Static fields */
         static String fileName;
-        final static boolean JSON_MODE = true;
+        final static boolean JSON_MODE = false;
 
         static String objToJson(Object val) {
                 if(val instanceof JSON) {
@@ -136,9 +136,9 @@ public class ForteLang implements ForteLangConstants {
 
                 public String toJSON() {
                         StringBuilder builder = new StringBuilder("{");
-                        builder.append("\u005c"function\u005c" : { ");
+                        builder.append("\u005c"FL_Function\u005c" : { ");
                         builder.append("\u005c"param\u005c" : \u005c"" + parameter + "\u005c",");
-                        builder.append("\u005c"expression\u005c" : \u005c"" + objToJson(expression) + "\u005c" } }");
+                        builder.append("\u005c"expression\u005c" : " + objToJson(expression) + " } }");
                         return builder.toString();
                 }
         }
@@ -156,8 +156,8 @@ public class ForteLang implements ForteLangConstants {
 
                 public String toJSON() {
                         StringBuilder builder = new StringBuilder("{");
-                        builder.append("\u005c"function call\u005c" : { ");
-                        builder.append("\u005c"initFunction\u005c" : \u005c"" + objToJson(initFunction) + "\u005c",");
+                        builder.append("\u005c"FL_Function_Call\u005c" : { ");
+                        builder.append("\u005c"initFunction\u005c" : " + objToJson(initFunction) + ",");
                         builder.append("\u005c"arguments\u005c" : " + objToJson(arguments) + " } }");
                         return builder.toString();
                 }
@@ -235,7 +235,7 @@ public class ForteLang implements ForteLangConstants {
 
                 public String toJSON() {
                         StringBuilder builder = new StringBuilder("{");
-                        builder.append("\u005c"set\u005c" : { ");
+                        builder.append("\u005c"FL_Set\u005c" : { ");
                         builder.append("\u005c"impure\u005c" : " + impure + ",");
                         builder.append("\u005c"attributes\u005c" : " + objToJson(attributes) + " } }");
                         return builder.toString();
@@ -267,7 +267,7 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        static class FL_Guards implements Evaluatable {
+        static class FL_Guards implements Evaluatable, JSON {
                 LinkedHashMap<Object, Object> statements;
                 Object finalStatement;
 
@@ -275,6 +275,16 @@ public class ForteLang implements ForteLangConstants {
 
                 @Override public String toString() {
                   return "FL_Guards[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
+                }
+
+                public String toJSON() {
+                        StringBuilder builder = new StringBuilder("{");
+                        LinkedHashMap<Object, Object> c = (LinkedHashMap<Object, Object>) statements.clone();
+                        c.put(null, finalStatement);
+                        builder.append("\u005c"FL_Guards\u005c" : { ");
+                        builder.append("\u005c"statements\u005c" : " + objToJson(c) + " } }");
+//			builder.append("\"arguments\" : " + objToJson(null) + " } }");
+                        return builder.toString();
                 }
         }
 
@@ -299,11 +309,11 @@ public class ForteLang implements ForteLangConstants {
                 }
 
                 public String toJSON() {
-                        return "\u005c"var:\u005c"" + name;
+                        return " { \u005c"FL_Var\u005c" : \u005c"" + name + "\u005c" }";
                 }
         }
 
-        static class FL_OpExpr implements Evaluatable {
+        static class FL_OpExpr implements Evaluatable, JSON {
                 Object initVar;
                 LinkedList<Token> operators;
                 LinkedList<Object> expressionsToParse;
@@ -315,6 +325,27 @@ public class ForteLang implements ForteLangConstants {
 
                 @Override public String toString() {
                         return "FL_OpExpr[init=" + initVar + "" + operators + "" + expressionsToParse + "]";
+                }
+
+                public String toJSON() {
+                        StringBuilder builder = new StringBuilder("{");
+                        builder.append("\u005c"FL_OpExpr\u005c" : { ");
+
+                        LinkedList<Token> operatorsC = (LinkedList<Token>) operators.clone();
+                        LinkedList<Object> expressionsToParseC = (LinkedList<Object>) expressionsToParse.clone();
+
+                        LinkedList<Object> newList = new LinkedList<Object>();
+                        newList.push(initVar);
+
+                        while(!operatorsC.isEmpty()) {
+                                newList.push(operatorsC.pop());
+                                newList.push(expressionsToParseC.pop());
+                        }
+
+                        builder.append("\u005c"operation\u005c" : " + objToJson(newList) + " } }");
+//			builder.append("\"expressionsToParse\" : " + objToJson(expressionsToParse) + ",");
+//			builder.append("\"operators\" : " + objToJson(operators) + " } }");
+                        return builder.toString();
                 }
         }
 
@@ -1230,124 +1261,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(6, xla); }
   }
 
-  private boolean jj_3R_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_19()) {
-    jj_scanpos = xsp;
-    if (jj_3R_20()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_38() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(EQUALS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_7() {
-    if (jj_3R_10()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_4()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_29() {
-    if (jj_scan_token(BOOLEAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_28() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    if (jj_scan_token(IMPURE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_27() {
-    if (jj_3R_34()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_26() {
-    if (jj_3R_33()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_25() {
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_24() {
-    if (jj_3R_31()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_35()) jj_scanpos = xsp;
-    if (jj_scan_token(OPENCBRACKET)) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_38()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSECBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_21() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_22()) {
-    jj_scanpos = xsp;
-    if (jj_3R_23()) {
-    jj_scanpos = xsp;
-    if (jj_3R_24()) {
-    jj_scanpos = xsp;
-    if (jj_3R_25()) {
-    jj_scanpos = xsp;
-    if (jj_3R_26()) {
-    jj_scanpos = xsp;
-    if (jj_3R_27()) {
-    jj_scanpos = xsp;
-    if (jj_3R_28()) {
-    jj_scanpos = xsp;
-    if (jj_3R_29()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_3R_30()) return true;
-    return false;
-  }
-
   private boolean jj_3R_18() {
     if (jj_3R_21()) return true;
     return false;
@@ -1544,6 +1457,124 @@ public class ForteLang implements ForteLangConstants {
     if (jj_scan_token(VAR_NAME)) return true;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
     if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_19()) {
+    jj_scanpos = xsp;
+    if (jj_3R_20()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_38() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(EQUALS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_7() {
+    if (jj_3R_10()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_4()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_29() {
+    if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_28() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    if (jj_scan_token(IMPURE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_27() {
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_26() {
+    if (jj_3R_33()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_25() {
+    if (jj_3R_32()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_24() {
+    if (jj_3R_31()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_35()) jj_scanpos = xsp;
+    if (jj_scan_token(OPENCBRACKET)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_38()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSECBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_21() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_22()) {
+    jj_scanpos = xsp;
+    if (jj_3R_23()) {
+    jj_scanpos = xsp;
+    if (jj_3R_24()) {
+    jj_scanpos = xsp;
+    if (jj_3R_25()) {
+    jj_scanpos = xsp;
+    if (jj_3R_26()) {
+    jj_scanpos = xsp;
+    if (jj_3R_27()) {
+    jj_scanpos = xsp;
+    if (jj_3R_28()) {
+    jj_scanpos = xsp;
+    if (jj_3R_29()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_22() {
+    if (jj_3R_30()) return true;
     return false;
   }
 

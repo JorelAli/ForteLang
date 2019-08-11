@@ -463,18 +463,30 @@ public class ForteLang {
 		Object result = lambda.expression;
 
 		if(result instanceof FL_Function) {
+		    //Dump
 		  	System.out.println("Beginning dump");
-			Dump newDump = new Dump(stack, control, environment);
+			Dump newDump = new Dump((Stack<Object>) stack.clone(), (LinkedList<Object>) control.clone(), (HashMap<String, Object>) environment.clone());
 			dump.push(newDump);
 
 			stack.clear();
-			//TODO: Sort out control
+			control.clear();
 			environment.clear();
-			stack.push(result);
+
+			control.add(result);
 		} else {
-			//TODO:
+			stack.push(result);
 		}
+
 		
+		while(!control.isEmpty()) {
+			Object cItem = control.pop();
+
+			if(!(cItem instanceof Evaluatable)) {
+				stack.push(cItem);
+			}
+			
+		}
+		//Control is now empty
 		
 		
 		

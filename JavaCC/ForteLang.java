@@ -459,13 +459,13 @@ public class ForteLang implements ForteLangConstants {
 
                 if(result instanceof FL_Function) {
                         System.out.println("Beginning dump");
-                        Dump newDump = new Dump(stack, control, environment);
+                        Dump newDump = new Dump((Stack<Object>) stack.clone(), control, environment);
                         dump.push(newDump);
 
                         stack.clear();
                         //TODO: Sort out control
                         environment.clear();
-                        stack.push(result);
+//			control = 
                 } else {
                         //TODO:
                 }

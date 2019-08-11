@@ -2,13 +2,14 @@
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
-import java.lang.reflect.Field;
+import java.util.logging.*;
 import java.io.*;
 
 public class ForteLang implements ForteLangConstants {
 
         /** Static fields */
         static String fileName;
+        static Logger SECD = Logger.getLogger("SECD");
 
 
         /** Main method */
@@ -239,16 +240,6 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        public static <T> T print(T o) throws Exception {
-                StringBuilder builder = new StringBuilder();
-                builder.append(o.getClass().getName() + "[");
-                for(Field f : o.getClass().getDeclaredFields()) {
-                        builder.append(f.getName() + ": " + f.get(o).toString() + "; ");
-                }
-                System.out.println(builder.append("]").toString());
-                return o;
-        }
-
         static class OperatorParser {
 
                 enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT };
@@ -415,6 +406,9 @@ public class ForteLang implements ForteLangConstants {
         //Placeholder for "applying" an object
         static class ApplyObj { @Override public String toString() { return "ap"; }}
 
+        static void printSECD() { System.out.println("[SECD] "); }
+        static void printSECD(Object o) { System.out.println("[SECD] " + o); }
+
         public static Object secd(FL_Function_Call functionCall, FL_Set globalScope) throws Exception {
                 Stack<Object> stack = new Stack<Object>();
                 HashMap<String, Object> environment = new HashMap<String, Object>();
@@ -428,7 +422,7 @@ public class ForteLang implements ForteLangConstants {
                         control.add(object);
                         control.add(new ApplyObj());
                 }
-                System.out.println("Initial control: " + control);
+                printSECD("Initial control: " + control);
 
                 Object controlItem = null;
 
@@ -439,8 +433,8 @@ public class ForteLang implements ForteLangConstants {
 
                                 if(controlItem instanceof ApplyObj) {
                                         //Begin application
-                                        System.out.println();
-                                        System.out.println("Applying...");
+                                        SECD.info("");
+                                        SECD.info("Applying...");
 
                                         //Pop two items from the top of the stack
                                         Object value = stack.pop();
@@ -460,10 +454,12 @@ public class ForteLang implements ForteLangConstants {
                                         environment.put(lambda.parameter, value);
                                         Object result = lambda.expression;
 
+                                        printSECD("Added complete. Result: " + result);
+
                                         //If the result is an abstraction, dump it
                                         if(result instanceof FL_Function) {
                                             //Dump
-                                                System.out.println("Beginning dump");
+                                                printSECD("Beginning dump...");
                                                 Dump newDump = new Dump((Stack<Object>) stack.clone(), (LinkedList<Object>) control.clone(), (HashMap<String, Object>) environment.clone());
                                                 dump.push(newDump);
 
@@ -487,7 +483,7 @@ public class ForteLang implements ForteLangConstants {
                         }
 
                         if(!dump.isEmpty()) {
-                                System.out.println("Restoring from dump");
+                                SECD.info("Restoring from dump");
                                 Dump restoredDump = dump.pop();
 
                                 while(!stack.isEmpty()) {
@@ -497,7 +493,7 @@ public class ForteLang implements ForteLangConstants {
                                 stack = restoredDump.stack;
                                 control = restoredDump.control;
                                 environment.putAll(restoredDump.environment);
-                                System.out.println("Dump restored");
+                                printSECD("Dump restored");
                         }
 
                 } while(!control.isEmpty() || !dump.isEmpty());
@@ -507,11 +503,14 @@ public class ForteLang implements ForteLangConstants {
                 return evaluate(newEnv, stack.pop());
         }
 
+        static void printEVAL() { System.out.println("[EVAL] "); }
+        static void printEVAL(Object o) { System.out.println("[EVAL] " + o); }
+
         public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
                 scope = scope.clone();
 //		System.out.println(scope);
                 if(expression instanceof Evaluatable) {
-                        System.out.println("Evaluating " + expression);
+                        printEVAL("Evaluating " + expression);
                         //System.out.println(expression.getClass().getName());
 //	  	  	System.out.println(expression);
 
@@ -566,7 +565,7 @@ public class ForteLang implements ForteLangConstants {
                                 return newFunctionCall;
                         } else
                         if(expression instanceof FL_Function_Call) {
-                                System.out.println();
+                                printEVAL();
                                 FL_Function_Call call = (FL_Function_Call) expression;
 
                                 if(!(call.initFunction instanceof FL_Function)) {
@@ -580,7 +579,7 @@ public class ForteLang implements ForteLangConstants {
                                                 if(function instanceof FL_Function_Call) {
                                                         call.initFunction = ((FL_Function_Call) function).initFunction;
                                                 } else {
-                                                        System.out.println("Reading from closure... " + function.getClass().getName());
+                                                        printEVAL("Reading from closure... " + function.getClass().getName());
                                                 }
                                         }
                                 }
@@ -593,12 +592,12 @@ public class ForteLang implements ForteLangConstants {
 
 
                                 if(call.initFunction instanceof FL_Function) {
-                                        System.out.println("About to evaluate the following: ");
-                                        System.out.println(call.initFunction);
+                                        printEVAL("About to evaluate the following: ");
+                                        printEVAL(call.initFunction);
 
-                                        System.out.println();
-                                        System.out.println("Starting SECD machine");
-                                        System.out.println();
+                                        printEVAL();
+                                        printEVAL("Starting SECD machine");
+                                        printEVAL();
 
                                         return secd(call, scope);
 
@@ -612,7 +611,7 @@ public class ForteLang implements ForteLangConstants {
 //					System.out.println(function);
 //					return evaluate(scope, function);
                                 } else {
-                                        System.out.println("Avoiding the SECD machine, because of type " + call.initFunction.getClass().getName());
+                                        printEVAL("Avoiding the SECD machine, because of type " + call.initFunction.getClass().getName());
                                         if(call.initFunction instanceof Evaluatable) {
                                                 return evaluate(scope, call.initFunction);
                                         } else {
@@ -646,20 +645,20 @@ public class ForteLang implements ForteLangConstants {
                                         throw new Exception("Could not find function \u005c"" + flVar.name + "\u005c" in the program!");
                                 }
                                 if(var instanceof FL_Function) {
-                                        System.out.println("\u005c"" + flVar.name + "\u005c" evaluates to a lambda, therefore not resolving");
+                                        printEVAL("\u005c"" + flVar.name + "\u005c" evaluates to a lambda, therefore not resolving");
                                         return var;
                                 } else {
-                                        System.out.println("Resolving: " + flVar.name + " => " + var);
+                                        printEVAL("Resolving: " + flVar.name + " => " + var);
                                         return evaluate(scope, var);
                                 }
                         } else if(expression instanceof FL_OpExpr) {
                                 FL_OpExpr flVarOp = (FL_OpExpr) expression;
 
-                                System.out.println("\u005cn\u005cnAbout to evaluate OpExpr:");
-                                System.out.println(flVarOp);
+                                printEVAL("\u005cn\u005cnAbout to evaluate OpExpr:");
+                                printEVAL(flVarOp);
 
                                 Object init = flVarOp.initVar;
-                                Object next = flVarOp.expressionsToParse.pop();
+                                Object next = flVarOp.expressionsToParse.pop(); //<<-- FIXME
 
                                 if (init instanceof Evaluatable) {
                                         init = evaluate(scope, init);
@@ -669,12 +668,13 @@ public class ForteLang implements ForteLangConstants {
                                         next = evaluate(scope, next);
                                 }
 
-
                                 Token operatorToUse = flVarOp.operators.pop();
 
-                                System.out.println(init + " " + operatorToUse.image + " " + next);
+                                printEVAL("OpExpr to eval: " + init + " " + operatorToUse.image + " " + next);
 
                                 Object newInit = new OperatorParser(operatorToUse).apply(init, next);
+
+                                printEVAL("OpExpr eval result: " + newInit);
 
                                 if(flVarOp.expressionsToParse.isEmpty()) {
                                         return evaluate(scope, newInit);

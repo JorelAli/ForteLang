@@ -697,6 +697,9 @@ public class ForteLang {
 					iterator.set(evaluate(scope, expr));
 				}
 				return list;
+			} else if(expression instanceof FL_Set) {
+			  	// TODO: Handle purity tests here!
+				return expression;
 			} else if(expression instanceof FL_IncludedSet) {
 			  	FL_IncludedSet incSet = (FL_IncludedSet) expression;
 				scope.attributes.putAll(incSet.set.attributes);

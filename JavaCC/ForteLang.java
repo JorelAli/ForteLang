@@ -692,6 +692,8 @@ public class ForteLang implements ForteLangConstants {
                                         iterator.set(evaluate(scope, expr));
                                 }
                                 return list;
+                        } else if(expression instanceof FL_Set) {
+                                return expression;
                         } else if(expression instanceof FL_IncludedSet) {
                                 FL_IncludedSet incSet = (FL_IncludedSet) expression;
                                 scope.attributes.putAll(incSet.set.attributes);

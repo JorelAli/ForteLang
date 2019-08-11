@@ -37,7 +37,9 @@ include {
 
     a = lambda -> lambda 2 3;
         
-} in (x -> x -> x) 2 3
+} in union {} {}
+
+#(x -> x -> x) 2 3
 
 #(y -> (x -> y)) 2 3
 

@@ -839,11 +839,20 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression; } {
 	{ function = new FL_Function.FL_Function_Builder(); }
 
-	(<OPENBRACKET>)?
-	paramName = <VAR_NAME>
-	<FUNCTION_ARROW>
-	innerExpression = enclosedExpression()
-	(LOOKAHEAD(2) <CLOSEBRACKET>)?
+	(
+		(			paramName = <VAR_NAME>
+			<FUNCTION_ARROW>
+			innerExpression = enclosedExpression()
+		)
+		|
+		(
+			<OPENBRACKET>
+			paramName = <VAR_NAME>
+			<FUNCTION_ARROW>
+			innerExpression = enclosedExpression()
+			<CLOSEBRACKET>
+		)
+	)
 	  
 	{
 	    function.parameters.push(paramName.image);

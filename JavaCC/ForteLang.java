@@ -418,6 +418,7 @@ public class ForteLang implements ForteLangConstants {
         public static Object secd(FL_Function_Call functionCall, FL_Set globalScope) throws Exception {
                 Stack<Object> stack = new Stack<Object>();
                 HashMap<String, Object> environment = new HashMap<String, Object>();
+                environment.putAll(globalScope.attributes); //TODO: Make sure this isn't busted
                 LinkedList<Object> control = new LinkedList<Object>();
                 Stack<Dump> dump = new Stack<Dump>();
 

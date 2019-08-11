@@ -33,9 +33,9 @@ include {
         myAdd = x -> y -> x + y;
     } in myAdd 2;
 
-#    factorial = (input ->
-#        | input == 0 ->> 1
-#        | ->> input * (factorial (input - 1)));
+    factorial = input -> |>
+        | input == 0 ->> 1
+        | ->> input * factorial (input - 1);
 
     head' = list -> list ++ [2, 3, (2 + 2)];
 
@@ -47,7 +47,9 @@ include {
 
     a = lambda -> lambda 2 3;
         
-} in maxOr0 (nestedGuard 2) -2
+} in factorial 5
+
+#maxOr0 (nestedGuard 2) -2
 
 #union {} {}
 

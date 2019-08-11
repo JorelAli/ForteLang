@@ -533,10 +533,11 @@ public class ForteLang {
 	  	  	  
 			} else*/
 
-			if(expression instanceof FL_Function) {
-			  	FL_Function function = (FL_Function) expression;
-				return function;
-			} else if(expression instanceof FL_Function_Call) {
+//			if(expression instanceof FL_Function) {
+//			  	FL_Function function = (FL_Function) expression;
+//				return function;
+//			} else
+			if(expression instanceof FL_Function_Call) {
 				FL_Function_Call call = (FL_Function_Call) expression;
 				Object function = scope.attributes.get(call.functionName.name);
 
@@ -600,8 +601,13 @@ public class ForteLang {
 				if(var == null) {
 					throw new Exception("Could not find function \"" + flVar.name + "\" in the program!");
 				}
-				System.out.println("Resolving: " + flVar.name + " => " + var);
-				return evaluate(scope, var);
+				if(var instanceof FL_Function) {
+					System.out.println("\"" + flVar.name + "\" evaluates to a lambda, therefore not resolving");
+					return var;
+				} else { 
+					System.out.println("Resolving: " + flVar.name + " => " + var);
+					return evaluate(scope, var);
+				}
 			} else if(expression instanceof FL_OpExpr) {
 				FL_OpExpr flVarOp = (FL_OpExpr) expression;
 

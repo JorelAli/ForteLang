@@ -29,6 +29,9 @@
 			}, {
 				"name": "constant.language",
 				"match": "true|false"
+			}, {
+				"name": "constant.numeric",
+				"match": "\\b([0-9]+(\\.[0-9]+)*)\\b"
 			}]
 		},
 		"strings": {
@@ -45,14 +48,14 @@
 		"comments": {
 			"patterns": [
 				{
+					"name": "comment.block.blah",
+					"begin": "###",
+					"end": "###"
+				},
+				{
 					"name": "comment.line.number-sign",
 					"begin": "#",
 					"end": "\n"
-				},
-				{
-					"name": "comment.block.number-sign",
-					"begin": "###",
-					"end": "###"
 				}
 
 			]

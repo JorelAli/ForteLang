@@ -561,6 +561,7 @@ public class ForteLang {
 
 				if(call.initFunction instanceof FL_Function) {
 					//Then it's a lambda.
+					System.out.println("PARSE LAMBDA HERE");
 				} else {
 				  	// It's a function name
 				  	FL_Var functionName = (FL_Var) call.initFunction; 
@@ -818,10 +819,12 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 
 FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression; } {
 	{ function = new FL_Function.FL_Function_Builder(); }
-	
+
+	(<OPENBRACKET>)?
 	paramName = <VAR_NAME>
 	<FUNCTION_ARROW>
 	innerExpression = enclosedExpression()
+	(LOOKAHEAD(2) <CLOSEBRACKET>)?
 	  
 	{
 	    function.parameters.push(paramName.image);
@@ -858,24 +861,26 @@ double number() throws Exception : { Token value; double f; } {
 
 /** Expressions */
 Object enclosedExpression() throws Exception : { Object result; Token vName;  } {
-	( 
+	LOOKAHEAD(3)
+	result = opExpression() {return result; }
+	| (
 	  <OPENBRACKET>
-	  result = opExpression()
+	  result = opExpression() 
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
-	| result = opExpression() {return result; }
 }
 
 Object expression() throws Exception : { Object result; } {
- 	  /*LOOKAHEAD(2) result = lambda()                 { return result; }  
-	| LOOKAHEAD(2) */result = singleExpression()       { return result; }
+    LOOKAHEAD(3) result = functionCall() { return result; }
+	| result = singleExpression()       { return result; }
+	
 }
 
 Object singleExpression() throws Exception : { Object result; Token token; } {
 	  result = set() { return result; }
-	| LOOKAHEAD(3) result = lambda() { return result; }
-    | result = functionCall() { return result; }
+	| result = lambda() { return result; }
+//    | result = functionCall() { return result; }
 	| result = includedSet() { return result; }
 	| result = list() { return result; }
 	| result = number() { return result; }
@@ -917,8 +922,8 @@ FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Ob
 		lambda = null;
   	}
   	(
-  	  LOOKAHEAD(2)  	  varName = <VAR_NAME>
-  	  | lambda = lambda()
+  	  LOOKAHEAD(2)
+  	  lambda = lambda()  	  | varName = <VAR_NAME> 
   	)
   	{
   	   	result = new FL_Function_Call();

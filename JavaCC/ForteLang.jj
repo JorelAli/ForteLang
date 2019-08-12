@@ -23,6 +23,7 @@ public class ForteLang {
 	
 	/** Static fields */
 	static String fileName;
+	final static boolean LOGGING_ENABLE = false; 
 
 	static void printSECD() {print("SECD"); }
 	static void printSECD(Object o) { print("SECD", o); }
@@ -32,13 +33,13 @@ public class ForteLang {
 	static void printEVAL(Object o) { print("EVAL", o); }
 	static void printEVAL(String s, Object o) { print("EVAL", s, o); }
 	
-	static void print(String title) { System.out.println("[" + title + "] "); }
+	static void print(String title) { print(title, "", ""); }
 	static void print(String title, Object val) { print(title, "", val); }
 	static void print(String title, String init, Object val) {
-	  	String text = String.valueOf(val);
-	  	System.out.println("[" + title + "] " + init + " " + text);
+	  	if(LOGGING_ENABLE) {
+		  	System.out.println("[" + title + "] " + init + " " + String.valueOf(val));
+	  	}
 	}
-
 
 	/** Main method */
 	public static void main(String[] args) throws ParseException, FileNotFoundException {
@@ -59,11 +60,19 @@ public class ForteLang {
 					result = (long) d;
 				}
 			}
-			System.out.println("Final result: " + result);
+			System.out.println();
+			System.out.println("=== Evaluation complete ===");
+			System.out.println("==> " + result);
 			
 		} catch(Exception e) {
 		  	e.printStackTrace();
 		  	return;
+		}
+	}
+
+	static class EvaluationException extends Exception {
+		public EvaluationException(String message) {
+			super(message);
 		}
 	}
 
@@ -556,14 +565,9 @@ public class ForteLang {
 	  	  	//System.out.println(expression.getClass().getName());
 //	  	  	System.out.println(expression);
 	  	  	
-	  	  	/*if(expression instanceof FL_Builtin) {
+	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
 				Object builtinParam = evaluate(scope, builtin.param);
-//				//TODO: Fix for when builtins require non-String types
-//				if(!(builtinParam instanceof String)) {
-//					throw new Exception("Builtin parameter " + builtinParam + " did not evaluate to a String");
-//				}
-//				String builtinParamStr = (String) builtinParam;
 				switch(builtin.type) {
 					case IMPORT:
 						File file = new File((String) builtinParam);
@@ -575,29 +579,40 @@ public class ForteLang {
 						break;
 					case HEAD:
 						if(!(builtinParam instanceof FL_List)) {
-							throw new Exception("head function requires a list as a parameter");
+							throw new EvaluationException("head function requires a list as a parameter");
 						} else {
-						  	return ((FL_List) builtinParam).list.getFirst();
+						  	LinkedList list = ((FL_List) builtinParam).list;
+						  	if(list.isEmpty()) {
+								throw new EvaluationException("List is empty, cannot retrieve the head of the list");
+						  	}
+						  	return list.getFirst();
 						} 
 					case TAIL:
 						if(!(builtinParam instanceof FL_List)) {
 							throw new Exception("tail function requires a list as a parameter");
 						} else {
-						  	((FL_List) builtinParam).list.remove();
-						  	return builtinParam;
+						 	LinkedList list = ((FL_List) builtinParam).list;
+						  	if(list.isEmpty()) {
+								throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
+						  	}
+						  	list = (LinkedList) list.clone();
+						  	list.remove();
+						  	FL_List newList = new FL_List();
+						  	newList.list = list;
+						  	return newList;
 						}
-						TODO: 
-					
-					    ### Things to do
-					    all = list -> false; 
-					    filter = list -> [];
-					    foldl = op -> init -> list -> 2;
-					    length = list -> 0;
-					    map = list;
-					    ###
+//						TODO: 
+//					
+//					    ### Things to do
+//					    all = list -> false; 
+//					    filter = list -> [];
+//					    foldl = op -> init -> list -> 2;
+//					    length = list -> 0;
+//					    map = list;
+//					    ###
 				}
 	  	  	  
-			} else*/
+			} else
 
 			if(expression instanceof FL_Function) {
 			  	FL_Function function = (FL_Function) expression;
@@ -983,6 +998,7 @@ Object singleExpression() throws Exception : { Object result; Token token; } {
 	| token = <STRING> { return parseString(token); }
 	| token = <REGEX_STRING> { return Pattern.compile(parseString(token)); }
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
+	| result = builtinFunctions() { return result; }
 }
 
 Object opExpression() throws Exception : { FL_OpExpr result; Object expr; Token operator; boolean isOpExpr; } {
@@ -1037,13 +1053,13 @@ FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Ob
 	{ return result; }
 }
 
-//Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
-//	<IMPORT>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
-//    | <PRINT> (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
-//	| <EXEC>  (LOOKAHEAD(2) stringToken = <STRING> { param = parseString(stringToken); } | param = enclosedExpression()) { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
-//	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
-//	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
-//}
+Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
+	<IMPORT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
+    | <PRINT> param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
+	| <EXEC>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
+	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
+	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
+}
 
 FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; } {
 	{ guards = new FL_Guards(); expression = null; }

@@ -872,7 +872,7 @@ SKIP : { < "###" (~["#"])* "###" > }
 SKIP : { "\n" | "\r" | " " }
 
 /** Main endpoint */
-Object input() throws Exception : { Object expression; Object result; } {
+Object input() throws Exception : { Object expression; } {
   expression = enclosedExpression()
   <EOF>
   {
@@ -880,13 +880,16 @@ Object input() throws Exception : { Object expression; Object result; } {
 	System.out.println();
 	System.out.println("=== Parsing complete ===");
 	System.out.println();
-    
+
+    Object result = null;
     if(expression instanceof FL_IncludedSet) {
     	FL_IncludedSet flIS = (FL_IncludedSet) expression;
-    	return evaluate(flIS.set, flIS.expression);
+    	result = evaluate(flIS.set, flIS.expression);
     } else {
-		return evaluate(new FL_Set(), expression);
+		result = evaluate(new FL_Set(), expression);
     }
+	
+    return result;
   }
 }
 

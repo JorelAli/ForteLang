@@ -46,13 +46,30 @@ include {
     factorial = input -> |>
         | input == 0 ->> 1
         | ->> input * factorial (input - 1);
+
+    # Standard library
+    all = list -> match list 
+        | [] ->> true
+        | ->> |> | head list ->> all (tail list) | ->> false;
+
+    any = list -> match list
+        | [] ->> false
+        | ->> |> | head list ->> true | ->> any (tail list);
+
+    length = list -> match list
+        | [] ->> 0
+        | ->> 1 + sizeOfList (tail list);
+
+    genList = num -> formula -> match num
+        | 0 ->> []
+        | ->> [(formula num)] ++ genList (num - 1) formula;
         
-    # Pattern matching on Strings:
-    isInt = str -> match str
-        | "yo" ->> true
-        | '[0-9]+' ->> true
-        | '-[0-9]+' ->> true
-        | ->> false;
+# Pattern matching on Strings:
+isInt = str -> match str
+    | "I_AM_AN_INT" ->> true
+    | '[0-9]+' ->> true
+    | '-[0-9]+' ->> true
+    | ->> false;
 
     isFloat = str -> match str
         | '-?[0-9]+\.[0-9]+' ->> true
@@ -64,10 +81,25 @@ include {
         | [] ->> true
         | ->> false;
 
+    # map = list -> f -> match list
+    #     | [] ->> []
+    #     | ->> [f (head list)] ++ map (tail list) f;
 
-    
+    # map' = f -> list -> match list
+    #     | [] ->> []
+    #     | ->> [f (head list)] ++ map' f (tail list);
 
-} in factorial 5 #1 + 2 + 3 + 4 + 5 #factorial 2
+} in genList 3 (x -> 2) 
+
+#any [false, false, false] #all [true, true, true, true]
+
+#map [1, 2, 3, 4, 5] (x -> 5) 
+
+#map' (x -> 5)  [1, 2, 3]
+
+#sizeOfList [1, 2, 3]
+
+#factorial 5 #1 + 2 + 3 + 4 + 5 #factorial 2
 
 #isEmpty (tail [2, 3, 4]) #@print "hi" #isInt "yo"# ("23" ++ "2.2")
 

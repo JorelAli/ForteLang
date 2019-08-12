@@ -801,19 +801,22 @@ public class ForteLang implements ForteLangConstants {
 
 /** Main endpoint */
   final public Object input() throws ParseException, Exception {
-                                    Object expression; Object result;
+                                    Object expression;
     expression = enclosedExpression();
     jj_consume_token(0);
         System.out.println();
         System.out.println("=== Parsing complete ===");
         System.out.println();
 
+    Object result = null;
     if(expression instanceof FL_IncludedSet) {
         FL_IncludedSet flIS = (FL_IncludedSet) expression;
-        {if (true) return evaluate(flIS.set, flIS.expression);}
+        result = evaluate(flIS.set, flIS.expression);
     } else {
-                {if (true) return evaluate(new FL_Set(), expression);}
+                result = evaluate(new FL_Set(), expression);
     }
+
+    {if (true) return result;}
     throw new Error("Missing return statement in function");
   }
 

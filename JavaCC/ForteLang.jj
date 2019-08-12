@@ -123,7 +123,7 @@ public class ForteLang {
 			arguments = new LinkedList<Object>();
 		}
 
-		@Override public String toString() { return "FuncCall " + initFunction + " " + arguments; }
+//		@Override public String toString() { return "FuncCall " + initFunction + " " + arguments; }
 	}
 
 	static class FL_Set implements Evaluatable {
@@ -233,16 +233,17 @@ public class ForteLang {
 		public FL_Guards() { statements = new LinkedHashMap<Object, Object>(); }
 
 		@Override public String toString() {
-		  StringBuilder builder = new StringBuilder("Guard[");
+		  StringBuilder builder = new StringBuilder("Guard{ ");
 		  for(Entry<Object, Object> entry : statements.entrySet()) {
-		      builder.append("|");
+		      builder.append("| ");
 			  builder.append(entry.getKey());
 			  builder.append(" ->> ");
 			  builder.append(entry.getValue());
+			  builder.append(" ");
 		  }
 		  builder.append("| ->> ");
 		  builder.append(finalStatement);
-		  return builder.append("]").toString();
+		  return builder.append(" }").toString();
 		}
 	}
 
@@ -280,24 +281,19 @@ public class ForteLang {
 	}
 
 	static class FL_OpExpr implements Evaluatable {
-		Object initVar;
-		LinkedList<Token> operators;
-		LinkedList<Object> expressionsToParse;
-
-		public FL_OpExpr() {
-		  	operators = new LinkedList<Token>();
-			expressionsToParse = new LinkedList<Object>();
-		}
+		Object leftExpr;
+		Object rightExpr;
+		Token operator;
+		
+		public FL_OpExpr() {}
 
 		@Override public String toString() {
 		  StringBuilder builder = new StringBuilder("FL_OpExpr[");
-		  builder.append(initVar);
-		  for(int i = 0; i < operators.size(); i++) {
-			 builder.append(", ");
-			 builder.append(operators.get(i));
-			 builder.append(", ");
-			 builder.append(expressionsToParse.get(i));
-		  }
+		  builder.append(leftExpr);
+		  builder.append("");
+		  builder.append(operator.image);
+		  builder.append("");
+		  builder.append(rightExpr);
 		  return builder.append("]").toString();
 		}
 	}
@@ -398,7 +394,6 @@ public class ForteLang {
 				throw new Exception("Invalid operator (expected numerical operator)");
 		  	}
 
-		  	//TODO: operator precedence
 			switch(op) {
 				case "+":
 					return f1 + f2;
@@ -745,42 +740,42 @@ public class ForteLang {
 					return evaluate(scope, var);
 				}
 			} else if(expression instanceof FL_OpExpr) {
-			  	//TODO: Operator precedence occurs HERE
 				FL_OpExpr flVarOp = (FL_OpExpr) expression;
 
 				printEVAL("\n\nAbout to evaluate OpExpr:");
 				printEVAL(flVarOp);
 				
-			  	Object init = flVarOp.initVar;
-			  	Object next = flVarOp.expressionsToParse.pop(); //<<-- FIXME
+			  	Object left = flVarOp.leftExpr;
+			  	Object right = flVarOp.rightExpr;
 
-			  	if (init instanceof Evaluatable) {
-			  	  	printEVAL("Evaluating first part", init);
-					init = evaluate(scope, init);
+			  	if (left instanceof Evaluatable) {
+			  	  	printEVAL("EvalOpExpr left part", left);
+					left = evaluate(scope, left);
 			  	}
 
-			  	if (next instanceof Evaluatable) {
-			  	  	printEVAL("Evaluating next part", next);
-					next = evaluate(scope, next);
+			  	if (right instanceof Evaluatable) {
+			  	  	printEVAL("EvalOpExpr right part", right);
+					right = evaluate(scope, right);
 			  	}
 
-				Token operatorToUse = flVarOp.operators.pop();
+				Token operatorToUse = flVarOp.operator;
 
-				printEVAL("OpExpr to eval: " + init + " " + operatorToUse.image + " " + next);
+				printEVAL("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
 			  	
-			  	Object newInit = new OperatorParser(operatorToUse).apply(init, next);
+			  	Object newInit = new OperatorParser(operatorToUse).apply(left, right);
 
 			  	printEVAL("OpExpr eval result: ", newInit);
+			  	return newInit;
 
-			  	if(flVarOp.expressionsToParse.isEmpty()) {
-					return evaluate(scope, newInit);
-			  	} else {
-					FL_OpExpr newOp = new FL_OpExpr();
-					newOp.initVar = newInit;
-					newOp.operators = flVarOp.operators;
-					newOp.expressionsToParse = flVarOp.expressionsToParse;
-					return evaluate(scope, newOp);
-			  	}
+//			  	if(flVarOp.expressionsToParse.isEmpty()) {
+//					return evaluate(scope, newInit);
+//			  	} else {
+//					FL_OpExpr newOp = new FL_OpExpr();
+//					newOp.initVar = newInit;
+//					newOp.operators = flVarOp.operators;
+//					newOp.expressionsToParse = flVarOp.expressionsToParse;
+//					return evaluate(scope, newOp);
+//			  	}
 			} else if(expression instanceof FL_List) {
 				FL_List list = (FL_List) expression;
 				ListIterator<Object> iterator = list.list.listIterator(0);
@@ -1028,19 +1023,21 @@ Object opExpression() throws Exception : { FL_OpExpr result; Object expr; Token 
   	}
 
   	expr = expression()
-  	{ result.initVar = expr; }
+  	{ result.leftExpr = expr; }
 	(
 	  LOOKAHEAD(2)
 	  operator = anyOperator()
-	  { result.operators.add(operator); }
+	  { result.operator = operator; }
 
-	  expr = expression()
-	  { result.expressionsToParse.add(expr); }
+	  expr = enclosedExpression()
+	  { result.rightExpr =expr; }
 
 	  { isOpExpr = true; }
-	)*
+	)?
 	{
 		if(isOpExpr) {
+		  	//TODO: Check for nested OpExprs here and
+		  	//handle the order of operations.
 			return result;
 		} else {
 			return expr;

@@ -64,9 +64,12 @@ include {
         | [] ->> true
         | ->> false;
 
+
     
 
-} in isEmpty (tail [2, 3, 4]) #@print "hi" #isInt "yo"# ("23" ++ "2.2")
+} in factorial 2
+
+#isEmpty (tail [2, 3, 4]) #@print "hi" #isInt "yo"# ("23" ++ "2.2")
 
 
 #factorial 1

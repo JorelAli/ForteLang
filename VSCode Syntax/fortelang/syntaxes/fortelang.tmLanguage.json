@@ -10,6 +10,9 @@
 		},
 		{
 			"include": "#comments"
+		},
+		{
+			"include": "#regexstrs"
 		}
 	],
 	"repository": {
@@ -53,6 +56,11 @@
 					"match": "\\\\."
 				}
 			]
+		},
+		"regexstrs": {
+			"name": "string.regexp.fortelang",
+			"begin": "'",
+			"end": "'"
 		},
 		"comments": {
 			"patterns": [

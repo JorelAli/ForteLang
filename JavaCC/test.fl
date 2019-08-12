@@ -55,7 +55,11 @@ include {
 
     # isInt = str -> '[0-9]+';
 
-} in isInt "-123"
+    isEmpty = list -> match list
+        | [] ->> true
+        | ->> false;
+
+} in isEmpty []
 
 
 #factorial 1

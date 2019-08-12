@@ -18,44 +18,6 @@ public class ForteLang implements ForteLangConstants {
 
         /** Static fields */
         static String fileName;
-        final static boolean JSON_MODE = false;
-
-        static String objToJson(Object val) {
-                if(val instanceof JSON) {
-                        return ((JSON) val).toJSON();
-                } else if (val instanceof Collection) {
-                        return listToJson((Collection<Object>) val);
-                } else if (val instanceof Map) {
-                        return mapToJson((Map) val);
-                } else {
-                        return String.valueOf(val);
-                }
-        }
-
-        static String listToJson(Collection<Object> col) {
-                StringBuilder b = new StringBuilder("[");
-                for(Object o : col) {
-                        b.append(objToJson(o));
-                        b.append(",");
-                }
-                if(!col.isEmpty())
-                        b.deleteCharAt(b.lastIndexOf(","));
-                return b.append("]").toString();
-        }
-
-        static String mapToJson(Map col) {
-                StringBuilder b = new StringBuilder("");
-                for(Object o : col.entrySet()) {
-                        Entry<Object, Object> e = (Entry<Object, Object>) o;
-                        b.append(objToJson(e.getKey()));
-                        b.append(":");
-                        b.append(objToJson(e.getValue()));
-                        b.append(",");
-                }
-                if(!col.isEmpty())
-                        b.deleteCharAt(b.lastIndexOf(","));
-                return b.toString();
-        }
 
         static void printSECD() {print("SECD"); }
         static void printSECD(Object o) { print("SECD", o); }
@@ -68,12 +30,7 @@ public class ForteLang implements ForteLangConstants {
         static void print(String title) { System.out.println("[" + title + "] "); }
         static void print(String title, Object val) { print(title, "", val); }
         static void print(String title, String init, Object val) {
-                String text = null;
-                if(JSON_MODE) {
-                        text = objToJson(val);
-                } else {
-                        text = String.valueOf(val);
-                }
+                String text = String.valueOf(val);
                 System.out.println("[" + title + "] " + init + " " + text);
         }
 
@@ -106,12 +63,11 @@ public class ForteLang implements ForteLangConstants {
         }
 
         static interface Evaluatable { }
-        static interface JSON { public String toJSON(); }
 
         /** Class declarations */
 
         //Function declaration, e.g. x -> y -> x + y
-        static class FL_Function implements Evaluatable, JSON {
+        static class FL_Function implements Evaluatable {
                 //Basically the closure of parameters
                 Map<String, Object> functionScope;
                 String parameter;
@@ -142,18 +98,10 @@ public class ForteLang implements ForteLangConstants {
                                 return (FL_Function) currentExpression;
                         }
                 }
-
-                public String toJSON() {
-                        StringBuilder builder = new StringBuilder("{");
-                        builder.append("\u005c"FL_Function\u005c" : { ");
-                        builder.append("\u005c"param\u005c" : \u005c"" + parameter + "\u005c",");
-                        builder.append("\u005c"expression\u005c" : " + objToJson(expression) + " } }");
-                        return builder.toString();
-                }
         }
 
         //Function call, e.g. myFunc 2 3
-        static class FL_Function_Call implements Evaluatable, JSON {
+        static class FL_Function_Call implements Evaluatable {
                 Object initFunction;
                 LinkedList<Object> arguments;
 
@@ -162,17 +110,9 @@ public class ForteLang implements ForteLangConstants {
                 }
 
                 @Override public String toString() { return "FL_Function_Call(" + initFunction + ") " + arguments; }
-
-                public String toJSON() {
-                        StringBuilder builder = new StringBuilder("{");
-                        builder.append("\u005c"FL_Function_Call\u005c" : { ");
-                        builder.append("\u005c"initFunction\u005c" : " + objToJson(initFunction) + ",");
-                        builder.append("\u005c"arguments\u005c" : " + objToJson(arguments) + " } }");
-                        return builder.toString();
-                }
         }
 
-        static class FL_Set implements Evaluatable, JSON {
+        static class FL_Set implements Evaluatable {
                 boolean impure;
                 LinkedHashMap<String, Object> attributes;
 
@@ -241,14 +181,6 @@ public class ForteLang implements ForteLangConstants {
                 @Override public String toString() {
                   return "FL_Set[impure=" + impure + ", attrs=" + attributes + "]";
                 }
-
-                public String toJSON() {
-                        StringBuilder builder = new StringBuilder("{");
-                        builder.append("\u005c"FL_Set\u005c" : { ");
-                        builder.append("\u005c"impure\u005c" : " + impure + ",");
-                        builder.append("\u005c"attributes\u005c" : " + objToJson(attributes) + " } }");
-                        return builder.toString();
-                }
         }
 
         /** Helper functions */
@@ -263,20 +195,16 @@ public class ForteLang implements ForteLangConstants {
 
         /** Other declared objects */
 
-        static class FL_List implements Evaluatable, JSON {
+        static class FL_List implements Evaluatable {
                 LinkedList<Object> list;
                 public FL_List() { list = new LinkedList<Object>(); }
 
                 @Override public String toString() {
                   return "FL_List" + list;
                 }
-
-                public String toJSON() {
-                        return objToJson(list);
-                }
         }
 
-        static class FL_Guards implements Evaluatable, JSON {
+        static class FL_Guards implements Evaluatable {
                 LinkedHashMap<Object, Object> statements;
                 Object finalStatement;
 
@@ -284,16 +212,6 @@ public class ForteLang implements ForteLangConstants {
 
                 @Override public String toString() {
                   return "FL_Guards[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
-                }
-
-                public String toJSON() {
-                        StringBuilder builder = new StringBuilder("{");
-                        LinkedHashMap<Object, Object> c = (LinkedHashMap<Object, Object>) statements.clone();
-                        c.put(null, finalStatement);
-                        builder.append("\u005c"FL_Guards\u005c" : { ");
-                        builder.append("\u005c"statements\u005c" : " + objToJson(c) + " } }");
-//			builder.append("\"arguments\" : " + objToJson(null) + " } }");
-                        return builder.toString();
                 }
         }
 
@@ -318,7 +236,7 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        static class FL_Var implements Evaluatable, JSON {
+        static class FL_Var implements Evaluatable {
                 String name;
 
                 public FL_Var(String name) {
@@ -328,13 +246,9 @@ public class ForteLang implements ForteLangConstants {
                 @Override public String toString() {
                   return "FL_Var[name=" + name + "]";
                 }
-
-                public String toJSON() {
-                        return " { \u005c"FL_Var\u005c" : \u005c"" + name + "\u005c" }";
-                }
         }
 
-        static class FL_OpExpr implements Evaluatable, JSON {
+        static class FL_OpExpr implements Evaluatable {
                 Object initVar;
                 LinkedList<Token> operators;
                 LinkedList<Object> expressionsToParse;
@@ -346,27 +260,6 @@ public class ForteLang implements ForteLangConstants {
 
                 @Override public String toString() {
                         return "FL_OpExpr[init=" + initVar + "" + operators + "" + expressionsToParse + "]";
-                }
-
-                public String toJSON() {
-                        StringBuilder builder = new StringBuilder("{");
-                        builder.append("\u005c"FL_OpExpr\u005c" : { ");
-
-                        LinkedList<Token> operatorsC = (LinkedList<Token>) operators.clone();
-                        LinkedList<Object> expressionsToParseC = (LinkedList<Object>) expressionsToParse.clone();
-
-                        LinkedList<Object> newList = new LinkedList<Object>();
-                        newList.push(initVar);
-
-                        while(!operatorsC.isEmpty()) {
-                                newList.push(operatorsC.pop());
-                                newList.push(expressionsToParseC.pop());
-                        }
-
-                        builder.append("\u005c"operation\u005c" : " + objToJson(newList) + " } }");
-//			builder.append("\"expressionsToParse\" : " + objToJson(expressionsToParse) + ",");
-//			builder.append("\"operators\" : " + objToJson(operators) + " } }");
-                        return builder.toString();
                 }
         }
 
@@ -1351,6 +1244,16 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
+  private boolean jj_3R_43() {
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_7()) return true;
+    return false;
+  }
+
   private boolean jj_3R_35() {
     if (jj_scan_token(OPENSBRACKET)) return true;
     Token xsp;
@@ -1689,16 +1592,6 @@ public class ForteLang implements ForteLangConstants {
       if (jj_3_1()) { jj_scanpos = xsp; break; }
     }
     if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_43() {
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_7()) return true;
     return false;
   }
 

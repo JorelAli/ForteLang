@@ -72,10 +72,10 @@ To enter a double quote in a string, it must be escaped with a backslash:
 
 #### Guards (conditional statements)
 
-ForteLang doesn't have `if ... else` statements, instead it has guards:
+ForteLang doesn't have `if ... else` statements, instead it has guards, which begin with the `|>` operator. Each statement is composed of the guard symbol `|`, a predicate (boolean result) followed by the double arrow `->>` and a resulting expression.
 
 ```
-max = x -> y ->
+max = x -> y -> |>
 	| x > y ->> x
 	| ->> y;
 ```
@@ -83,7 +83,7 @@ max = x -> y ->
 This is equivalent to the pseudocode:
 
 ```
-max = x -> y ->
+max = x -> y -> 
 	if (x > y):
 		return x;
 	else:
@@ -120,6 +120,22 @@ ForteLang can do basic pattern matching using the `match` keyword
 ```
 isTrue = x -> match x
 	| true ->> true
+	| ->> false
+```
+
+Pattern matching allows you to match any expression to any other expression, for example with lists:
+
+```
+isEmpty = list -> match list
+	| [] ->> true
+	| ->> false
+```
+
+Pattern matching also allows for regex (Regular Expressions) which can be pattern matched for strings. Regular expressions must be encased in single quotes, as shown:
+
+```
+isNumber = str -> match str
+	| '[0-9]+' ->> true
 	| ->> false
 ```
 
@@ -165,6 +181,20 @@ Set elements can be accessed using the `.` operator:
 mySet = {
     exampleItem = 5;
 }.exampleItem
+```
+
+#### The `?` operator
+
+The `?` operator lets you check if an element exists within a set or a list:
+
+```
+[1, 2, 3] ? 2
+```
+
+This would return true. To check for items in a set, you must use a string to identify a given key within a set:
+
+```
+{ a = 1; b = 2; } ? "a"
 ```
 
 #### Importing other files

@@ -7,9 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.ByteArrayInputStream;
 import java.util.regex.Pattern;
 
 /** Token Manager. */

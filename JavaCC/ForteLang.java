@@ -7,10 +7,12 @@ import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.ByteArrayInputStream;
 
 import java.util.regex.Pattern;
 
@@ -18,7 +20,7 @@ public class ForteLang implements ForteLangConstants {
 
         /** Static fields */
         static String fileName;
-        final static boolean LOGGING_ENABLE = true;
+        static boolean LOGGING_ENABLE = true;
 
         static void printSECD() {print("SECD"); }
         static void printSECD(Object o) { print("SECD", o); }
@@ -38,31 +40,68 @@ public class ForteLang implements ForteLangConstants {
 
         /** Main method */
         public static void main(String[] args) throws ParseException, FileNotFoundException {
-                if(args.length != 1) {
+                boolean replMode = false;
+                for(String str : args) {
+                        if(str.equals("-repl")) {
+                                replMode = true;
+                        }
+                }
+
+                if(args.length < 1) {
                         System.out.println("Usage: java ForteLang <File>");
                         return;
                 }
 
-                File file = new File(args[0]);
-                fileName = file.getName();
-                try {
-                        /* Run the parser */
+                if(replMode) {
+                        LOGGING_ENABLE = false;
+                        System.out.println("Welcome to the ForteLang repl (v0.0.1). Type :help for help.");
+                        System.out.println();
+                        Scanner scanner = new Scanner(System.in);
+                        repl: while(true) {
+                                System.out.print("fl-repl> ");
+                                String input = scanner.nextLine();
+                                switch(input) {
+                                        case ":help":
+                                                System.out.println("The following commands are available:");
+                                                System.out.println();
+                                                System.out.println("  :q\u005ctExit ForteLang repl");
+                                                System.out.println();
+                                                continue repl;
+                                        case ":q":
+                                                break repl;
+                                }
 
-                        Object result = new ForteLang(new FileInputStream(file)).input();
-                        if(result instanceof Double) {
-                                double d = (double) result;
-                                if((d % 1) == 0) {
-                                        result = (long) d;
+                                try {
+                                        Object result = new ForteLang(new ByteArrayInputStream(input.getBytes())).input();
+                                        System.out.println("=> " + result + "\u005cn");
+                                } catch(Exception e) {
+//				  	e.printStackTrace();
                                 }
                         }
-                        System.out.println();
-                        System.out.println("=== Evaluation complete ===");
-                        System.out.println("==> " + result);
+                } else {
+                        File file = new File(args[0]);
+                        fileName = file.getName();
+                        try {
+                                /* Run the parser */
 
-                } catch(Exception e) {
-                        e.printStackTrace();
-                        return;
+                                Object result = new ForteLang(new FileInputStream(file)).input();
+                                if(result instanceof Double) {
+                                        double d = (double) result;
+                                        if((d % 1) == 0) {
+                                                result = (long) d;
+                                        }
+                                }
+                                System.out.println();
+                                System.out.println("=== Evaluation complete ===");
+                                System.out.println("==> " + result);
+
+                        } catch(Exception e) {
+                                e.printStackTrace();
+                                return;
+                        }
                 }
+
+
         }
 
         static class EvaluationException extends Exception {
@@ -821,9 +860,11 @@ public class ForteLang implements ForteLangConstants {
                                     Object expression;
     expression = enclosedExpression();
     jj_consume_token(0);
-        System.out.println();
-        System.out.println("=== Parsing complete ===");
-        System.out.println();
+        if(LOGGING_ENABLE) {
+                System.out.println();
+                System.out.println("=== Parsing complete ===");
+                System.out.println();
+        }
 
     Object result = null;
     if(expression instanceof FL_IncludedSet) {
@@ -1351,6 +1392,133 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
+  private boolean jj_3R_36() {
+    if (jj_scan_token(OPENSBRACKET)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_43()) {
+    jj_scanpos = xsp;
+    if (jj_3R_44()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_5()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(34)) return true;
+    }
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_6()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_20() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_19() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_10() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_19()) {
+    jj_scanpos = xsp;
+    if (jj_3R_20()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3_8() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_7() {
+    if (jj_3R_12()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_4()) jj_scanpos = xsp;
+    return false;
+  }
+
+  private boolean jj_3R_42() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(EQUALS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_33() {
+    if (jj_3R_40()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_32() {
+    if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_31() {
+    if (jj_scan_token(REGEX_STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_39() {
+    if (jj_scan_token(MATCH)) return true;
+    if (jj_3R_6()) return true;
+    Token xsp;
+    if (jj_3_8()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_8()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_29() {
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_41() {
+    if (jj_scan_token(IMPURE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_28() {
+    if (jj_3R_38()) return true;
+    return false;
+  }
+
   private boolean jj_3R_27() {
     if (jj_3R_37()) return true;
     return false;
@@ -1635,133 +1803,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3_6() {
     if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_36() {
-    if (jj_scan_token(OPENSBRACKET)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_43()) {
-    jj_scanpos = xsp;
-    if (jj_3R_44()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_5() {
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_8() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_5()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(34)) return true;
-    }
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_6()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_20() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_19() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_10() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_19()) {
-    jj_scanpos = xsp;
-    if (jj_3R_20()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3_8() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_7() {
-    if (jj_3R_12()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_4()) jj_scanpos = xsp;
-    return false;
-  }
-
-  private boolean jj_3R_42() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(EQUALS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_33() {
-    if (jj_3R_40()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_32() {
-    if (jj_scan_token(BOOLEAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_31() {
-    if (jj_scan_token(REGEX_STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_39() {
-    if (jj_scan_token(MATCH)) return true;
-    if (jj_3R_6()) return true;
-    Token xsp;
-    if (jj_3_8()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_8()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_29() {
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_41() {
-    if (jj_scan_token(IMPURE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_28() {
-    if (jj_3R_38()) return true;
     return false;
   }
 

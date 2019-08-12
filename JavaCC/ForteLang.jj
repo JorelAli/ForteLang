@@ -312,7 +312,7 @@ public class ForteLang {
 
 	static class OperatorParser {
 
-		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT };
+		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT, CONTAINS };
 
 		Operator operatorKind;
 		String op;
@@ -334,6 +334,9 @@ public class ForteLang {
 				case ForteLangConstants.CONCAT:
 					operatorKind = Operator.CONCAT;
 					break;
+				case ForteLangConstants.CONTAINS:
+					operatorKind = Operator.CONTAINS;
+					break;
 				default:
 					throw new Exception ("Invalid operator for OperatorParser: " + operator.image);
 			}
@@ -351,9 +354,23 @@ public class ForteLang {
 				case COMPARATOR:
 					return applyComparator(o1, o2);
 				case CONCAT:
-					return applyConcat(o1, o2); 
+					return applyConcat(o1, o2);
+				case CONTAINS:
+					return applyContains(o1, o2);
 			}
 			throw new Exception ("Failed to apply any operators");
+		}
+
+		public Object applyContains(Object o1, Object o2) throws Exception {
+			if(o1 instanceof FL_List) {
+				FL_List l1 = (FL_List) o1;
+				return l1.list.contains(o2);
+			} else if(o1 instanceof FL_Set) {
+				FL_Set s1 = (FL_Set) o1;
+				return s1.attributes.keySet().contains(o2);
+			} else {
+				throw new Exception("Cannot check for existance within a " + o1.getClass().getName());
+			}
 		}
 
 		public Object applyConcat(Object o1, Object o2) throws Exception {
@@ -899,6 +916,7 @@ Token anyOperator() throws Exception : { Token op; } {
 	| op = <SET_OP>        { return op; }
 	| op = <COMPARATOR_OP> { return op; }
 	| op = <CONCAT>        { return op; }
+	| op = <CONTAINS>      { return op; }
 }
 
 FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object expression; FL_Set set; } {

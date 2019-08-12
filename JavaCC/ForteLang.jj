@@ -14,18 +14,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
+import java.util.regex.Pattern;
+
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.ByteArrayInputStream;
 
-import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 public class ForteLang {
 	
 	/** Static fields */
 	static String fileName;
-	static boolean LOGGING_ENABLE = true; 
+	static boolean LOGGING_ENABLE = true;
+	static Scanner globalScanner = null;
 
 	static void printSECD() {print("SECD"); }
 	static void printSECD(Object o) { print("SECD", o); }
@@ -41,6 +45,25 @@ public class ForteLang {
 	  	if(LOGGING_ENABLE) {
 		  	System.out.println("[" + title + "] " + init + (init.isEmpty() ? "" : " ") + String.valueOf(val));
 	  	}
+	}
+
+	static Scanner getGlobalScanner() {
+		if(globalScanner == null) {
+			globalScanner = new Scanner(System.in);
+		}
+		return globalScanner;
+	}
+
+	static String prettifyOutput(Object result) {
+		if(result instanceof String) {
+			return "\"" + result + "\"";
+		} else if(result instanceof Double) {
+		  	double d = (double) result;
+			if((d % 1) == 0) {
+				result = (long) d;
+			}
+		}
+		return String.valueOf(result);
 	}
 
 	/** Main method */
@@ -61,10 +84,13 @@ public class ForteLang {
 			LOGGING_ENABLE = false;
 			System.out.println("Welcome to the ForteLang repl (v0.0.1). Type :help for help.");
 			System.out.println();
-			Scanner scanner = new Scanner(System.in);
+			Scanner scanner = getGlobalScanner();
 			repl: while(true) {
 			  	System.out.print("fl-repl> ");
-				String input = scanner.nextLine();
+				String input = null;
+				try { 
+					input = scanner.nextLine();
+				} catch(Exception e) { scanner.close(); }
 				switch(input) {
 					case ":help":
 						System.out.println("The following commands are available:");
@@ -78,9 +104,13 @@ public class ForteLang {
 				
 				try { 
 					Object result = new ForteLang(new ByteArrayInputStream(input.getBytes())).input();
-					System.out.println("=> " + result + "\n");
+					System.out.println("=> " + prettifyOutput(result) + "\n");
+				} catch(Error e) {
+					System.out.println("=>> Error, invalid input \"" + input + "\"");
+					System.out.println(e.getMessage() + "\n");
 				} catch(Exception e) {
-//				  	e.printStackTrace();
+					System.out.println("=>> Error, invalid input \"" + input + "\"");
+					System.out.println(e.getMessage() + "\n");
 				}
 			}
 	  	} else {
@@ -90,15 +120,9 @@ public class ForteLang {
 			  	/* Run the parser */
 	
 				Object result = new ForteLang(new FileInputStream(file)).input();
-				if(result instanceof Double) {
-				  	double d = (double) result;
-					if((d % 1) == 0) {
-						result = (long) d;
-					}
-				}
 				System.out.println();
 				System.out.println("=== Evaluation complete ===");
-				System.out.println("==> " + result);
+				System.out.println("==> " + prettifyOutput(result));
 				
 			} catch(Exception e) {
 			  	e.printStackTrace();
@@ -232,7 +256,15 @@ public class ForteLang {
 		}
 
 		@Override public String toString() {
-		  return (impure ? "Impure" : "") + "Set" + attributes;
+		  StringBuilder builder = new StringBuilder("{ ");
+		  //		LinkedHashMap<String, Object> attributes;
+		  for(Entry<String, Object> entry : attributes.entrySet()) {
+			  builder.append(entry.getKey());
+			  builder.append(" = ");
+			  builder.append(entry.getValue());
+			  builder.append("; ");
+		  }
+		  return (impure ? "impure " : "") + builder.append("}").toString();
 		}
 	}
 
@@ -253,7 +285,7 @@ public class ForteLang {
 		public FL_List() { list = new LinkedList<Object>(); }
 		
 		@Override public String toString() {
-		  return "List" + list;
+		  return String.valueOf(list);
 		}
 
 		@Override public boolean equals(Object o) {
@@ -339,7 +371,7 @@ public class ForteLang {
 
 	static class FL_Builtin implements Evaluatable {
 		Object param;
-		enum Builtin { IMPORT, PRINT, EXEC, HEAD, TAIL }
+		enum Builtin { IMPORT, PRINT, EXEC, HEAD, TAIL, INPUT, INPUTBOX }
 
 		Builtin type;
 
@@ -670,6 +702,20 @@ public class ForteLang {
 						  	newList.list = list;
 						  	return newList;
 						}
+					case INPUT:
+						if(!(builtinParam instanceof String)) {
+							throw new EvaluationException("Expected a string for input");
+						}
+						System.out.println("[@input] " + builtinParam);
+						System.out.print("@input> ");
+						return getGlobalScanner().nextLine();
+					case INPUTBOX:
+						if(!(builtinParam instanceof String)) {
+							throw new EvaluationException("Expected a string for inputbox");
+						}
+						UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+						String inputBox = JOptionPane.showInputDialog(null, builtinParam, "ForteLang @inputbox", -1);
+						return (inputBox == null ? "" : inputBox);
 //						TODO: 
 //					
 //					    ### Things to do
@@ -890,6 +936,8 @@ TOKEN : { < MATCH : "match" > }
 TOKEN : { < IMPORT : "@import" > }
 TOKEN : { < EXEC : "@exec" > }
 TOKEN : { < PRINT : "@print" > }
+TOKEN : { < INPUT : "@input" > }
+TOKEN : { < INPUTBOX : "@inputbox" > }
 TOKEN : { < HEAD : "head" > }
 TOKEN : { < TAIL : "tail" > }
 
@@ -1138,6 +1186,8 @@ Object builtinFunctions() throws Exception : { Object param; Token stringToken; 
 	| <EXEC>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
 	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
 	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
+	| <INPUT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUT, param); }
+	| <INPUTBOX>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, param); }
 }
 
 FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; } {

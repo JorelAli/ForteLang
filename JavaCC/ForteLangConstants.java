@@ -47,43 +47,47 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int PRINT = 19;
   /** RegularExpression Id. */
-  int HEAD = 20;
+  int INPUT = 20;
   /** RegularExpression Id. */
-  int TAIL = 21;
+  int INPUTBOX = 21;
   /** RegularExpression Id. */
-  int OPENBRACKET = 22;
+  int HEAD = 22;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 23;
+  int TAIL = 23;
   /** RegularExpression Id. */
-  int OPENSBRACKET = 24;
+  int OPENBRACKET = 24;
   /** RegularExpression Id. */
-  int CLOSESBRACKET = 25;
+  int CLOSEBRACKET = 25;
   /** RegularExpression Id. */
-  int COMMA = 26;
+  int OPENSBRACKET = 26;
   /** RegularExpression Id. */
-  int CAPS = 27;
+  int CLOSESBRACKET = 27;
   /** RegularExpression Id. */
-  int ENUM_OPEN = 28;
+  int COMMA = 28;
   /** RegularExpression Id. */
-  int ENUM_CLOSE = 29;
+  int CAPS = 29;
   /** RegularExpression Id. */
-  int EQUALS = 30;
+  int ENUM_OPEN = 30;
   /** RegularExpression Id. */
-  int SEMICOLON = 31;
+  int ENUM_CLOSE = 31;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 32;
+  int EQUALS = 32;
   /** RegularExpression Id. */
-  int CLOSECBRACKET = 33;
+  int SEMICOLON = 33;
   /** RegularExpression Id. */
-  int VAR_NAME = 34;
+  int OPENCBRACKET = 34;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 35;
+  int CLOSECBRACKET = 35;
   /** RegularExpression Id. */
-  int GUARD_START = 36;
+  int VAR_NAME = 36;
   /** RegularExpression Id. */
-  int GUARD = 37;
+  int FUNCTION_ARROW = 37;
   /** RegularExpression Id. */
-  int GUARD_ARROW = 38;
+  int GUARD_START = 38;
+  /** RegularExpression Id. */
+  int GUARD = 39;
+  /** RegularExpression Id. */
+  int GUARD_ARROW = 40;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -110,6 +114,8 @@ public interface ForteLangConstants {
     "\"@import\"",
     "\"@exec\"",
     "\"@print\"",
+    "\"@input\"",
+    "\"@inputbox\"",
     "\"head\"",
     "\"tail\"",
     "\"(\"",
@@ -129,8 +135,8 @@ public interface ForteLangConstants {
     "\"|>\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 39>",
-    "<token of kind 40>",
+    "<token of kind 41>",
+    "<token of kind 42>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",

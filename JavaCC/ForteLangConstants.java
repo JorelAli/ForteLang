@@ -31,57 +31,59 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int STRING = 11;
   /** RegularExpression Id. */
-  int INCLUDE = 12;
+  int REGEX_STRING = 12;
   /** RegularExpression Id. */
-  int IN = 13;
+  int INCLUDE = 13;
   /** RegularExpression Id. */
-  int IMPURE = 14;
+  int IN = 14;
   /** RegularExpression Id. */
-  int MATCH = 15;
+  int IMPURE = 15;
   /** RegularExpression Id. */
-  int IMPORT = 16;
+  int MATCH = 16;
   /** RegularExpression Id. */
-  int EXEC = 17;
+  int IMPORT = 17;
   /** RegularExpression Id. */
-  int PRINT = 18;
+  int EXEC = 18;
   /** RegularExpression Id. */
-  int HEAD = 19;
+  int PRINT = 19;
   /** RegularExpression Id. */
-  int TAIL = 20;
+  int HEAD = 20;
   /** RegularExpression Id. */
-  int OPENBRACKET = 21;
+  int TAIL = 21;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 22;
+  int OPENBRACKET = 22;
   /** RegularExpression Id. */
-  int OPENSBRACKET = 23;
+  int CLOSEBRACKET = 23;
   /** RegularExpression Id. */
-  int CLOSESBRACKET = 24;
+  int OPENSBRACKET = 24;
   /** RegularExpression Id. */
-  int COMMA = 25;
+  int CLOSESBRACKET = 25;
   /** RegularExpression Id. */
-  int CAPS = 26;
+  int COMMA = 26;
   /** RegularExpression Id. */
-  int ENUM_OPEN = 27;
+  int CAPS = 27;
   /** RegularExpression Id. */
-  int ENUM_CLOSE = 28;
+  int ENUM_OPEN = 28;
   /** RegularExpression Id. */
-  int EQUALS = 29;
+  int ENUM_CLOSE = 29;
   /** RegularExpression Id. */
-  int SEMICOLON = 30;
+  int EQUALS = 30;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 31;
+  int SEMICOLON = 31;
   /** RegularExpression Id. */
-  int CLOSECBRACKET = 32;
+  int OPENCBRACKET = 32;
   /** RegularExpression Id. */
-  int VAR_NAME = 33;
+  int CLOSECBRACKET = 33;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 34;
+  int VAR_NAME = 34;
   /** RegularExpression Id. */
-  int GUARD_START = 35;
+  int FUNCTION_ARROW = 35;
   /** RegularExpression Id. */
-  int GUARD = 36;
+  int GUARD_START = 36;
   /** RegularExpression Id. */
-  int GUARD_ARROW = 37;
+  int GUARD = 37;
+  /** RegularExpression Id. */
+  int GUARD_ARROW = 38;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -100,6 +102,7 @@ public interface ForteLangConstants {
     "<FLOATING_POINT_NUMBER>",
     "<BOOLEAN>",
     "<STRING>",
+    "<REGEX_STRING>",
     "\"include\"",
     "\"in\"",
     "\"impure\"",
@@ -126,8 +129,8 @@ public interface ForteLangConstants {
     "\"|>\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 38>",
     "<token of kind 39>",
+    "<token of kind 40>",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",

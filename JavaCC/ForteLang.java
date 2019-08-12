@@ -202,6 +202,14 @@ public class ForteLang implements ForteLangConstants {
                 @Override public String toString() {
                   return "FL_List" + list;
                 }
+
+                @Override public boolean equals(Object o) {
+                        if(o instanceof FL_List) {
+                                FL_List other = (FL_List) o;
+                                return list.equals(other.list);
+                        }
+                        return false;
+                }
         }
 
         static class FL_Guards implements Evaluatable {
@@ -1244,16 +1252,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_43() {
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_7()) return true;
-    return false;
-  }
-
   private boolean jj_3R_35() {
     if (jj_scan_token(OPENSBRACKET)) return true;
     Token xsp;
@@ -1592,6 +1590,16 @@ public class ForteLang implements ForteLangConstants {
       if (jj_3_1()) { jj_scanpos = xsp; break; }
     }
     if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_43() {
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_7()) return true;
     return false;
   }
 

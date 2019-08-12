@@ -4,11 +4,20 @@ options {
 
 PARSER_BEGIN(ForteLang)
 
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
-import java.util.Map.*;
-import java.io.*;
+import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.ListIterator;
+import java.util.Stack;
+import java.util.LinkedHashMap;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import java.io.FileInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+
+import java.util.regex.Pattern;
 
 public class ForteLang {
 	
@@ -290,6 +299,18 @@ public class ForteLang {
 			builder.append("\"statements\" : " + objToJson(c) + " } }");
 //			builder.append("\"arguments\" : " + objToJson(null) + " } }");
 			return builder.toString();
+		}
+	}
+
+	static class FL_Match implements Evaluatable {
+		LinkedHashMap<Object, Object> statements;
+		Object finalStatement;
+		Object matchOn;
+
+		public FL_Match() { statements = new LinkedHashMap<Object, Object>(); }
+
+		@Override public String toString() {
+		  return "FL_Match[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
 		}
 	}
 
@@ -755,7 +776,25 @@ public class ForteLang {
 					}
 				}
 				return evaluate(scope, guards.finalStatement);
-			} else if(expression instanceof FL_Var) {
+			} else if(expression instanceof FL_Match) {
+				FL_Match match = (FL_Match) expression;
+
+				Object matchOn = evaluate(scope, match.matchOn);
+				
+				for(Object matchExpr : match.statements.keySet()) {
+					Object result = evaluate(scope, matchExpr);
+
+					if(result instanceof Pattern && matchOn instanceof String) {
+						Pattern pattern = (Pattern) result;
+						if(pattern.matcher((String) matchOn).matches()) {
+							return evaluate(scope, match.statements.get(matchExpr));
+						}
+					} else if(matchOn.equals(result)) {
+						return evaluate(scope, match.statements.get(matchExpr));
+					}
+				}
+				return evaluate(scope, match.finalStatement);
+			}else if(expression instanceof FL_Var) {
 				FL_Var flVar = (FL_Var) expression;
 				Object var = scope.attributes.get(flVar.name);
 				while(var instanceof FL_Var) {
@@ -1039,8 +1078,9 @@ Object singleExpression() throws Exception : { Object result; Token token; } {
 	| result = list() { return result; }
 	| result = number() { return result; }
 	| result = guards() { return result; }
+	| result = match() { return result; }
 	| token = <STRING> { return parseString(token); }
-	| token = <REGEX_STRING> { return parseString(token); }
+	| token = <REGEX_STRING> { return Pattern.compile(parseString(token)); }
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 }
 
@@ -1104,12 +1144,12 @@ FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Ob
 //	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
 //}
 
-FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; Token firstGuard; } {
+FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; } {
 	{ guards = new FL_Guards(); expression = null; }
   	<GUARD_START>
 	(
 	  	LOOKAHEAD(2)
-	  	firstGuard = <GUARD>
+	  	<GUARD>
 		predicate = enclosedExpression()
 		<GUARD_ARROW>
 		expression = enclosedExpression()
@@ -1121,5 +1161,35 @@ FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Obje
 	{
 	  guards.finalStatement = finalExpression;
 	  return guards;
+	}
+}
+
+FL_Match match() throws Exception : {
+  FL_Match match;
+  Object statement;
+  
+  Object predicate;
+  Object expression;
+  Object finalExpression;
+} {
+	{ match = new FL_Match(); expression = null; }
+
+	<MATCH>
+	statement = enclosedExpression()
+	{ match.matchOn = statement; }
+	(
+	  	LOOKAHEAD(2)
+	  	<GUARD>
+		predicate = enclosedExpression()
+		<GUARD_ARROW>
+		expression = enclosedExpression()
+		{ match.statements.put(predicate, expression); }
+	)+
+	<GUARD>
+	<GUARD_ARROW>
+	finalExpression = enclosedExpression()
+	{
+	  match.finalStatement = finalExpression;
+	  return match;
 	}
 }

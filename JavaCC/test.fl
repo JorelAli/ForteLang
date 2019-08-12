@@ -48,14 +48,14 @@ include {
         | ->> input * factorial (input - 1);
         
     # Pattern matching on Strings:
-    # isInt = str -> match str
-    #     | '[0-9]+' ->> true;
-    #     | '-[0-9]+' ->> true;
-    #     | ->> false;
+    isInt = str -> match str
+        | '[0-9]+' ->> true
+        | '-[0-9]+' ->> true
+        | ->> false;
 
-    isInt = str -> '[0-9]+';
+    # isInt = str -> '[0-9]+';
 
-} in isInt 2
+} in isInt "-123"
 
 
 #factorial 1

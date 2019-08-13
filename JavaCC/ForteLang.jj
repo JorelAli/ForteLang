@@ -8,10 +8,6 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Stack;
-import java.util.LinkedHashMap;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 
 import java.util.regex.Pattern;
@@ -129,58 +125,12 @@ public class ForteLang {
 			  	return;
 			}
 	  	}
-
-	  	
 	}
 
 	static class EvaluationException extends Exception {
 		public EvaluationException(String message) {
 			super(message);
 		}
-	}
-
-	/** Class declarations */
-
-	//Function declaration, e.g. x -> y -> x + y
-//	static class FL_Function implements Evaluatable {
-//		String parameter;
-//		Object expression;
-//
-//		public FL_Function() {}
-//
-//		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
-//
-//		static class FL_Function_Builder {
-//			Stack<String> parameters;
-//			Object expression;
-//		  
-//			public FL_Function_Builder() {
-//				parameters = new Stack<String>();
-//			}
-//
-//			public FL_Function build() {
-//			  	Object currentExpression = expression;
-//			  	while(!parameters.empty()) {
-//					FL_Function newExpression = new FL_Function();
-//					newExpression.parameter = parameters.pop();
-//					newExpression.expression = currentExpression;
-//					currentExpression = newExpression;
-//			  	}
-//				return (FL_Function) currentExpression;
-//			}
-//		}
-//	}
-
-	//Function call, e.g. myFunc 2 3
-	static class FL_FunctionCall implements Evaluatable {
-		Object initFunction;
-		LinkedList<Object> arguments;
-
-		public FL_FunctionCall() {
-			arguments = new LinkedList<Object>();
-		}
-
-//		@Override public String toString() { return "FuncCall " + initFunction + " " + arguments; }
 	}
 
 	/** Helper functions */

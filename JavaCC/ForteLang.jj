@@ -645,7 +645,12 @@ public class ForteLang {
 			  	Object newInit = new OperatorParser(operatorToUse).apply(left, right);
 
 			  	printEVAL("OpExpr eval result: ", newInit);
-			  	return newInit;
+
+			  	if(newInit instanceof Evaluatable) {
+					return evaluate(scope, newInit);
+			  	} else { 
+				  	return newInit;
+				}	
 			} else if(expression instanceof FL_List) {
 				FL_List list = (FL_List) expression;
 				ListIterator<Object> iterator = list.listIterator(0);

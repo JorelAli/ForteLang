@@ -1,112 +1,114 @@
 include {
-    # # Adds two parameters together
-    # add = x -> y -> x + y;
+    # Adds two parameters together
+    add = x -> y -> x + y;
 
-    # basicOperation = 123.25 + 2;
+    basicOperation = 123.25 + 2;
 
-    # # Lists
-    # someList      = [1, 2];
-    # someOtherList = [3];
-    # emptyList     = [];
+    # Lists
+    someList      = [1, 2];
+    someOtherList = [3];
+    emptyList     = [];
 
-    # #Example with guards
-    # maxOr0 = x -> y -> |>
-    #     | x > y ->> x 
-    #     | x < y ->> y 
-    #     | ->> 0;
+    #Example with guards
+    maxOr0 = x -> y -> |>
+        | x > y ->> x 
+        | x < y ->> y 
+        | ->> 0;
 
-    # nestedGuard = x -> |>
-    #     | x == 0 ->> 0
-    #     | ->> |>
-    #         | x == 1 ->> 1
-    #         | ->> -1;
+    nestedGuard = x -> |>
+        | x == 0 ->> 0
+        | ->> |>
+            | x == 1 ->> 1
+            | ->> -1;
 
-    # inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
+    inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
 
-    # # Set operations
-    # union =      set1 -> set2 -> set1 /+ set2;
-    # intersect =  set1 -> set2 -> set1 /- set2;
-    # difference = set1 -> set2 -> set1 // set2;
+    # Set operations
+    union =      set1 -> set2 -> set1 /+ set2;
+    intersect =  set1 -> set2 -> set1 /- set2;
+    difference = set1 -> set2 -> set1 // set2;
 
-    # # Adds sets to scope of expressions
-    # myFunctions2 = include {
-    #     myAdd = x -> y -> x + y;
-    # } in myAdd 2;
+    # Adds sets to scope of expressions
+    myFunctions2 = include {
+        myAdd = x -> y -> x + y;
+    } in myAdd 2;
 
-    # head' = list -> list ++ [2, 3, (2 + 2)];
+    head' = list -> list ++ [2, 3, (2 + 2)];
 
-    # nestedList = [2, [3]];
+    nestedList = [2, [3]];
 
-    # const = 4;
+    const = 4;
 
-    # p = x -> x;
+    p = x -> x;
 
-    # a = lambda -> lambda 2 3;
+    a = lambda -> lambda 2 3;
 
-    # factorial = input -> |>
-    #     | input == 0 ->> 1
-    #     | ->> input * factorial (input - 1);
+    factorial = input -> |>
+        | input == 0 ->> 1
+        | ->> input * factorial (input - 1);
 
-    # # Standard library
-    # all = list -> match list 
-    #     | [] ->> true
-    #     | ->> |> | head list ->> all (tail list) | ->> false;
+    # Standard library
+    all = list -> match list 
+        | [] ->> true
+        | ->> |> | head list ->> all (tail list) | ->> false;
 
-    # any = list -> match list
-    #     | [] ->> false
-    #     | ->> |> | head list ->> true | ->> any (tail list);
+    any = list -> match list
+        | [] ->> false
+        | ->> |> | head list ->> true | ->> any (tail list);
 
-    # length = list -> match list
-    #     | [] ->> 0
-    #     | ->> 1 + sizeOfList (tail list);
+    length = list -> match list
+        | [] ->> 0
+        | ->> 1 + sizeOfList (tail list);
 
-    # genList = num -> formula -> match num
-    #     | 0 ->> []
-    #     | ->> [(formula num)] ++ genList (num - 1) formula;
+    genList = num -> formula -> match num
+        | 0 ->> []
+        | ->> [(formula num)] ++ genList (num - 1) formula;
 
-    # not = bool -> |> | bool ->> false | ->> true;
+    not = bool -> |> | bool ->> false | ->> true;
             
-    # # Pattern matching on Strings:
-    # isInt = str -> match str
-    #     | "I_AM_AN_INT" ->> true
-    #     | '[0-9]+' ->> true
-    #     | '-[0-9]+' ->> true
-    #     | ->> false;
+    # Pattern matching on Strings:
+    isInt = str -> match str
+        | "I_AM_AN_INT" ->> true
+        | '[0-9]+' ->> true
+        | '-[0-9]+' ->> true
+        | ->> false;
 
-    # isFloat = str -> match str
-    #     | '-?[0-9]+\.[0-9]+' ->> true
-    #     | ->> false;
+    isFloat = str -> match str
+        | '-?[0-9]+\.[0-9]+' ->> true
+        | ->> false;
 
-    # # isInt = str -> '[0-9]+';
+    # isInt = str -> '[0-9]+';
 
-    # isEmpty = list -> match list
-    #     | [] ->> true
-    #     | ->> false;
+    isEmpty = list -> match list
+        | [] ->> true
+        | ->> false;
 
-    # map = list -> f -> match list
+    map = list -> f -> match list
+        | [] ->> []
+        | ->> [f (head list)] ++ map (tail list) f;
+
+    # map' = f -> list -> match list
     #     | [] ->> []
-    #     | ->> [f (head list)] ++ map (tail list) f;
+    #     | ->> [f (head list)] ++ map' f (tail list);
 
-    # # map' = f -> list -> match list
-    # #     | [] ->> []
-    # #     | ->> [f (head list)] ++ map' f (tail list);
-
-    # isDerivation = set -> set ? "derivation";
+    isDerivation = set -> set ? "derivation";
 
     mySet = {
         item1 = "hello";
         item2 = "world";
         item3 = {
             item4 = {
-                item4 = "!!";
-                item5 = "??";
+                item6 = "!!";
+                item7 = "??";
             };
             item5 = "??";
         };
     };
 
 
-} in mySet."item3"."item4"."item5"
+} in isDerivation {} #{a={a=b;};}."a"."a"
+
+#mySet."item3"."item4"
 
 #isDerivation {derivation = true;}
 #factorial 5#impure {} // {a=2;} #impure { @a = 2; } ? "a"

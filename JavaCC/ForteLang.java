@@ -640,7 +640,12 @@ public class ForteLang implements ForteLangConstants {
                                 Object newInit = new OperatorParser(operatorToUse).apply(left, right);
 
                                 printEVAL("OpExpr eval result: ", newInit);
-                                return newInit;
+
+                                if(newInit instanceof Evaluatable) {
+                                        return evaluate(scope, newInit);
+                                } else {
+                                        return newInit;
+                                }
                         } else if(expression instanceof FL_List) {
                                 FL_List list = (FL_List) expression;
                                 ListIterator<Object> iterator = list.listIterator(0);
@@ -1210,35 +1215,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_52() {
-    if (jj_scan_token(TAIL)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_51() {
-    if (jj_scan_token(HEAD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_50() {
-    if (jj_scan_token(EXEC)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_45() {
-    if (jj_3R_6()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_1()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3R_48() {
     if (jj_scan_token(IMPORT)) return true;
     if (jj_3R_6()) return true;
@@ -1647,6 +1623,35 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3_1() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_52() {
+    if (jj_scan_token(TAIL)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_51() {
+    if (jj_scan_token(HEAD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_50() {
+    if (jj_scan_token(EXEC)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_45() {
+    if (jj_3R_6()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_1()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSESBRACKET)) return true;
     return false;
   }
 

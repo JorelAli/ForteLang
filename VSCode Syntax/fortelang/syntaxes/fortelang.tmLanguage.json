@@ -59,7 +59,7 @@
 		},
 		"regexstrs": {
 			"name": "string.regexp.fortelang",
-			"begin": "'",
+			"begin": "[^a-zA-Z0-9_]'",
 			"end": "'"
 		},
 		"comments": {

@@ -113,8 +113,20 @@ include {
 		};
 	};
 
-} in include { 
-	myFunc = "hello"; } in { hello = 2; }.myFunc
+} in 
+
+include {
+	hello = include {
+		hello' = true;
+	} in { hello = "hello"; }.((hello -> hello ++ "hello") |> | (|> | hello' ->> hello' | ->> hello') ->> "" | ->> "hello");
+} in hello ++ ", world!"
+
+
+	# { a = "hello"; }.((x -> x ++ "a") "") 
+	# ++ 
+	# { b = "world"; }.((x -> y -> x -> "b") 1 2 3)
+
+#include { myFunc = "hello"; } in { hello = 2; }.myFunc
 
 #{ a = 2; }.((x -> x ++ "a") "")
 

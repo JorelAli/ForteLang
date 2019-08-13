@@ -247,6 +247,8 @@ public class ForteLang implements ForteLangConstants {
                                                         throw new Exception("Cannot select from a set using a " + func.getInitFunction().getClass().getName());
                                                 }
                                         }
+                                } else if (o2 instanceof Evaluatable) {
+                                        return applySelect(o1, evaluate(scope, o2));
                                 } else {
                                         throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
                                 }

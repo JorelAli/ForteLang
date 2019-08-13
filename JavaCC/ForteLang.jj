@@ -153,8 +153,11 @@ public class ForteLang {
 
 		Operator operatorKind;
 		String op;
+		FL_Set scope;
 	  
-		public OperatorParser(Token operator) throws Exception {
+		public OperatorParser(Token operator, FL_Set scope) throws Exception {
+		  	this.scope = scope;
+		  	
 			switch(operator.kind) {
 				case ForteLangConstants.BOOLEAN_OP:
 					operatorKind = Operator.BOOLEAN;
@@ -184,6 +187,19 @@ public class ForteLang {
 		}
 
 		public Object apply(Object o1, Object o2) throws Exception {
+
+			if(operatorKind != Operator.SELECT) { 
+			  	if (o1 instanceof Evaluatable) {
+			  	  	printEVAL("EvalOpExpr left part", o1);
+					o1 = evaluate(scope, o1);
+			  	}
+	
+			  	if (o2 instanceof Evaluatable) {
+			  	  	printEVAL("EvalOpExpr right part", o2);
+					o2 = evaluate(scope, o2);
+			  	}
+		 	}
+			
 			switch(operatorKind) {
 				case BOOLEAN:
 					return applyBoolean((boolean) o1, (boolean) o2);
@@ -204,6 +220,12 @@ public class ForteLang {
 		}
 
 		public Object applySelect(Object o1, Object o2) throws Exception {
+		  
+		  	if (o1 instanceof Evaluatable) {
+		  	  	printEVAL("EvalOpExpr left part", o1);
+				o1 = evaluate(scope, o1);
+		  	}
+		  	
 		  	if(o1 instanceof FL_Set) {
 				FL_Set set = (FL_Set) o1;
 				if(o2 instanceof String) {
@@ -213,6 +235,23 @@ public class ForteLang {
 				  	} else { 
 						return result;
 					}
+				} else if (o2 instanceof FL_FunctionCall) {
+				  	FL_FunctionCall func = (FL_FunctionCall) o2;
+				  	if(func.getInitFunction() instanceof FL_Var) {
+						FL_Var var = (FL_Var) func.getInitFunction();
+						Object result = set.get(var.getName());
+					  	if(result == null) {
+							throw new Exception("Cannot find element \"" + o2 + "\" in set containing " + set.keySet());
+					  	} else { 
+							return result;
+						}
+				  	} else {
+						if(func.getInitFunction() instanceof Evaluatable) {
+							return applySelect(o1, evaluate(scope, func));
+						} else {
+							throw new Exception("Cannot select from a set using a " + func.getInitFunction().getClass().getName());
+						}
+				  	}
 				} else {
 					throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
 				}
@@ -627,22 +666,11 @@ public class ForteLang {
 				
 			  	Object left = flVarOp.getLeftExpr();
 			  	Object right = flVarOp.getRightExpr();
-
-			  	if (left instanceof Evaluatable) {
-			  	  	printEVAL("EvalOpExpr left part", left);
-					left = evaluate(scope, left);
-			  	}
-
-			  	if (right instanceof Evaluatable) {
-			  	  	printEVAL("EvalOpExpr right part", right);
-					right = evaluate(scope, right);
-			  	}
-
 				Token operatorToUse = flVarOp.getOperator();
 
 				printEVAL("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
 			  	
-			  	Object newInit = new OperatorParser(operatorToUse).apply(left, right);
+			  	Object newInit = new OperatorParser(operatorToUse, scope).apply(left, right);
 
 			  	printEVAL("OpExpr eval result: ", newInit);
 

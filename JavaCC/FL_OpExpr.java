@@ -16,13 +16,17 @@ public class FL_OpExpr implements Evaluatable {
 		if(operator.image.equals(".")) {
 			if(rightExpr instanceof FL_OpExpr) {
 				FL_OpExpr right = (FL_OpExpr) rightExpr;
-				this.rightExpr = right.getLeftExpr();
 
-				FL_OpExpr inner = new FL_OpExpr(leftExpr, rightExpr, operator);
+				if(right.operator.image.equals(".")) {
 
-				this.leftExpr = inner;
-				this.rightExpr = right.getRightExpr();
-				this.operator = right.getOperator();
+					this.rightExpr = right.getLeftExpr();
+
+					FL_OpExpr inner = new FL_OpExpr(leftExpr, rightExpr, operator);
+
+					this.leftExpr = inner;
+					this.rightExpr = right.getRightExpr();
+					this.operator = right.getOperator();
+				}
 			}
 		}
 	}

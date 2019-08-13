@@ -93,6 +93,14 @@ include {
 
     isDerivation = set -> set ? "derivation";
 
+    mySet' = {
+        item1 = {
+            item2 = {
+                item3 = "hello";
+            };
+        };
+    }."item1".("item2"."item3");
+
     mySet = {
         item1 = "hello";
         item2 = "world";
@@ -105,22 +113,9 @@ include {
         };
     };
 
-    mySet' = {
-        item1 = {
-            item2 = {
-                item3 = "hello";
-            };
-        };
-    }."item1".("item2"."item3");
+} in mySet.item2
 
-
-} in {
-        item1 = {
-            item2 = {
-                item3 = "hello";
-            };
-        };
-    }."item1".("item2"."item3")
+#mySet.((x -> "item2") 2)
     
      #{a={a=b;};}."a"."a"
 

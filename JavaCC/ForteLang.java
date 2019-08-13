@@ -148,8 +148,11 @@ public class ForteLang implements ForteLangConstants {
 
                 Operator operatorKind;
                 String op;
+                FL_Set scope;
 
-                public OperatorParser(Token operator) throws Exception {
+                public OperatorParser(Token operator, FL_Set scope) throws Exception {
+                        this.scope = scope;
+
                         switch(operator.kind) {
                                 case ForteLangConstants.BOOLEAN_OP:
                                         operatorKind = Operator.BOOLEAN;
@@ -179,6 +182,19 @@ public class ForteLang implements ForteLangConstants {
                 }
 
                 public Object apply(Object o1, Object o2) throws Exception {
+
+                        if(operatorKind != Operator.SELECT) {
+                                if (o1 instanceof Evaluatable) {
+                                        printEVAL("EvalOpExpr left part", o1);
+                                        o1 = evaluate(scope, o1);
+                                }
+
+                                if (o2 instanceof Evaluatable) {
+                                        printEVAL("EvalOpExpr right part", o2);
+                                        o2 = evaluate(scope, o2);
+                                }
+                        }
+
                         switch(operatorKind) {
                                 case BOOLEAN:
                                         return applyBoolean((boolean) o1, (boolean) o2);
@@ -199,6 +215,12 @@ public class ForteLang implements ForteLangConstants {
                 }
 
                 public Object applySelect(Object o1, Object o2) throws Exception {
+
+                        if (o1 instanceof Evaluatable) {
+                                printEVAL("EvalOpExpr left part", o1);
+                                o1 = evaluate(scope, o1);
+                        }
+
                         if(o1 instanceof FL_Set) {
                                 FL_Set set = (FL_Set) o1;
                                 if(o2 instanceof String) {
@@ -207,6 +229,23 @@ public class ForteLang implements ForteLangConstants {
                                                 throw new Exception("Cannot find element \u005c"" + o2 + "\u005c" in set containing " + set.keySet());
                                         } else {
                                                 return result;
+                                        }
+                                } else if (o2 instanceof FL_FunctionCall) {
+                                        FL_FunctionCall func = (FL_FunctionCall) o2;
+                                        if(func.getInitFunction() instanceof FL_Var) {
+                                                FL_Var var = (FL_Var) func.getInitFunction();
+                                                Object result = set.get(var.getName());
+                                                if(result == null) {
+                                                        throw new Exception("Cannot find element \u005c"" + o2 + "\u005c" in set containing " + set.keySet());
+                                                } else {
+                                                        return result;
+                                                }
+                                        } else {
+                                                if(func.getInitFunction() instanceof Evaluatable) {
+                                                        return applySelect(o1, evaluate(scope, func));
+                                                } else {
+                                                        throw new Exception("Cannot select from a set using a " + func.getInitFunction().getClass().getName());
+                                                }
                                         }
                                 } else {
                                         throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
@@ -622,22 +661,11 @@ public class ForteLang implements ForteLangConstants {
 
                                 Object left = flVarOp.getLeftExpr();
                                 Object right = flVarOp.getRightExpr();
-
-                                if (left instanceof Evaluatable) {
-                                        printEVAL("EvalOpExpr left part", left);
-                                        left = evaluate(scope, left);
-                                }
-
-                                if (right instanceof Evaluatable) {
-                                        printEVAL("EvalOpExpr right part", right);
-                                        right = evaluate(scope, right);
-                                }
-
                                 Token operatorToUse = flVarOp.getOperator();
 
                                 printEVAL("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
 
-                                Object newInit = new OperatorParser(operatorToUse).apply(left, right);
+                                Object newInit = new OperatorParser(operatorToUse, scope).apply(left, right);
 
                                 printEVAL("OpExpr eval result: ", newInit);
 
@@ -1236,60 +1264,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_45() {
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3_7() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_38() {
-    if (jj_scan_token(OPENSBRACKET)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_45()) {
-    jj_scanpos = xsp;
-    if (jj_3R_46()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_8() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_6()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(36)) return true;
-    }
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_7()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   private boolean jj_3R_11() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1300,16 +1274,16 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3_5() {
+    if (jj_3R_10()) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
   private boolean jj_3R_13() {
     if (jj_scan_token(OPENBRACKET)) return true;
     if (jj_3R_9()) return true;
     if (jj_scan_token(CLOSEBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3_5() {
-    if (jj_3R_10()) return true;
-    if (jj_3R_6()) return true;
     return false;
   }
 
@@ -1688,6 +1662,60 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_50() {
     if (jj_scan_token(PRINT)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_45() {
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_38() {
+    if (jj_scan_token(OPENSBRACKET)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_45()) {
+    jj_scanpos = xsp;
+    if (jj_3R_46()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_6()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(36)) return true;
+    }
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_7()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_22() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
     if (jj_3R_6()) return true;
     return false;
   }

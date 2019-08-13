@@ -91,7 +91,7 @@ include {
     #     | [] ->> []
     #     | ->> [f (head list)] ++ map' f (tail list);
 
-} in [2, 3, 4] #impure { @a = 2; } ? "a"
+} in impure {} // {a=2;} #impure { @a = 2; } ? "a"
 
 #not false #genList 3 (x -> 2) 
 

@@ -14,7 +14,21 @@ public class FL_Set extends LinkedHashMap<String, Object> implements Evaluatable
 		this.impure = impure;
 	}
 
+	public void setImpure(boolean b) {
+		this.impure = b;
+	}
+
+	public boolean isImpure() {
+		//TODO:
+		return impure;
+	}
+
 	public FL_Set copy() {
 		return new FL_Set(this, impure);
+	}
+
+	@Override
+	public String toString() {
+		return (impure ? "impure " : "") + super.toString();
 	}
 }

@@ -296,17 +296,17 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        static class FL_Match implements Evaluatable {
-                LinkedHashMap<Object, Object> statements;
-                Object finalStatement;
-                Object matchOn;
-
-                public FL_Match() { statements = new LinkedHashMap<Object, Object>(); }
-
-                @Override public String toString() {
-                  return "FL_Match[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
-                }
-        }
+//	static class FL_Match implements Evaluatable {
+//		LinkedHashMap<Object, Object> statements;
+//		Object finalStatement;
+//		Object matchOn;
+//
+//		public FL_Match() { statements = new LinkedHashMap<Object, Object>(); }
+//
+//		@Override public String toString() {
+//		  return "FL_Match[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
+//		}
+//	}
 
         static class FL_IncludedSet implements Evaluatable {
                 FL_Set set;
@@ -772,22 +772,22 @@ public class ForteLang implements ForteLangConstants {
                         } else if(expression instanceof FL_Match) {
                                 FL_Match match = (FL_Match) expression;
 
-                                Object matchOn = evaluate(scope, match.matchOn);
+                                Object matchOn = evaluate(scope, match.getMatchOn());
 
-                                for(Object matchExpr : match.statements.keySet()) {
+                                for(Object matchExpr : match.getStatements().keySet()) {
                                         Object result = evaluate(scope, matchExpr);
 
                                         if(result instanceof Pattern && matchOn instanceof String) {
                                                 Pattern pattern = (Pattern) result;
                                                 if(pattern.matcher((String) matchOn).matches()) {
-                                                        return evaluate(scope, match.statements.get(matchExpr));
+                                                        return evaluate(scope, match.getStatements().get(matchExpr));
                                                 }
                                         } else if(matchOn.equals(result)) {
-                                                return evaluate(scope, match.statements.get(matchExpr));
+                                                return evaluate(scope, match.getStatements().get(matchExpr));
                                         }
                                 }
-                                return evaluate(scope, match.finalStatement);
-                        }else if(expression instanceof FL_Var) {
+                                return evaluate(scope, match.getFinalStatement());
+                        } else if(expression instanceof FL_Var) {
                                 FL_Var flVar = (FL_Var) expression;
                                 Object var = scope.attributes.get(flVar.getName());
                                 while(var instanceof FL_Var) {
@@ -1336,17 +1336,17 @@ public class ForteLang implements ForteLangConstants {
   Object predicate;
   Object expression;
   Object finalExpression;
-          match = new FL_Match(); expression = null;
+          expression = null;
     jj_consume_token(MATCH);
     statement = enclosedExpression();
-          match.matchOn = statement;
+          match = new FL_Match(statement);
     label_5:
     while (true) {
       jj_consume_token(GUARD);
       predicate = enclosedExpression();
       jj_consume_token(GUARD_ARROW);
       expression = enclosedExpression();
-                  match.statements.put(predicate, expression);
+                  match.addStatement(predicate, expression);
       if (jj_2_8(2)) {
         ;
       } else {
@@ -1355,8 +1355,8 @@ public class ForteLang implements ForteLangConstants {
     }
     jj_consume_token(GUARD);
     jj_consume_token(GUARD_ARROW);
-    finalExpression = enclosedExpression();
-          match.finalStatement = finalExpression;
+    expression = enclosedExpression();
+          match.setFinalStatement(expression);
           {if (true) return match;}
     throw new Error("Missing return statement in function");
   }

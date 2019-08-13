@@ -24,9 +24,9 @@ public class FL_OpExpr implements Evaluatable {
 	@Override public String toString() {
 		StringBuilder builder = new StringBuilder("FL_OpExpr[");
 		builder.append(leftExpr);
-		builder.append("");
+		builder.append(" ");
 		builder.append(operator.image);
-		builder.append("");
+		builder.append(" ");
 		builder.append(rightExpr);
 		return builder.append("]").toString();
 	}

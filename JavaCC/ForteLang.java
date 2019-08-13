@@ -26,19 +26,19 @@ public class ForteLang implements ForteLangConstants {
         static boolean LOGGING_ENABLE = true;
         static Scanner globalScanner = null;
 
-        static void printSECD() {print("SECD"); }
-        static void printSECD(Object o) { print("SECD", o); }
+        static void printSECD()                   { print("SECD"); }
+        static void printSECD(Object o)           { print("SECD", o); }
         static void printSECD(String s, Object o) { print("SECD", s, o); }
 
-        static void printEVAL() {print("EVAL"); }
-        static void printEVAL(Object o) { print("EVAL", o); }
+        static void printEVAL()                   { print("EVAL"); }
+        static void printEVAL(Object o)           { print("EVAL", o); }
         static void printEVAL(String s, Object o) { print("EVAL", s, o); }
 
-        static void print(String title) { print(title, "", ""); }
-        static void print(String title, Object val) { print(title, "", val); }
-        static void print(String title, String init, Object val) {
+        static void print(String title)           { print(title, "", ""); }
+        static void print(String title, Object o) { print(title, "", o); }
+        static void print(String title, String init, Object o) {
                 if(LOGGING_ENABLE) {
-                        System.out.println("[" + title + "] " + init + (init.isEmpty() ? "" : " ") + String.valueOf(val));
+                        System.out.println("[" + title + "] " + init + (init.isEmpty() ? "" : " ") + o);
                 }
         }
 
@@ -523,13 +523,13 @@ public class ForteLang implements ForteLangConstants {
                                                 }
                                         case TAIL:
                                                 if(!(builtinParam instanceof FL_List)) {
-                                                        throw new Exception("tail function requires a list as a parameter");
+                                                        throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());
                                                 } else {
                                                         FL_List list = ((FL_List) builtinParam);
                                                         if(list.isEmpty()) {
                                                                 throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
                                                         }
-                                                        return list.subList(1, list.size());
+                                                        return new FL_List(list.subList(1, list.size()));
                                                 }
                                         case INPUT:
                                                 if(!(builtinParam instanceof String)) {
@@ -1250,12 +1250,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   private boolean jj_3_8() {
     if (jj_scan_token(GUARD)) return true;
     if (jj_3R_6()) return true;
@@ -1679,6 +1673,12 @@ public class ForteLang implements ForteLangConstants {
     jj_scanpos = xsp;
     if (jj_3R_20()) return true;
     }
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_3R_6()) return true;
     return false;
   }
 

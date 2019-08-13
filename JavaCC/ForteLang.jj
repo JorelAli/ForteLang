@@ -280,23 +280,6 @@ public class ForteLang {
 
 	/** Other declared objects */
 
-//	static class FL_List implements Evaluatable {
-//		LinkedList<Object> list;
-//		public FL_List() { list = new LinkedList<Object>(); }
-//		
-//		@Override public String toString() {
-//		  return String.valueOf(list);
-//		}
-//
-//		@Override public boolean equals(Object o) {
-//			if(o instanceof FL_List) {
-//				FL_List other = (FL_List) o;
-//				return list.equals(other.list);
-//			}
-//			return false;
-//		}
-//	}
-
 	static class FL_Guards implements Evaluatable {
 		LinkedHashMap<Object, Object> statements;
 		Object finalStatement;
@@ -336,18 +319,6 @@ public class ForteLang {
 
 		@Override public String toString() {
 		  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
-		}
-	}
-
-	static class FL_Var implements Evaluatable {
-		String name;
-
-		public FL_Var(String name) {
-			this.name = name;
-		}
-
-		@Override public String toString() {
-		  return "Var[" + name + "]";
 		}
 	}
 
@@ -562,9 +533,9 @@ public class ForteLang {
 
 	//Placeholder for "applying" an object
 	static class ApplyObj {
-	  @Override
-	  public String toString() {
-	    return "ap";
+		@Override
+	  	public String toString() {
+	    	return "ap";
 	    }
 	}
 
@@ -757,10 +728,10 @@ public class ForteLang {
 				if(!(call.initFunction instanceof FL_Function)) {
 				  	// It's a function name, which needs to be resolved
 				  	FL_Var functionName = (FL_Var) call.initFunction; 
-					Object function = scope.attributes.get(functionName.name);
+					Object function = scope.attributes.get(functionName.getName());
 
 					if(function == null) {
-						throw new Exception("Function \"" + functionName.name + "\" has not been declared!");
+						throw new Exception("Function \"" + functionName.getName() + "\" has not been declared!");
 					} else {
 						if(function instanceof FL_Function_Call) {
 							call.initFunction = ((FL_Function_Call) function).initFunction;
@@ -841,18 +812,18 @@ public class ForteLang {
 				return evaluate(scope, match.finalStatement);
 			}else if(expression instanceof FL_Var) {
 				FL_Var flVar = (FL_Var) expression;
-				Object var = scope.attributes.get(flVar.name);
+				Object var = scope.attributes.get(flVar.getName());
 				while(var instanceof FL_Var) {
-					var = scope.attributes.get(((FL_Var)var).name);
+					var = scope.attributes.get(((FL_Var) var).getName());
 				}
 				if(var == null) {
-					throw new Exception("Could not find function \"" + flVar.name + "\" in the program!");
+					throw new Exception("Could not find function \"" + flVar.getName() + "\" in the program!");
 				}
 				if(var instanceof FL_Function) {
-					printEVAL("\"" + flVar.name + "\" evaluates to a lambda, therefore not resolving");
+					printEVAL("\"" + flVar.getName() + "\" evaluates to a lambda, therefore not resolving");
 					return var;
 				} else { 
-					printEVAL("Resolving: " + flVar.name + " => ", var);
+					printEVAL("Resolving: " + flVar.getName() + " => ", var);
 					return evaluate(scope, var);
 				}
 			} else if(expression instanceof FL_OpExpr) {

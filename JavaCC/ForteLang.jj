@@ -34,6 +34,8 @@ public class ForteLang {
 	static void printEVAL()                   { print("EVAL"); }
 	static void printEVAL(Object o)           { print("EVAL", o); }
 	static void printEVAL(String s, Object o) { print("EVAL", s, o); }
+
+	static void printOPEX(Object o)           { print("OPEX", o); }
 	
 	static void print(String title)           { print(title, "", ""); }
 	static void print(String title, Object o) { print(title, "", o); }
@@ -147,7 +149,7 @@ public class ForteLang {
 
 	static class OperatorParser {
 
-		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT, CONTAINS };
+		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT, CONTAINS, SELECT };
 
 		Operator operatorKind;
 		String op;
@@ -172,6 +174,9 @@ public class ForteLang {
 				case ForteLangConstants.CONTAINS:
 					operatorKind = Operator.CONTAINS;
 					break;
+				case ForteLangConstants.SELECT:
+					operatorKind = Operator.SELECT;
+					break;
 				default:
 					throw new Exception ("Invalid operator for OperatorParser: " + operator.image);
 			}
@@ -192,8 +197,28 @@ public class ForteLang {
 					return applyConcat(o1, o2);
 				case CONTAINS:
 					return applyContains(o1, o2);
+				case SELECT:
+					return applySelect(o1, o2);
 			}
 			throw new Exception ("Failed to apply any operators");
+		}
+
+		public Object applySelect(Object o1, Object o2) throws Exception {
+		  	if(o1 instanceof FL_Set) {
+				FL_Set set = (FL_Set) o1;
+				if(o2 instanceof String) {
+				  	Object result = set.get(String.valueOf(o2));
+				  	if(result == null) {
+						throw new Exception("Cannot find element \"" + o2 + "\" in set containing " + set.keySet());
+				  	} else { 
+						return result;
+					}
+				} else {
+					throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
+				}
+		  	} else {
+				throw new Exception("Cannot select from an object that's not a set");
+		  	}
 		}
 
 		public Object applyContains(Object o1, Object o2) throws Exception {
@@ -744,6 +769,7 @@ Token anyOperator() throws Exception : { Token op; } {
 	| op = <COMPARATOR_OP> { return op; }
 	| op = <CONCAT>        { return op; }
 	| op = <CONTAINS>      { return op; }
+	| op = <SELECT>        { return op; }
 }
 
 FL_IncludedSet includedSet() throws Exception : { FL_Set set; Object expression; } {
@@ -857,12 +883,14 @@ Object opExpression() throws Exception : {
   Object rightExpr = null;
   Token operator = null;
 } {
+  
   	leftExpr = expression()
 	(
 	  LOOKAHEAD(2)
 	  operator = anyOperator()
 	  rightExpr = enclosedExpression()
 	)?
+	
 	{
 		if(operator != null) {
 		  	//TODO: Check for nested OpExprs here and

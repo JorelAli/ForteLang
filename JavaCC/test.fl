@@ -91,7 +91,11 @@ include {
     #     | [] ->> []
     #     | ->> [f (head list)] ++ map' f (tail list);
 
-} in maxOr0 2 3
+    isDerivation = set -> set ? "derivation";
+
+
+
+} in isDerivation {derivation = true;}
 #factorial 5#impure {} // {a=2;} #impure { @a = 2; } ? "a"
 
 #not false #genList 3 (x -> 2) 

@@ -369,27 +369,27 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        static class Dump {
-                Stack<Object> stack;
-                LinkedList<Object> control;
-                HashMap<String, Object> environment;
-
-                public Dump(Stack<Object> s, LinkedList<Object> control, HashMap<String, Object> env) {
-                        this.stack = s;
-                        this.control = control;
-                        this.environment = env;
-                }
-        }
-
-        //Placeholder for "applying" an object
-        static class ApplyObj {
-                @Override
-                public String toString() {
-                return "ap";
-            }
-        }
-
         public static Object secd(FL_FunctionCall functionCall, FL_Set globalScope) throws Exception {
+
+                class Dump {
+                        Stack<Object> stack;
+                        LinkedList<Object> control;
+                        HashMap<String, Object> environment;
+
+                        public Dump(Stack<Object> s, LinkedList<Object> control, HashMap<String, Object> env) {
+                                this.stack = s;
+                                this.control = control;
+                                this.environment = env;
+                        }
+                }
+
+                class ApplyObj {
+                        @Override
+                        public String toString() {
+                        return "ap";
+                    }
+                }
+
                 Stack<Object> stack = new Stack<Object>();
                 HashMap<String, Object> environment = new HashMap<String, Object>();
                 environment.putAll(globalScope); //TODO: Make sure this isn't busted

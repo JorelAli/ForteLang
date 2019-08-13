@@ -142,38 +142,34 @@ public class ForteLang {
 	/** Class declarations */
 
 	//Function declaration, e.g. x -> y -> x + y
-	static class FL_Function implements Evaluatable {
-	  	//Basically the closure of parameters
-	  	Map<String, Object> functionScope; 
-		String parameter;
-		Object expression;
-
-		public FL_Function() {
-			functionScope = new HashMap<String, Object>();
-		}
-
-		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
-
-		static class FL_Function_Builder {
-			Stack<String> parameters;
-			Object expression;
-		  
-			public FL_Function_Builder() {
-				parameters = new Stack<String>();
-			}
-
-			public FL_Function build() {
-			  	Object currentExpression = expression;
-			  	while(!parameters.empty()) {
-					FL_Function newExpression = new FL_Function();
-					newExpression.parameter = parameters.pop();
-					newExpression.expression = currentExpression;
-					currentExpression = newExpression;
-			  	}
-				return (FL_Function) currentExpression;
-			}
-		}
-	}
+//	static class FL_Function implements Evaluatable {
+//		String parameter;
+//		Object expression;
+//
+//		public FL_Function() {}
+//
+//		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
+//
+//		static class FL_Function_Builder {
+//			Stack<String> parameters;
+//			Object expression;
+//		  
+//			public FL_Function_Builder() {
+//				parameters = new Stack<String>();
+//			}
+//
+//			public FL_Function build() {
+//			  	Object currentExpression = expression;
+//			  	while(!parameters.empty()) {
+//					FL_Function newExpression = new FL_Function();
+//					newExpression.parameter = parameters.pop();
+//					newExpression.expression = currentExpression;
+//					currentExpression = newExpression;
+//			  	}
+//				return (FL_Function) currentExpression;
+//			}
+//		}
+//	}
 
 	//Function call, e.g. myFunc 2 3
 	static class FL_FunctionCall implements Evaluatable {
@@ -427,8 +423,8 @@ public class ForteLang {
 					
 	
 					//Bind it properly in the current environment
-					environment.put(lambda.parameter, value);
-					Object result = lambda.expression;
+					environment.put(lambda.getParameter(), value);
+					Object result = lambda.getExpression();
 
 					printSECD("Added complete. Result: ", result);
 	
@@ -829,9 +825,7 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	}
 }
 
-FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression; } {
-	{ function = new FL_Function.FL_Function_Builder(); }
-
+FL_Function lambda() throws Exception : { Token paramName; Object innerExpression; } {
 	(
 		(			paramName = <VAR_NAME>
 			<FUNCTION_ARROW>
@@ -847,11 +841,7 @@ FL_Function lambda() throws Exception : { FL_Function.FL_Function_Builder functi
 		)
 	)
 	  
-	{
-	    function.parameters.push(paramName.image);
-	    function.expression = innerExpression;
-	    return function.build();
-	}
+	{ return new FL_Function(paramName.image, innerExpression); }
 }
 
 FL_List list() throws Exception : { FL_List list; Object nextItem; } {

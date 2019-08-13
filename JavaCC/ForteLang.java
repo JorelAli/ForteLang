@@ -137,38 +137,34 @@ public class ForteLang implements ForteLangConstants {
         /** Class declarations */
 
         //Function declaration, e.g. x -> y -> x + y
-        static class FL_Function implements Evaluatable {
-                //Basically the closure of parameters
-                Map<String, Object> functionScope;
-                String parameter;
-                Object expression;
-
-                public FL_Function() {
-                        functionScope = new HashMap<String, Object>();
-                }
-
-                @Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
-
-                static class FL_Function_Builder {
-                        Stack<String> parameters;
-                        Object expression;
-
-                        public FL_Function_Builder() {
-                                parameters = new Stack<String>();
-                        }
-
-                        public FL_Function build() {
-                                Object currentExpression = expression;
-                                while(!parameters.empty()) {
-                                        FL_Function newExpression = new FL_Function();
-                                        newExpression.parameter = parameters.pop();
-                                        newExpression.expression = currentExpression;
-                                        currentExpression = newExpression;
-                                }
-                                return (FL_Function) currentExpression;
-                        }
-                }
-        }
+//	static class FL_Function implements Evaluatable {
+//		String parameter;
+//		Object expression;
+//
+//		public FL_Function() {}
+//
+//		@Override public String toString() { return "FL_Function(" + parameter + ") -> (" + expression + ")"; }
+//
+//		static class FL_Function_Builder {
+//			Stack<String> parameters;
+//			Object expression;
+//		  
+//			public FL_Function_Builder() {
+//				parameters = new Stack<String>();
+//			}
+//
+//			public FL_Function build() {
+//			  	Object currentExpression = expression;
+//			  	while(!parameters.empty()) {
+//					FL_Function newExpression = new FL_Function();
+//					newExpression.parameter = parameters.pop();
+//					newExpression.expression = currentExpression;
+//					currentExpression = newExpression;
+//			  	}
+//				return (FL_Function) currentExpression;
+//			}
+//		}
+//	}
 
         //Function call, e.g. myFunc 2 3
         static class FL_FunctionCall implements Evaluatable {
@@ -193,15 +189,6 @@ public class ForteLang implements ForteLangConstants {
         }
 
         /** Other declared objects */
-
-//	static class FL_IncludedSet implements Evaluatable {
-//		FL_Set set;
-//		Object expression;
-//
-//		@Override public String toString() {
-//		  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
-//		}
-//	}
 
         static class OperatorParser {
 
@@ -431,8 +418,8 @@ public class ForteLang implements ForteLangConstants {
 
 
                                         //Bind it properly in the current environment
-                                        environment.put(lambda.parameter, value);
-                                        Object result = lambda.expression;
+                                        environment.put(lambda.getParameter(), value);
+                                        Object result = lambda.getExpression();
 
                                         printSECD("Added complete. Result: ", result);
 
@@ -805,8 +792,7 @@ public class ForteLang implements ForteLangConstants {
   }
 
   final public FL_Function lambda() throws ParseException, Exception {
-                                          FL_Function.FL_Function_Builder function; Token paramName; Object innerExpression;
-          function = new FL_Function.FL_Function_Builder();
+                                          Token paramName; Object innerExpression;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case VAR_NAME:
       paramName = jj_consume_token(VAR_NAME);
@@ -825,9 +811,7 @@ public class ForteLang implements ForteLangConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
-            function.parameters.push(paramName.image);
-            function.expression = innerExpression;
-            {if (true) return function.build();}
+          {if (true) return new FL_Function(paramName.image, innerExpression);}
     throw new Error("Missing return statement in function");
   }
 
@@ -1247,6 +1231,39 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
+  private boolean jj_3R_20() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_19() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_5()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(36)) return true;
+    }
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_6()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   private boolean jj_3R_10() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1269,6 +1286,12 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3R_42() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(EQUALS)) return true;
+    return false;
+  }
+
   private boolean jj_3R_7() {
     if (jj_3R_12()) return true;
     Token xsp;
@@ -1277,9 +1300,8 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_42() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(EQUALS)) return true;
+  private boolean jj_3R_41() {
+    if (jj_scan_token(IMPURE)) return true;
     return false;
   }
 
@@ -1298,6 +1320,19 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3R_34() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_41()) jj_scanpos = xsp;
+    if (jj_scan_token(OPENCBRACKET)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_42()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSECBRACKET)) return true;
+    return false;
+  }
+
   private boolean jj_3R_30() {
     if (jj_scan_token(STRING)) return true;
     return false;
@@ -1305,11 +1340,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_29() {
     if (jj_3R_39()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_41() {
-    if (jj_scan_token(IMPURE)) return true;
     return false;
   }
 
@@ -1342,19 +1372,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_25() {
     if (jj_3R_35()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_34() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_41()) jj_scanpos = xsp;
-    if (jj_scan_token(OPENCBRACKET)) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_42()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSECBRACKET)) return true;
     return false;
   }
 
@@ -1405,11 +1422,6 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_21() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
   private boolean jj_3R_35() {
     if (jj_scan_token(INCLUDE)) return true;
     if (jj_3R_34()) return true;
@@ -1431,29 +1443,13 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3_7() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
+  private boolean jj_3R_21() {
+    if (jj_3R_22()) return true;
     return false;
   }
 
   private boolean jj_3R_15() {
     if (jj_scan_token(SET_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_12() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_3()) {
-    jj_scanpos = xsp;
-    if (jj_3R_21()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_3R_8()) return true;
     return false;
   }
 
@@ -1486,6 +1482,27 @@ public class ForteLang implements ForteLangConstants {
     }
     }
     }
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_12() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_3()) {
+    jj_scanpos = xsp;
+    if (jj_3R_21()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_3R_8()) return true;
     return false;
   }
 
@@ -1643,39 +1660,6 @@ public class ForteLang implements ForteLangConstants {
     jj_scanpos = xsp;
     if (jj_3R_44()) return true;
     }
-    return false;
-  }
-
-  private boolean jj_3_5() {
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_20() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_8() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_5()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(36)) return true;
-    }
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_6()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_19() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    if (jj_3R_6()) return true;
     return false;
   }
 

@@ -194,26 +194,26 @@ public class ForteLang implements ForteLangConstants {
 
         /** Other declared objects */
 
-        static class FL_Guards implements Evaluatable {
-                LinkedHashMap<Object, Object> statements;
-                Object finalStatement;
-
-                public FL_Guards() { statements = new LinkedHashMap<Object, Object>(); }
-
-                @Override public String toString() {
-                  StringBuilder builder = new StringBuilder("Guard{ ");
-                  for(Entry<Object, Object> entry : statements.entrySet()) {
-                      builder.append("| ");
-                          builder.append(entry.getKey());
-                          builder.append(" ->> ");
-                          builder.append(entry.getValue());
-                          builder.append(" ");
-                  }
-                  builder.append("| ->> ");
-                  builder.append(finalStatement);
-                  return builder.append(" }").toString();
-                }
-        }
+//	static class FL_Guards implements Evaluatable {
+//		LinkedHashMap<Object, Object> statements;
+//		Object finalStatement;
+//
+//		public FL_Guards() { statements = new LinkedHashMap<Object, Object>(); }
+//
+//		@Override public String toString() {
+//		  StringBuilder builder = new StringBuilder("Guard{ ");
+//		  for(Entry<Object, Object> entry : statements.entrySet()) {
+//		      builder.append("| ");
+//			  builder.append(entry.getKey());
+//			  builder.append(" ->> ");
+//			  builder.append(entry.getValue());
+//			  builder.append(" ");
+//		  }
+//		  builder.append("| ->> ");
+//		  builder.append(finalStatement);
+//		  return builder.append(" }").toString();
+//		}
+//	}
 
         static class FL_IncludedSet implements Evaluatable {
                 FL_Set set;
@@ -636,20 +636,20 @@ public class ForteLang implements ForteLangConstants {
 
                         } else if(expression instanceof FL_Guards) {
                                 FL_Guards guards = (FL_Guards) expression;
-                                for(Object guardExpr : guards.statements.keySet()) {
+                                for(Object guardExpr : guards.getStatements().keySet()) {
                                         Object result = evaluate(scope, guardExpr);
                                         if(result instanceof Boolean) {
                                                 boolean resultBool = (boolean) result;
                                                 if(!resultBool) {
                                                         continue;
                                                 } else {
-                                                        return evaluate(scope, guards.statements.get(guardExpr));
+                                                        return evaluate(scope, guards.getStatements().get(guardExpr));
                                                 }
                                         } else {
                                                 throw new Exception(result + " is not a valid Boolean object in guard expression!");
                                         }
                                 }
-                                return evaluate(scope, guards.finalStatement);
+                                return evaluate(scope, guards.getFinalStatement());
                         } else if(expression instanceof FL_Match) {
                                 FL_Match match = (FL_Match) expression;
 
@@ -1170,8 +1170,9 @@ public class ForteLang implements ForteLangConstants {
   }
 
   final public FL_Guards guards() throws ParseException, Exception {
-                                        FL_Guards guards; Object predicate; Object expression; Object finalExpression;
-          guards = new FL_Guards(); expression = null;
+  FL_Guards guards = new FL_Guards();
+  Object predicate;
+  Object expression;
     jj_consume_token(GUARD_START);
     label_4:
     while (true) {
@@ -1179,7 +1180,7 @@ public class ForteLang implements ForteLangConstants {
       predicate = enclosedExpression();
       jj_consume_token(GUARD_ARROW);
       expression = enclosedExpression();
-                  guards.statements.put(predicate, expression);
+                  guards.addStatement(predicate, expression);
       if (jj_2_7(2)) {
         ;
       } else {
@@ -1188,8 +1189,8 @@ public class ForteLang implements ForteLangConstants {
     }
     jj_consume_token(GUARD);
     jj_consume_token(GUARD_ARROW);
-    finalExpression = enclosedExpression();
-          guards.finalStatement = finalExpression;
+    expression = enclosedExpression();
+          guards.setFinalStatement(expression);
           {if (true) return guards;}
     throw new Error("Missing return statement in function");
   }
@@ -1201,7 +1202,6 @@ public class ForteLang implements ForteLangConstants {
   Object predicate;
   Object expression;
   Object finalExpression;
-          expression = null;
     jj_consume_token(MATCH);
     statement = enclosedExpression();
           match = new FL_Match(statement);
@@ -1303,12 +1303,6 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3_7() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   private boolean jj_3R_18() {
     if (jj_scan_token(CONTAINS)) return true;
     return false;
@@ -1382,6 +1376,17 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3R_38() {
+    if (jj_scan_token(GUARD_START)) return true;
+    Token xsp;
+    if (jj_3_7()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_7()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   private boolean jj_3R_46() {
     if (jj_scan_token(FLOATING_POINT_NUMBER)) return true;
     return false;
@@ -1398,17 +1403,6 @@ public class ForteLang implements ForteLangConstants {
     if (jj_3R_45()) {
     jj_scanpos = xsp;
     if (jj_3R_46()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_38() {
-    if (jj_scan_token(GUARD_START)) return true;
-    Token xsp;
-    if (jj_3_7()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_7()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -1567,17 +1561,17 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3_8() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
   private boolean jj_3R_7() {
     if (jj_3R_12()) return true;
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3_4()) jj_scanpos = xsp;
-    return false;
-  }
-
-  private boolean jj_3_8() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
     return false;
   }
 
@@ -1617,6 +1611,18 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3R_39() {
+    if (jj_scan_token(MATCH)) return true;
+    if (jj_3R_6()) return true;
+    Token xsp;
+    if (jj_3_8()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_8()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   private boolean jj_3R_28() {
     if (jj_3R_38()) return true;
     return false;
@@ -1629,18 +1635,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_26() {
     if (jj_3R_36()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_39() {
-    if (jj_scan_token(MATCH)) return true;
-    if (jj_3R_6()) return true;
-    Token xsp;
-    if (jj_3_8()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_8()) { jj_scanpos = xsp; break; }
-    }
     return false;
   }
 
@@ -1711,6 +1705,12 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_21() {
     if (jj_3R_22()) return true;
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
     return false;
   }
 

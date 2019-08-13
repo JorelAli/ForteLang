@@ -199,27 +199,6 @@ public class ForteLang {
 
 	/** Other declared objects */
 
-	static class FL_Guards implements Evaluatable {
-		LinkedHashMap<Object, Object> statements;
-		Object finalStatement;
-
-		public FL_Guards() { statements = new LinkedHashMap<Object, Object>(); }
-
-		@Override public String toString() {
-		  StringBuilder builder = new StringBuilder("Guard{ ");
-		  for(Entry<Object, Object> entry : statements.entrySet()) {
-		      builder.append("| ");
-			  builder.append(entry.getKey());
-			  builder.append(" ->> ");
-			  builder.append(entry.getValue());
-			  builder.append(" ");
-		  }
-		  builder.append("| ->> ");
-		  builder.append(finalStatement);
-		  return builder.append(" }").toString();
-		}
-	}
-
 	static class FL_IncludedSet implements Evaluatable {
 		FL_Set set;
 		Object expression;
@@ -641,20 +620,20 @@ public class ForteLang {
 
 			} else if(expression instanceof FL_Guards) {
 				FL_Guards guards = (FL_Guards) expression;
-				for(Object guardExpr : guards.statements.keySet()) {
+				for(Object guardExpr : guards.getStatements().keySet()) {
 					Object result = evaluate(scope, guardExpr);
 					if(result instanceof Boolean) {
 						boolean resultBool = (boolean) result;
 						if(!resultBool) {
 							continue;
 						} else {
-							return evaluate(scope, guards.statements.get(guardExpr));
+							return evaluate(scope, guards.getStatements().get(guardExpr));
 						}
 					} else {
 						throw new Exception(result + " is not a valid Boolean object in guard expression!");
 					}
 				}
-				return evaluate(scope, guards.finalStatement);
+				return evaluate(scope, guards.getFinalStatement());
 			} else if(expression instanceof FL_Match) {
 				FL_Match match = (FL_Match) expression;
 
@@ -1015,8 +994,11 @@ Object builtinFunctions() throws Exception : { Object param; Token stringToken; 
 	| <INPUTBOX>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, param); }
 }
 
-FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Object expression; Object finalExpression; } {
-	{ guards = new FL_Guards(); expression = null; }
+FL_Guards guards() throws Exception : {
+  FL_Guards guards = new FL_Guards();
+  Object predicate;
+  Object expression;
+} {
   	<GUARD_START>
 	(
 	  	LOOKAHEAD(2)
@@ -1024,13 +1006,13 @@ FL_Guards guards() throws Exception : { FL_Guards guards; Object predicate; Obje
 		predicate = enclosedExpression()
 		<GUARD_ARROW>
 		expression = enclosedExpression()
-		{ guards.statements.put(predicate, expression); }
+		{ guards.addStatement(predicate, expression); }
 	)+
 	<GUARD>
 	<GUARD_ARROW>
-	finalExpression = enclosedExpression()
+	expression = enclosedExpression()
 	{
-	  guards.finalStatement = finalExpression;
+	  guards.setFinalStatement(expression);
 	  return guards;
 	}
 }
@@ -1043,8 +1025,6 @@ FL_Match match() throws Exception : {
   Object expression;
   Object finalExpression;
 } {
-	{ expression = null; }
-
 	<MATCH>
 	statement = enclosedExpression()
 	{ match = new FL_Match(statement); }

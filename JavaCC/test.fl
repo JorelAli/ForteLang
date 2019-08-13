@@ -91,7 +91,8 @@ include {
     #     | [] ->> []
     #     | ->> [f (head list)] ++ map' f (tail list);
 
-} in factorial 5#impure {} // {a=2;} #impure { @a = 2; } ? "a"
+} in maxOr0 2 3
+#factorial 5#impure {} // {a=2;} #impure { @a = 2; } ? "a"
 
 #not false #genList 3 (x -> 2) 
 

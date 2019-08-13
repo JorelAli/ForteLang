@@ -184,84 +184,84 @@ public class ForteLang implements ForteLangConstants {
 //		@Override public String toString() { return "FuncCall " + initFunction + " " + arguments; }
         }
 
-        static class FL_Set implements Evaluatable {
-                boolean impure;
-                LinkedHashMap<String, Object> attributes;
-
-                public FL_Set() {
-                  attributes = new LinkedHashMap<String, Object>();
-                  impure = false;
-                }
-
-                public FL_Set clone() {
-                        FL_Set newSet = new FL_Set();
-                        newSet.impure = impure;
-                        newSet.attributes = new LinkedHashMap<String, Object>(attributes);
-                        return newSet;
-                }
-
-                public void checkPurity(Token setDeclaration) throws Exception {
-                  //TODO: Make this code WAY more elegant, like seriously... what even
-                        if(!impure) {
-                                for(String str: attributes.keySet()) {
-                                        if(str.startsWith("@")) {
-                                                throw new Exception("impure set detected and isn't declared as 'impure'");
-                                        }
-                                }
-
-                                for(Object o : attributes.values()) {
-                                        if(o instanceof FL_Set) {
-                                                if(((FL_Set) o).impure) {
-                                                        throw new Exception("Set detected as impure due to inner attribute and isn't declared as 'impure'" + location(setDeclaration));
-                                                }
-                                        }
-                                }
-                        } else {
-                                for(String str: attributes.keySet()) {
-                                        if(str.startsWith("@")) {
-                                                return;
-                                        }
-                                }
-                                for(Object o : attributes.values()) {
-                                        if(o instanceof FL_Set) {
-                                                if(((FL_Set) o).impure) {
-                                                        return;
-                                                }
-                                        }
-                                }
-                                throw new Exception("impure keyword detected, but the set is actually pure" + location(setDeclaration));
-                        }
-                }
-
-                public boolean isImpure() {
-                        for(String str: attributes.keySet()) {
-                                if(str.startsWith("@")) {
-                                        return true;
-                                }
-                        }
-
-                        for(Object o : attributes.values()) {
-                                if(o instanceof FL_Set) {
-                                        if(((FL_Set) o).impure) {
-                                                return true;
-                                        }
-                                }
-                        }
-                        return false;
-                }
-
-                @Override public String toString() {
-                  StringBuilder builder = new StringBuilder("{ ");
-                  //		LinkedHashMap<String, Object> attributes;
-                  for(Entry<String, Object> entry : attributes.entrySet()) {
-                          builder.append(entry.getKey());
-                          builder.append(" = ");
-                          builder.append(entry.getValue());
-                          builder.append("; ");
-                  }
-                  return (impure ? "impure " : "") + builder.append("}").toString();
-                }
-        }
+//	static class FL_Set implements Evaluatable {
+//		boolean impure;
+//		LinkedHashMap<String, Object> attributes;
+//
+//		public FL_Set() {
+//		  attributes = new LinkedHashMap<String, Object>();
+//		  impure = false;
+//		}
+//
+//		public FL_Set clone() {
+//			FL_Set newSet = new FL_Set();
+//			newSet.impure = impure;
+//			newSet.attributes = new LinkedHashMap<String, Object>(attributes);
+//			return newSet;
+//		}
+//
+//		public void checkPurity(Token setDeclaration) throws Exception {
+//		  //TODO: Make this code WAY more elegant, like seriously... what even
+//			if(!impure) {
+//				for(String str: attributes.keySet()) {
+//					if(str.startsWith("@")) {
+//						throw new Exception("impure set detected and isn't declared as 'impure'");
+//					}
+//				}
+//				
+//				for(Object o : attributes.values()) {
+//					if(o instanceof FL_Set) {
+//						if(((FL_Set) o).impure) {
+//							throw new Exception("Set detected as impure due to inner attribute and isn't declared as 'impure'" + location(setDeclaration));
+//						}
+//					}
+//				}
+//			} else {
+//				for(String str: attributes.keySet()) {
+//					if(str.startsWith("@")) {
+//						return;
+//					}
+//				}
+//				for(Object o : attributes.values()) {
+//					if(o instanceof FL_Set) {
+//						if(((FL_Set) o).impure) {
+//							return;
+//						}
+//					}
+//				}
+//				throw new Exception("impure keyword detected, but the set is actually pure" + location(setDeclaration));
+//			}
+//		}
+//
+//		public boolean isImpure() {
+//			for(String str: attributes.keySet()) {
+//				if(str.startsWith("@")) {
+//					return true;
+//				}
+//			}
+//			
+//			for(Object o : attributes.values()) {
+//				if(o instanceof FL_Set) {
+//					if(((FL_Set) o).impure) {
+//						return true;
+//					}
+//				}
+//			}
+//			return false;
+//		}
+//
+//		@Override public String toString() {
+//		  StringBuilder builder = new StringBuilder("{ ");
+//		  //		LinkedHashMap<String, Object> attributes;
+//		  for(Entry<String, Object> entry : attributes.entrySet()) {
+//			  builder.append(entry.getKey());
+//			  builder.append(" = ");
+//			  builder.append(entry.getValue());
+//			  builder.append("; ");
+//		  }
+//		  return (impure ? "impure " : "") + builder.append("}").toString();
+//		}
+//	}
 
         /** Helper functions */
 

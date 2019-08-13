@@ -208,18 +208,6 @@ public class ForteLang {
 		}
 	}
 
-	static class FL_Builtin implements Evaluatable {
-		Object param;
-		enum Builtin { IMPORT, PRINT, EXEC, HEAD, TAIL, INPUT, INPUTBOX }
-
-		Builtin type;
-
-		public FL_Builtin(Builtin type, Object param) {
-			this.type = type;
-			this.param = param;
-		}
-	}
-
 	static class OperatorParser {
 
 		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT, CONTAINS };
@@ -457,7 +445,8 @@ public class ForteLang {
 					if(result instanceof FL_Function) {
 					    //Dump
 					  	printSECD("Beginning dump...");
-						Dump newDump = new Dump((Stack<Object>) stack.clone(), (LinkedList<Object>) control.clone(), (HashMap<String, Object>) environment.clone());
+					  	@SuppressWarnings("unchecked") 
+						Dump newDump = new Dump((Stack<Object>) stack.clone(), new LinkedList<Object>(control), new HashMap<String, Object>(environment));
 						dump.push(newDump);
 			
 						stack.clear();
@@ -517,8 +506,8 @@ public class ForteLang {
 	  	  	
 	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
-				Object builtinParam = evaluate(scope, builtin.param);
-				switch(builtin.type) {
+				Object builtinParam = evaluate(scope, builtin.getParameter());
+				switch(builtin.getType()) {
 					case IMPORT:
 						File file = new File((String) builtinParam);
 						return new ForteLang(new FileInputStream(file)).input();

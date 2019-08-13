@@ -322,24 +322,6 @@ public class ForteLang {
 		}
 	}
 
-	static class FL_OpExpr implements Evaluatable {
-		Object leftExpr;
-		Object rightExpr;
-		Token operator;
-		
-		public FL_OpExpr() {}
-
-		@Override public String toString() {
-		  StringBuilder builder = new StringBuilder("FL_OpExpr[");
-		  builder.append(leftExpr);
-		  builder.append("");
-		  builder.append(operator.image);
-		  builder.append("");
-		  builder.append(rightExpr);
-		  return builder.append("]").toString();
-		}
-	}
-
 	static class FL_Builtin implements Evaluatable {
 		Object param;
 		enum Builtin { IMPORT, PRINT, EXEC, HEAD, TAIL, INPUT, INPUTBOX }
@@ -832,8 +814,8 @@ public class ForteLang {
 				printEVAL("\n\nAbout to evaluate OpExpr:");
 				printEVAL(flVarOp);
 				
-			  	Object left = flVarOp.leftExpr;
-			  	Object right = flVarOp.rightExpr;
+			  	Object left = flVarOp.getLeftExpr();
+			  	Object right = flVarOp.getRightExpr();
 
 			  	if (left instanceof Evaluatable) {
 			  	  	printEVAL("EvalOpExpr left part", left);
@@ -845,7 +827,7 @@ public class ForteLang {
 					right = evaluate(scope, right);
 			  	}
 
-				Token operatorToUse = flVarOp.operator;
+				Token operatorToUse = flVarOp.getOperator();
 
 				printEVAL("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
 			  	
@@ -1111,31 +1093,24 @@ Object singleExpression() throws Exception : { Object result; Token token; } {
 	| result = builtinFunctions() { return result; }
 }
 
-Object opExpression() throws Exception : { FL_OpExpr result; Object expr; Token operator; boolean isOpExpr; } {
-  	{
-  	  	result = new FL_OpExpr();
-  		isOpExpr = false;
-  	}
-
-  	expr = expression()
-  	{ result.leftExpr = expr; }
+Object opExpression() throws Exception : {
+  Object leftExpr;
+  Object rightExpr = null;
+  Token operator = null;
+} {
+  	leftExpr = expression()
 	(
 	  LOOKAHEAD(2)
 	  operator = anyOperator()
-	  { result.operator = operator; }
-
-	  expr = enclosedExpression()
-	  { result.rightExpr =expr; }
-
-	  { isOpExpr = true; }
+	  rightExpr = enclosedExpression()
 	)?
 	{
-		if(isOpExpr) {
+		if(operator != null) {
 		  	//TODO: Check for nested OpExprs here and
 		  	//handle the order of operations.
-			return result;
+			return new FL_OpExpr(leftExpr, rightExpr, operator);
 		} else {
-			return expr;
+			return leftExpr;
 		}
 	}
 }

@@ -176,11 +176,11 @@ public class ForteLang {
 	}
 
 	//Function call, e.g. myFunc 2 3
-	static class FL_Function_Call implements Evaluatable {
+	static class FL_FunctionCall implements Evaluatable {
 		Object initFunction;
 		LinkedList<Object> arguments;
 
-		public FL_Function_Call() {
+		public FL_FunctionCall() {
 			arguments = new LinkedList<Object>();
 		}
 
@@ -427,7 +427,7 @@ public class ForteLang {
 	    }
 	}
 
-	public static Object secd(FL_Function_Call functionCall, FL_Set globalScope) throws Exception {
+	public static Object secd(FL_FunctionCall functionCall, FL_Set globalScope) throws Exception {
 	  	Stack<Object> stack = new Stack<Object>();
 	  	HashMap<String, Object> environment = new HashMap<String, Object>();
 	  	environment.putAll(globalScope); //TODO: Make sure this isn't busted
@@ -462,8 +462,8 @@ public class ForteLang {
 					FL_Function lambda = null;
 					if(potentialFunction instanceof FL_Function) {
 						lambda = (FL_Function) potentialFunction;
-					} else if(potentialFunction instanceof FL_Function_Call) {
-						FL_Function_Call lambdaCall = (FL_Function_Call) potentialFunction;
+					} else if(potentialFunction instanceof FL_FunctionCall) {
+						FL_FunctionCall lambdaCall = (FL_FunctionCall) potentialFunction;
 						lambda = (FL_Function) lambdaCall.initFunction;
 					}
 					
@@ -588,14 +588,14 @@ public class ForteLang {
 
 			if(expression instanceof FL_Function) {
 			  	FL_Function function = (FL_Function) expression;
-			  	FL_Function_Call newFunctionCall = new FL_Function_Call();
+			  	FL_FunctionCall newFunctionCall = new FL_FunctionCall();
 			  	newFunctionCall.initFunction = function;
 			  	
 				return newFunctionCall;
 			} else
-			if(expression instanceof FL_Function_Call) {
+			if(expression instanceof FL_FunctionCall) {
 				printEVAL();
-				FL_Function_Call call = (FL_Function_Call) expression;
+				FL_FunctionCall call = (FL_FunctionCall) expression;
 
 				if(!(call.initFunction instanceof FL_Function)) {
 				  	// It's a function name, which needs to be resolved
@@ -605,8 +605,8 @@ public class ForteLang {
 					if(function == null) {
 						throw new Exception("Function \"" + functionName.getName() + "\" has not been declared!");
 					} else {
-						if(function instanceof FL_Function_Call) {
-							call.initFunction = ((FL_Function_Call) function).initFunction;
+						if(function instanceof FL_FunctionCall) {
+							call.initFunction = ((FL_FunctionCall) function).initFunction;
 						} else {
 							printEVAL("Reading from closure... ", function.getClass().getName());
 						}
@@ -980,7 +980,7 @@ Object opExpression() throws Exception : {
 	}
 }
 
-FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Object param; Token varName; Object lambda; } {
+FL_FunctionCall functionCall() throws Exception : { FL_FunctionCall result; Object param; Token varName; Object lambda; } {
   	{
 		varName = null;
 		lambda = null;
@@ -990,7 +990,7 @@ FL_Function_Call functionCall() throws Exception : { FL_Function_Call result; Ob
   	  lambda = lambda()  	  | varName = <VAR_NAME> 
   	)
   	{
-  	   	result = new FL_Function_Call();
+  	   	result = new FL_FunctionCall();
   	   	if(varName != null) { 
 			result.initFunction = new FL_Var(varName.image);
 		} else {

@@ -183,7 +183,7 @@ mySet = {
 }."exampleItem"
 ```
 
-The `.` operator has the strongest binding of the order of operations, and will ignore brackets. For example:
+The `.` operator has the strongest binding of the order of operations, and will ignore brackets when used consecutively. For example:
 
 ```
 { 
@@ -196,6 +196,26 @@ The `.` operator has the strongest binding of the order of operations, and will 
 ```
 
 returns `"hello"`, as if you had done `"item1"."item2"."item3"`. It is strongly recommended _not_ to use brackets.
+
+Set accessing needs not have quoted strings, for example, the following is permitted and returns `2`:
+
+```
+{ a = 2; }.a
+```
+
+In addition, lambdas may also be used:
+
+```
+{ a = 2; }.((x -> x ++ "a") "")
+```
+
+Any function calls will not be evaluated, for example:
+
+```
+include {
+	myFunc = "hello";
+} in { hello = 2; }.myFunc
+```
 
 #### The `?` operator
 

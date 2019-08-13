@@ -888,7 +888,7 @@ null, "\151\156\143\154\165\144\145", "\151\156", "\151\155\160\165\162\145",
 "\100\160\162\151\156\164", "\100\151\156\160\165\164", "\100\151\156\160\165\164\142\157\170", 
 "\150\145\141\144", "\164\141\151\154", "\50", "\51", "\133", "\135", "\54", null, "\40\173\174", 
 "\174\175", "\75", "\73", "\173", "\175", null, "\55\76", "\174\76", "\174", "\55\76\76", 
-null, null, null, null, null, };
+null, null, null, null, null, null, };
 
 /** Lexer state names. */
 public static final String[] lexStateNames = {
@@ -898,7 +898,7 @@ static final long[] jjtoToken = {
    0x1ffffffffffL, 
 };
 static final long[] jjtoSkip = {
-   0x3e0000000000L, 
+   0x7e0000000000L, 
 };
 protected SimpleCharStream input_stream;
 private final int[] jjrounds = new int[52];
@@ -1001,7 +1001,7 @@ public Token getNextToken()
    }
 
    try { input_stream.backup(0);
-      while (curChar <= 13 && (0x2400L & (1L << curChar)) != 0L)
+      while (curChar <= 13 && (0x2600L & (1L << curChar)) != 0L)
          curChar = input_stream.BeginToken();
    }
    catch (java.io.IOException e1) { continue EOFLoop; }

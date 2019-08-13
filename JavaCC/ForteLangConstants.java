@@ -140,6 +140,7 @@ public interface ForteLangConstants {
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",
+    "\"\\t\"",
   };
 
 }

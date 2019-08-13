@@ -241,7 +241,7 @@ public class ForteLang {
 						FL_Var var = (FL_Var) func.getInitFunction();
 						Object result = set.get(var.getName());
 					  	if(result == null) {
-							throw new Exception("Cannot find element \"" + o2 + "\" in set containing " + set.keySet());
+							throw new Exception("Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
 					  	} else { 
 							return result;
 						}
@@ -769,7 +769,7 @@ SKIP : { < "#" (~["\r", "\n"])* > }
 SKIP : { < "###" (~["#"])* "###" > }
 
 //Whitespace
-SKIP : { "\n" | "\r" | " " }
+SKIP : { "\n" | "\r" | " " | "\t" }
 
 /** Main endpoint */
 Object input() throws Exception : { Object expression; } {

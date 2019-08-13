@@ -134,7 +134,7 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        static interface Evaluatable { }
+//	static interface Evaluatable { }
 
         /** Class declarations */
 
@@ -275,22 +275,22 @@ public class ForteLang implements ForteLangConstants {
 
         /** Other declared objects */
 
-        static class FL_List implements Evaluatable {
-                LinkedList<Object> list;
-                public FL_List() { list = new LinkedList<Object>(); }
-
-                @Override public String toString() {
-                  return String.valueOf(list);
-                }
-
-                @Override public boolean equals(Object o) {
-                        if(o instanceof FL_List) {
-                                FL_List other = (FL_List) o;
-                                return list.equals(other.list);
-                        }
-                        return false;
-                }
-        }
+//	static class FL_List implements Evaluatable {
+//		LinkedList<Object> list;
+//		public FL_List() { list = new LinkedList<Object>(); }
+//		
+//		@Override public String toString() {
+//		  return String.valueOf(list);
+//		}
+//
+//		@Override public boolean equals(Object o) {
+//			if(o instanceof FL_List) {
+//				FL_List other = (FL_List) o;
+//				return list.equals(other.list);
+//			}
+//			return false;
+//		}
+//	}
 
         static class FL_Guards implements Evaluatable {
                 LinkedHashMap<Object, Object> statements;
@@ -430,7 +430,7 @@ public class ForteLang implements ForteLangConstants {
                 public Object applyContains(Object o1, Object o2) throws Exception {
                         if(o1 instanceof FL_List) {
                                 FL_List l1 = (FL_List) o1;
-                                return l1.list.contains(o2);
+                                return l1.contains(o2);
                         } else if(o1 instanceof FL_Set) {
                                 FL_Set s1 = (FL_Set) o1;
                                 return s1.attributes.keySet().contains(o2);
@@ -443,7 +443,7 @@ public class ForteLang implements ForteLangConstants {
                         if(o1 instanceof FL_List && o2 instanceof FL_List) {
                                 FL_List l1 = (FL_List) o1;
                                 FL_List l2 = (FL_List) o2;
-                                l1.list.addAll(l2.list);
+                                l1.addAll(l2);
                                 return l1;
                         } else if(o1 instanceof String && o2 instanceof String) {
                                 String s1 = (String) o1;
@@ -556,7 +556,12 @@ public class ForteLang implements ForteLangConstants {
         }
 
         //Placeholder for "applying" an object
-        static class ApplyObj { @Override public String toString() { return "ap"; }}
+        static class ApplyObj {
+          @Override
+          public String toString() {
+            return "ap";
+            }
+        }
 
         public static Object secd(FL_Function_Call functionCall, FL_Set globalScope) throws Exception {
                 Stack<Object> stack = new Stack<Object>();
@@ -653,6 +658,14 @@ public class ForteLang implements ForteLangConstants {
                 return evaluate(newEnv, stack.pop());
         }
 
+        /**
+	 * Main evaluation method. Evaluates an expression given a
+	 * "scope", which is an FL_Set. An FL_Set is used as opposed
+	 * to a regular HashMap (for example) because an FL_Set contains
+	 * information about the current purity of the scope. This is
+	 * thus used to check for purity in evaluation which cannot be
+	 * determined during the parse phase.
+	 */
         public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
                 scope = scope.clone();
 //		System.out.println(scope);
@@ -677,7 +690,7 @@ public class ForteLang implements ForteLangConstants {
                                                 if(!(builtinParam instanceof FL_List)) {
                                                         throw new EvaluationException("head function requires a list as a parameter");
                                                 } else {
-                                                        LinkedList list = ((FL_List) builtinParam).list;
+                                                        FL_List list = ((FL_List) builtinParam);
                                                         if(list.isEmpty()) {
                                                                 throw new EvaluationException("List is empty, cannot retrieve the head of the list");
                                                         }
@@ -687,15 +700,16 @@ public class ForteLang implements ForteLangConstants {
                                                 if(!(builtinParam instanceof FL_List)) {
                                                         throw new Exception("tail function requires a list as a parameter");
                                                 } else {
-                                                        LinkedList list = ((FL_List) builtinParam).list;
+                                                        FL_List list = ((FL_List) builtinParam);
                                                         if(list.isEmpty()) {
                                                                 throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
                                                         }
-                                                        list = (LinkedList) list.clone();
-                                                        list.remove();
-                                                        FL_List newList = new FL_List();
-                                                        newList.list = list;
-                                                        return newList;
+                                                        return list.subList(1, list.size());
+//						  	list = (LinkedList) list.clone();
+//						  	list.remove();
+//						  	FL_List newList = new FL_List();
+//						  	newList.list = list;
+//						  	return newList;
                                                 }
                                         case INPUT:
                                                 if(!(builtinParam instanceof String)) {
@@ -875,7 +889,7 @@ public class ForteLang implements ForteLangConstants {
 //			  	}
                         } else if(expression instanceof FL_List) {
                                 FL_List list = (FL_List) expression;
-                                ListIterator<Object> iterator = list.list.listIterator(0);
+                                ListIterator<Object> iterator = list.listIterator(0);
                                 while(iterator.hasNext()) {
                                         Object expr = iterator.next();
                                         iterator.set(evaluate(scope, expr));
@@ -1065,7 +1079,7 @@ public class ForteLang implements ForteLangConstants {
     case GUARD_START:
       //Non-empty list
                       nextItem = enclosedExpression();
-                  list.list.add(nextItem);
+                  list.add(nextItem);
       label_2:
       while (true) {
         if (jj_2_1(2)) {
@@ -1075,7 +1089,7 @@ public class ForteLang implements ForteLangConstants {
         }
         jj_consume_token(COMMA);
         nextItem = enclosedExpression();
-                          list.list.add(nextItem);
+                          list.add(nextItem);
       }
       jj_consume_token(CLOSESBRACKET);
       break;
@@ -1454,134 +1468,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_42() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(EQUALS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_33() {
-    if (jj_3R_40()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_39() {
-    if (jj_scan_token(MATCH)) return true;
-    if (jj_3R_6()) return true;
-    Token xsp;
-    if (jj_3_8()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_8()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_32() {
-    if (jj_scan_token(BOOLEAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_31() {
-    if (jj_scan_token(REGEX_STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_29() {
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_41() {
-    if (jj_scan_token(IMPURE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_28() {
-    if (jj_3R_38()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_27() {
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_26() {
-    if (jj_3R_36()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_25() {
-    if (jj_3R_35()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_34() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_41()) jj_scanpos = xsp;
-    if (jj_scan_token(OPENCBRACKET)) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_42()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSECBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_24() {
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_23()) {
-    jj_scanpos = xsp;
-    if (jj_3R_24()) {
-    jj_scanpos = xsp;
-    if (jj_3R_25()) {
-    jj_scanpos = xsp;
-    if (jj_3R_26()) {
-    jj_scanpos = xsp;
-    if (jj_3R_27()) {
-    jj_scanpos = xsp;
-    if (jj_3R_28()) {
-    jj_scanpos = xsp;
-    if (jj_3R_29()) {
-    jj_scanpos = xsp;
-    if (jj_3R_30()) {
-    jj_scanpos = xsp;
-    if (jj_3R_31()) {
-    jj_scanpos = xsp;
-    if (jj_3R_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_33()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_3R_34()) return true;
-    return false;
-  }
-
   private boolean jj_3R_21() {
     if (jj_3R_22()) return true;
     return false;
@@ -1614,14 +1500,14 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_18() {
-    if (jj_scan_token(CONTAINS)) return true;
-    return false;
-  }
-
   private boolean jj_3R_11() {
     if (jj_scan_token(OPENBRACKET)) return true;
     if (jj_3R_7()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_18() {
+    if (jj_scan_token(CONTAINS)) return true;
     return false;
   }
 
@@ -1883,6 +1769,134 @@ public class ForteLang implements ForteLangConstants {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3_4()) jj_scanpos = xsp;
+    return false;
+  }
+
+  private boolean jj_3R_42() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(EQUALS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_33() {
+    if (jj_3R_40()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_39() {
+    if (jj_scan_token(MATCH)) return true;
+    if (jj_3R_6()) return true;
+    Token xsp;
+    if (jj_3_8()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_8()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_32() {
+    if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_31() {
+    if (jj_scan_token(REGEX_STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_29() {
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_41() {
+    if (jj_scan_token(IMPURE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_28() {
+    if (jj_3R_38()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_27() {
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_26() {
+    if (jj_3R_36()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_25() {
+    if (jj_3R_35()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_34() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_41()) jj_scanpos = xsp;
+    if (jj_scan_token(OPENCBRACKET)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_42()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSECBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_24() {
+    if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_22() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_23()) {
+    jj_scanpos = xsp;
+    if (jj_3R_24()) {
+    jj_scanpos = xsp;
+    if (jj_3R_25()) {
+    jj_scanpos = xsp;
+    if (jj_3R_26()) {
+    jj_scanpos = xsp;
+    if (jj_3R_27()) {
+    jj_scanpos = xsp;
+    if (jj_3R_28()) {
+    jj_scanpos = xsp;
+    if (jj_3R_29()) {
+    jj_scanpos = xsp;
+    if (jj_3R_30()) {
+    jj_scanpos = xsp;
+    if (jj_3R_31()) {
+    jj_scanpos = xsp;
+    if (jj_3R_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_33()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_3R_34()) return true;
     return false;
   }
 

@@ -658,6 +658,14 @@ public class ForteLang {
 		return evaluate(newEnv, stack.pop());
 	}
 	
+	/**
+	 * Main evaluation method. Evaluates an expression given a
+	 * "scope", which is an FL_Set. An FL_Set is used as opposed
+	 * to a regular HashMap (for example) because an FL_Set contains
+	 * information about the current purity of the scope. This is
+	 * thus used to check for purity in evaluation which cannot be
+	 * determined during the parse phase.
+	 */
 	public static Object evaluate(FL_Set scope /*TODO: Why is this a FL_Set not a hashmap?*/, Object expression) throws Exception {
 	  	scope = scope.clone();
 //		System.out.println(scope);

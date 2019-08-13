@@ -194,14 +194,14 @@ public class ForteLang implements ForteLangConstants {
 
         /** Other declared objects */
 
-        static class FL_IncludedSet implements Evaluatable {
-                FL_Set set;
-                Object expression;
-
-                @Override public String toString() {
-                  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
-                }
-        }
+//	static class FL_IncludedSet implements Evaluatable {
+//		FL_Set set;
+//		Object expression;
+//
+//		@Override public String toString() {
+//		  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
+//		}
+//	}
 
         static class OperatorParser {
 
@@ -692,8 +692,8 @@ public class ForteLang implements ForteLangConstants {
                                 return expression;
                         } else if(expression instanceof FL_IncludedSet) {
                                 FL_IncludedSet incSet = (FL_IncludedSet) expression;
-                                scope.putAll(incSet.set);
-                                return evaluate(scope, incSet.expression);
+                                scope.putAll(incSet.getFLSet());
+                                return evaluate(scope, incSet.getExpression());
                         }
                         throw new Exception("Not implemented yet, could not evaluate: " + expression);
                 } else {
@@ -715,7 +715,7 @@ public class ForteLang implements ForteLangConstants {
     Object result = null;
     if(expression instanceof FL_IncludedSet) {
         FL_IncludedSet flIS = (FL_IncludedSet) expression;
-        result = evaluate(flIS.set, flIS.expression);
+        result = evaluate(flIS.getFLSet(), flIS.getExpression());
     } else {
                 result = evaluate(new FL_Set(false), expression);
     }
@@ -760,15 +760,12 @@ public class ForteLang implements ForteLangConstants {
   }
 
   final public FL_IncludedSet includedSet() throws ParseException, Exception {
-                                                  FL_IncludedSet result; Object expression; FL_Set set;
-          result = new FL_IncludedSet();
+                                                  FL_Set set; Object expression;
     jj_consume_token(INCLUDE);
     set = set();
     jj_consume_token(IN);
     expression = enclosedExpression();
-          result.set = set;
-          result.expression = expression;
-          {if (true) return result;}
+          {if (true) return new FL_IncludedSet(set, expression);}
     throw new Error("Missing return statement in function");
   }
 
@@ -1250,6 +1247,22 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(7, xla); }
   }
 
+  private boolean jj_3R_10() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_19()) {
+    jj_scanpos = xsp;
+    if (jj_3R_20()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
   private boolean jj_3_8() {
     if (jj_scan_token(GUARD)) return true;
     if (jj_3R_6()) return true;
@@ -1397,9 +1410,35 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3R_35() {
+    if (jj_scan_token(INCLUDE)) return true;
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_18() {
+    if (jj_scan_token(CONTAINS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_17() {
+    if (jj_scan_token(CONCAT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_16() {
+    if (jj_scan_token(COMPARATOR_OP)) return true;
+    return false;
+  }
+
   private boolean jj_3_7() {
     if (jj_scan_token(GUARD)) return true;
     if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_15() {
+    if (jj_scan_token(SET_OP)) return true;
     return false;
   }
 
@@ -1418,55 +1457,8 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_35() {
-    if (jj_scan_token(INCLUDE)) return true;
-    if (jj_3R_34()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_18() {
-    if (jj_scan_token(CONTAINS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_11() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_3R_7()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_17() {
-    if (jj_scan_token(CONCAT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_16() {
-    if (jj_scan_token(COMPARATOR_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_15() {
-    if (jj_scan_token(SET_OP)) return true;
-    return false;
-  }
-
   private boolean jj_3R_14() {
     if (jj_scan_token(OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_6() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_2()) {
-    jj_scanpos = xsp;
-    if (jj_3R_11()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_2() {
-    if (jj_3R_7()) return true;
     return false;
   }
 
@@ -1494,6 +1486,27 @@ public class ForteLang implements ForteLangConstants {
     }
     }
     }
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_3R_7()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_6() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_2()) {
+    jj_scanpos = xsp;
+    if (jj_3R_11()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_3R_7()) return true;
     return false;
   }
 
@@ -1662,22 +1675,6 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3R_19() {
     if (jj_scan_token(VAR_NAME)) return true;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_10() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_19()) {
-    jj_scanpos = xsp;
-    if (jj_3R_20()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
     if (jj_3R_6()) return true;
     return false;
   }

@@ -199,15 +199,6 @@ public class ForteLang {
 
 	/** Other declared objects */
 
-	static class FL_IncludedSet implements Evaluatable {
-		FL_Set set;
-		Object expression;
-
-		@Override public String toString() {
-		  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
-		}
-	}
-
 	static class OperatorParser {
 
 		enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT, CONTAINS };
@@ -697,8 +688,8 @@ public class ForteLang {
 				return expression;
 			} else if(expression instanceof FL_IncludedSet) {
 			  	FL_IncludedSet incSet = (FL_IncludedSet) expression;
-				scope.putAll(incSet.set);
-				return evaluate(scope, incSet.expression);
+				scope.putAll(incSet.getFLSet());
+				return evaluate(scope, incSet.getExpression());
 			}
 			throw new Exception("Not implemented yet, could not evaluate: " + expression);
 	  	} else {
@@ -791,7 +782,7 @@ Object input() throws Exception : { Object expression; } {
     Object result = null;
     if(expression instanceof FL_IncludedSet) {
     	FL_IncludedSet flIS = (FL_IncludedSet) expression;
-    	result = evaluate(flIS.set, flIS.expression);
+    	result = evaluate(flIS.getFLSet(), flIS.getExpression());
     } else {
 		result = evaluate(new FL_Set(false), expression);
     }
@@ -809,18 +800,12 @@ Token anyOperator() throws Exception : { Token op; } {
 	| op = <CONTAINS>      { return op; }
 }
 
-FL_IncludedSet includedSet() throws Exception : { FL_IncludedSet result; Object expression; FL_Set set; } {
-  	{ result = new FL_IncludedSet(); }
+FL_IncludedSet includedSet() throws Exception : { FL_Set set; Object expression; } {
 	<INCLUDE>
 	set = set()
 	<IN>
 	expression = enclosedExpression()
-
-	{
-	  result.set = set;
-	  result.expression = expression;
-	  return result;
-	}
+	{ return new FL_IncludedSet(set, expression); }
 }
 
 FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {

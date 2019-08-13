@@ -339,8 +339,8 @@ public class ForteLang {
 	  	Stack<Dump> dump = new Stack<Dump>();
 
 	  	//Convert to reverse polish
-		control.add(functionCall.initFunction);
-		for(Object object : functionCall.arguments) {
+		control.add(functionCall.getInitFunction());
+		for(Object object : functionCall.getArguments()) {
 			control.add(object);
 			control.add(new ApplyObj());
 		}
@@ -368,7 +368,7 @@ public class ForteLang {
 						lambda = (FL_Function) potentialFunction;
 					} else if(potentialFunction instanceof FL_FunctionCall) {
 						FL_FunctionCall lambdaCall = (FL_FunctionCall) potentialFunction;
-						lambda = (FL_Function) lambdaCall.initFunction;
+						lambda = (FL_Function) lambdaCall.getInitFunction();
 					}
 					
 	
@@ -494,7 +494,7 @@ public class ForteLang {
 			if(expression instanceof FL_Function) {
 			  	FL_Function function = (FL_Function) expression;
 			  	FL_FunctionCall newFunctionCall = new FL_FunctionCall();
-			  	newFunctionCall.initFunction = function;
+			  	newFunctionCall.setInitFunction(function);
 			  	
 				return newFunctionCall;
 			} else
@@ -502,32 +502,32 @@ public class ForteLang {
 				printEVAL();
 				FL_FunctionCall call = (FL_FunctionCall) expression;
 
-				if(!(call.initFunction instanceof FL_Function)) {
+				if(!(call.getInitFunction() instanceof FL_Function)) {
 				  	// It's a function name, which needs to be resolved
-				  	FL_Var functionName = (FL_Var) call.initFunction; 
+				  	FL_Var functionName = (FL_Var) call.getInitFunction(); 
 					Object function = scope.get(functionName.getName());
 
 					if(function == null) {
 						throw new Exception("Function \"" + functionName.getName() + "\" has not been declared!");
 					} else {
 						if(function instanceof FL_FunctionCall) {
-							call.initFunction = ((FL_FunctionCall) function).initFunction;
+							call.setInitFunction(((FL_FunctionCall) function).getInitFunction());
 						} else {
 							printEVAL("Reading from closure... ", function.getClass().getName());
 						}
 					}
 				}
 				
-				if(call.arguments.isEmpty()) {
+				if(call.getArguments().isEmpty()) {
 //				  	System.out.println("Evaluating because arguments are empty...");
-					return evaluate(scope, call.initFunction);
+					return evaluate(scope, call.getInitFunction());
 				}
 
 				
 				
-				if(call.initFunction instanceof FL_Function) {
+				if(call.getInitFunction() instanceof FL_Function) {
 					printEVAL("About to evaluate the following: ");
-					printEVAL(call.initFunction);
+					printEVAL(call.getInitFunction());
 
 					printEVAL();
 					printEVAL("Starting SECD machine");
@@ -536,11 +536,11 @@ public class ForteLang {
 					return secd(call, scope);
 					
 				} else {
-				  	printEVAL("Avoiding the SECD machine, because of type ", call.initFunction.getClass().getName());
-				  	if(call.initFunction instanceof Evaluatable) {
-						return evaluate(scope, call.initFunction);
+				  	printEVAL("Avoiding the SECD machine, because of type ", call.getInitFunction().getClass().getName());
+				  	if(call.getInitFunction() instanceof Evaluatable) {
+						return evaluate(scope, call.getInitFunction());
 				  	} else {
-						return call.initFunction;
+						return call.getInitFunction();
 				  	}
 				}
 
@@ -886,15 +886,15 @@ FL_FunctionCall functionCall() throws Exception : { FL_FunctionCall result; Obje
   	{
   	   	result = new FL_FunctionCall();
   	   	if(varName != null) { 
-			result.initFunction = new FL_Var(varName.image);
+			result.setInitFunction(new FL_Var(varName.image));
 		} else {
-			result.initFunction = lambda;
+			result.setInitFunction(lambda);
 		}
   	}
 	(
 	  LOOKAHEAD(2)
 	  param = enclosedExpression()
-	  { result.arguments.add(param); }
+	  { result.getArguments().add(param); }
 	)*
 	{ return result; }
 }

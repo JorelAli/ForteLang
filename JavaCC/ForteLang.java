@@ -3,10 +3,6 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Stack;
-//import java.util.LinkedHashMap;
-//import java.util.Collection;
-//import java.util.Map;
-//import java.util.Map.Entry;
 import java.util.Scanner;
 
 import java.util.regex.Pattern;
@@ -124,8 +120,6 @@ public class ForteLang implements ForteLangConstants {
                                 return;
                         }
                 }
-
-
         }
 
         static class EvaluationException extends Exception {
@@ -340,8 +334,8 @@ public class ForteLang implements ForteLangConstants {
                 Stack<Dump> dump = new Stack<Dump>();
 
                 //Convert to reverse polish
-                control.add(functionCall.initFunction);
-                for(Object object : functionCall.arguments) {
+                control.add(functionCall.getInitFunction());
+                for(Object object : functionCall.getArguments()) {
                         control.add(object);
                         control.add(new ApplyObj());
                 }
@@ -369,7 +363,7 @@ public class ForteLang implements ForteLangConstants {
                                                 lambda = (FL_Function) potentialFunction;
                                         } else if(potentialFunction instanceof FL_FunctionCall) {
                                                 FL_FunctionCall lambdaCall = (FL_FunctionCall) potentialFunction;
-                                                lambda = (FL_Function) lambdaCall.initFunction;
+                                                lambda = (FL_Function) lambdaCall.getInitFunction();
                                         }
 
 
@@ -495,7 +489,7 @@ public class ForteLang implements ForteLangConstants {
                         if(expression instanceof FL_Function) {
                                 FL_Function function = (FL_Function) expression;
                                 FL_FunctionCall newFunctionCall = new FL_FunctionCall();
-                                newFunctionCall.initFunction = function;
+                                newFunctionCall.setInitFunction(function);
 
                                 return newFunctionCall;
                         } else
@@ -503,32 +497,32 @@ public class ForteLang implements ForteLangConstants {
                                 printEVAL();
                                 FL_FunctionCall call = (FL_FunctionCall) expression;
 
-                                if(!(call.initFunction instanceof FL_Function)) {
+                                if(!(call.getInitFunction() instanceof FL_Function)) {
                                         // It's a function name, which needs to be resolved
-                                        FL_Var functionName = (FL_Var) call.initFunction;
+                                        FL_Var functionName = (FL_Var) call.getInitFunction();
                                         Object function = scope.get(functionName.getName());
 
                                         if(function == null) {
                                                 throw new Exception("Function \u005c"" + functionName.getName() + "\u005c" has not been declared!");
                                         } else {
                                                 if(function instanceof FL_FunctionCall) {
-                                                        call.initFunction = ((FL_FunctionCall) function).initFunction;
+                                                        call.setInitFunction(((FL_FunctionCall) function).getInitFunction());
                                                 } else {
                                                         printEVAL("Reading from closure... ", function.getClass().getName());
                                                 }
                                         }
                                 }
 
-                                if(call.arguments.isEmpty()) {
+                                if(call.getArguments().isEmpty()) {
 //				  	System.out.println("Evaluating because arguments are empty...");
-                                        return evaluate(scope, call.initFunction);
+                                        return evaluate(scope, call.getInitFunction());
                                 }
 
 
 
-                                if(call.initFunction instanceof FL_Function) {
+                                if(call.getInitFunction() instanceof FL_Function) {
                                         printEVAL("About to evaluate the following: ");
-                                        printEVAL(call.initFunction);
+                                        printEVAL(call.getInitFunction());
 
                                         printEVAL();
                                         printEVAL("Starting SECD machine");
@@ -537,11 +531,11 @@ public class ForteLang implements ForteLangConstants {
                                         return secd(call, scope);
 
                                 } else {
-                                        printEVAL("Avoiding the SECD machine, because of type ", call.initFunction.getClass().getName());
-                                        if(call.initFunction instanceof Evaluatable) {
-                                                return evaluate(scope, call.initFunction);
+                                        printEVAL("Avoiding the SECD machine, because of type ", call.getInitFunction().getClass().getName());
+                                        if(call.getInitFunction() instanceof Evaluatable) {
+                                                return evaluate(scope, call.getInitFunction());
                                         } else {
-                                                return call.initFunction;
+                                                return call.getInitFunction();
                                         }
                                 }
 
@@ -1010,9 +1004,9 @@ public class ForteLang implements ForteLangConstants {
     }
                 result = new FL_FunctionCall();
                 if(varName != null) {
-                        result.initFunction = new FL_Var(varName.image);
+                        result.setInitFunction(new FL_Var(varName.image));
                 } else {
-                        result.initFunction = lambda;
+                        result.setInitFunction(lambda);
                 }
     label_3:
     while (true) {
@@ -1022,7 +1016,7 @@ public class ForteLang implements ForteLangConstants {
         break label_3;
       }
       param = enclosedExpression();
-            result.arguments.add(param);
+            result.getArguments().add(param);
     }
           {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -1185,6 +1179,37 @@ public class ForteLang implements ForteLangConstants {
     try { return !jj_3_8(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(7, xla); }
+  }
+
+  private boolean jj_3R_35() {
+    if (jj_scan_token(INCLUDE)) return true;
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_18() {
+    if (jj_scan_token(CONTAINS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_17() {
+    if (jj_scan_token(CONCAT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_16() {
+    if (jj_scan_token(COMPARATOR_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_21() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_15() {
+    if (jj_scan_token(SET_OP)) return true;
+    return false;
   }
 
   private boolean jj_3R_14() {
@@ -1585,37 +1610,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_23() {
     if (jj_3R_34()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    if (jj_scan_token(INCLUDE)) return true;
-    if (jj_3R_34()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_18() {
-    if (jj_scan_token(CONTAINS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_17() {
-    if (jj_scan_token(CONCAT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_16() {
-    if (jj_scan_token(COMPARATOR_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_21() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_15() {
-    if (jj_scan_token(SET_OP)) return true;
     return false;
   }
 

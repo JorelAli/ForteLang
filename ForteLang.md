@@ -180,8 +180,22 @@ Set elements can be accessed using the `.` operator:
 ```
 mySet = {
     exampleItem = 5;
-}.exampleItem
+}."exampleItem"
 ```
+
+The `.` operator has the strongest binding of the order of operations, and will ignore brackets. For example:
+
+```
+{ 
+	item1 = {
+		item2 = {
+			item3 = "hello";
+        };
+    };
+}."item1".("item2"."item3")
+```
+
+returns `"hello"`, as if you had done `"item1"."item2"."item3"`. It is strongly recommended _not_ to use brackets.
 
 #### The `?` operator
 

@@ -889,7 +889,9 @@ Object opExpression() throws Exception : {
   Token operator = null;
 } {
   
-  	leftExpr = expression()
+  	( LOOKAHEAD(3)  	  leftExpr = expression()
+  	  | <OPENBRACKET> leftExpr = expression() <CLOSEBRACKET>
+  	)
 	(
 	  LOOKAHEAD(2)
 	  operator = anyOperator()

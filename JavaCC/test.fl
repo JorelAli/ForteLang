@@ -105,8 +105,24 @@ include {
         };
     };
 
+    mySet' = {
+        item1 = {
+            item2 = {
+                item3 = "hello";
+            };
+        };
+    }."item1".("item2"."item3");
 
-} in isDerivation {} #{a={a=b;};}."a"."a"
+
+} in {
+        item1 = {
+            item2 = {
+                item3 = "hello";
+            };
+        };
+    }."item1".("item2"."item3")
+    
+     #{a={a=b;};}."a"."a"
 
 #mySet."item3"."item4"
 

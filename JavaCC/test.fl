@@ -116,10 +116,10 @@ include {
 } in 
 
 include {
-	hello = include {
-		hello' = true;
-	} in { hello = "hello"; }.((hello -> hello ++ "hello") |> | (|> | hello' ->> hello' | ->> hello') ->> "" | ->> "hello");
-} in hello ++ ", world!"
+	hello = { hello = "hello"; }.((hello -> hello ++ "hello") |> | |> | hello' ->> hello' | ->> hello' ->> "" | ->> "hello");
+	hello' = true;
+	world = {world = "hello";} /+ {world = "world!";};
+} in {hello = hello ++ ", " ++ match "world!" | '\w[o|r]+ld!' ->> |> | world.world == "world!" ->> "world!" | ->> "hello" | ->> "hello";}.hello
 
 
 	# { a = "hello"; }.((x -> x ++ "a") "") 

@@ -485,6 +485,7 @@ public class ForteLang implements ForteLangConstants {
 
                 FL_Set newEnv = new FL_Set(false);
                 newEnv.putAll(environment);
+                printSECD("SECD ended with " + stack.peek());
                 return evaluate(newEnv, stack.pop());
         }
 

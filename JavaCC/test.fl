@@ -114,12 +114,21 @@ include {
 	};
 
 } in 
+### Expect:
+|> 3 + 4 * 5 + 6
+=> 3 + (4 * 5) + 6 
+=> 3 + 20 + 6 
+=> 29
+###
+3 + 4 * 5 + 6
 
-include {
-	hello = { hello = "hello"; }.((hello -> hello ++ "hello") |> | |> | hello' ->> hello' | ->> hello' ->> "" | ->> "hello");
-	hello' = true;
-	world = {world = "hello";} /+ {world = "world!";};
-} in {hello = hello ++ ", " ++ match "world!" | '\w[o|r]+ld!' ->> |> | world.world == "world!" ->> "world!" | ->> "hello" | ->> "hello";}.hello
+
+
+# include {
+# 	hello = { hello = "hello"; }.((hello -> hello ++ "hello") |> | |> | hello' ->> hello' | ->> hello' ->> "" | ->> "hello");
+# 	hello' = true;
+# 	world = {world = "hello";} /+ {world = "world!";};
+# } in {hello = hello ++ ", " ++ match "world!" | '\w[o|r]+ld!' ->> |> | world.world == "world!" ->> "world!" | ->> "hello" | ->> "hello";}.hello
 
 
 	# { a = "hello"; }.((x -> x ++ "a") "") 

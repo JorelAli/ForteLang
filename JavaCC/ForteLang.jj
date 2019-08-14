@@ -505,6 +505,13 @@ public class ForteLang {
 		Token operatorToUse = flOpExpr.getOperator();
 
 		printOPEX("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
+		printOPEX("");
+		printOPEX("Phase 1: Flattening");
+
+		
+		
+		printOPEX("Phase 2: Shunting-yard");
+		printOPEX("Phase 3: Evaluation");
 	  	
 	  	Object newInit = new OperatorParser(operatorToUse, scope).apply(left, right);
 
@@ -823,20 +830,20 @@ FL_IncludedSet includedSet() throws Exception : { FL_Set set; Object expression;
 FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {
   	{ set = new FL_Set(false); }
 	(
-	  <IMPURE>
-	  { set.setImpure(true);}
+		<IMPURE>
+	  	{ set.setImpure(true); }
 	)?
 	setDeclaration = <OPENCBRACKET>
 	(
-	  attrName = <VAR_NAME>
-	  <EQUALS>
-	  attrValue = enclosedExpression()
-	  <SEMICOLON>
-	  { set.put(attrName.image, attrValue); }
+	  	attrName = <VAR_NAME>
+	  	<EQUALS>
+	  	attrValue = enclosedExpression()
+	  	<SEMICOLON>
+	  	{ set.put(attrName.image, attrValue); }
 	)*
 	<CLOSECBRACKET>
 	{
-//	  set.checkPurity(setDeclaration);
+	  //	  set.checkPurity(setDeclaration);
 	  return set;
 	}
 }

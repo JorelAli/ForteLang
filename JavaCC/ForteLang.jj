@@ -963,7 +963,7 @@ Object opExpression(boolean bracketed) throws Exception : {
   Token operator = null;
 } {
   
-  	( LOOKAHEAD(3)  	  leftExpr = expression() //This is totally wrong
+  	( LOOKAHEAD(3)  	  leftExpr = expression()
   	  | <OPENBRACKET> leftExpr = opExpression(true) <CLOSEBRACKET>
   	)
 	(

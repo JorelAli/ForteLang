@@ -30,7 +30,9 @@ public class ForteLang implements ForteLangConstants {
         static void printEVAL(Object o)           { print("EVAL", o); }
         static void printEVAL(String s, Object o) { print("EVAL", s, o); }
 
+        static void printOPEX()                   { print("OPEX"); }
         static void printOPEX(Object o)           { print("OPEX", o); }
+        static void printOPEX(String s, Object o) { print("OPEX", s, o); }
 
         static void print(String title)           { print(title, "", ""); }
         static void print(String title, Object o) { print(title, "", o); }
@@ -489,6 +491,27 @@ public class ForteLang implements ForteLangConstants {
                 return evaluate(newEnv, stack.pop());
         }
 
+        public static Object evaluateOpExpr(FL_Set scope, FL_OpExpr flOpExpr) throws Exception {
+                printOPEX("About to evaluate OpExpr:");
+                printOPEX(flOpExpr);
+
+                Object left = flOpExpr.getLeftExpr();
+                Object right = flOpExpr.getRightExpr();
+                Token operatorToUse = flOpExpr.getOperator();
+
+                printOPEX("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
+
+                Object newInit = new OperatorParser(operatorToUse, scope).apply(left, right);
+
+                printOPEX("OpExpr eval result: ", newInit);
+
+                if(newInit instanceof Evaluatable) {
+                        return evaluate(scope, newInit);
+                } else {
+                        return newInit;
+                }
+        }
+
         /**
 	 * Main evaluation method. Evaluates an expression given a
 	 * "scope", which is an FL_Set. An FL_Set is used as opposed
@@ -657,26 +680,7 @@ public class ForteLang implements ForteLangConstants {
                                         return evaluate(scope, var);
                                 }
                         } else if(expression instanceof FL_OpExpr) {
-                                FL_OpExpr flVarOp = (FL_OpExpr) expression;
-
-                                printEVAL("\u005cn\u005cnAbout to evaluate OpExpr:");
-                                printEVAL(flVarOp);
-
-                                Object left = flVarOp.getLeftExpr();
-                                Object right = flVarOp.getRightExpr();
-                                Token operatorToUse = flVarOp.getOperator();
-
-                                printEVAL("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
-
-                                Object newInit = new OperatorParser(operatorToUse, scope).apply(left, right);
-
-                                printEVAL("OpExpr eval result: ", newInit);
-
-                                if(newInit instanceof Evaluatable) {
-                                        return evaluate(scope, newInit);
-                                } else {
-                                        return newInit;
-                                }
+                                return evaluateOpExpr(scope, (FL_OpExpr) expression);
                         } else if(expression instanceof FL_List) {
                                 FL_List list = (FL_List) expression;
                                 ListIterator<Object> iterator = list.listIterator(0);

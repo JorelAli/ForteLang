@@ -964,7 +964,7 @@ Object opExpression(boolean bracketed) throws Exception : {
 } {
   
   	( LOOKAHEAD(3)  	  leftExpr = expression() //This is totally wrong
-  	  | <OPENBRACKET> leftExpr = expression() <CLOSEBRACKET>
+  	  | <OPENBRACKET> leftExpr = opExpression(true) <CLOSEBRACKET>
   	)
 	(
 	  LOOKAHEAD(2)

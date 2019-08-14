@@ -1,126 +1,132 @@
-include {
-	# Adds two parameters together
-	add = x -> y -> x + y;
+# include {
+# 	# Adds two parameters together
+# 	add = x -> y -> x + y;
 
-	basicOperation = 123.25 + 2;
+# 	basicOperation = 123.25 + 2;
+# 	# Lists
+# 	someList      = [1, 2];
+# 	someOtherList = [3];
+# 	emptyList     = [];
+# 	#Example with guards
+# 	maxOr0 = x -> y -> |>
+# 		| x > y ->> x 
+# 		| x < y ->> y 
+# 		| ->> 0;
 
-	# Lists
-	someList      = [1, 2];
-	someOtherList = [3];
-	emptyList     = [];
+# 	nestedGuard = x -> |>
+# 		| x == 0 ->> 0
+# 		| ->> |>
+# 			| x == 1 ->> 1
+# 			| ->> -1;
 
-	#Example with guards
-	maxOr0 = x -> y -> |>
-		| x > y ->> x 
-		| x < y ->> y 
-		| ->> 0;
+# 	inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
 
-	nestedGuard = x -> |>
-		| x == 0 ->> 0
-		| ->> |>
-			| x == 1 ->> 1
-			| ->> -1;
+# 	# Set operations
+# 	union =      set1 -> set2 -> set1 /+ set2;
+# 	intersect =  set1 -> set2 -> set1 /- set2;
+# 	difference = set1 -> set2 -> set1 // set2;
 
-	inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
+# 	# Adds sets to scope of expressions
+# 	myFunctions2 = include {
+# 		myAdd = x -> y -> x + y;
+# 	} in myAdd 2;
 
-	# Set operations
-	union =      set1 -> set2 -> set1 /+ set2;
-	intersect =  set1 -> set2 -> set1 /- set2;
-	difference = set1 -> set2 -> set1 // set2;
+# 	head' = list -> list ++ [2, 3, (2 + 2)];
 
-	# Adds sets to scope of expressions
-	myFunctions2 = include {
-		myAdd = x -> y -> x + y;
-	} in myAdd 2;
+# 	nestedList = [2, [3]];
 
-	head' = list -> list ++ [2, 3, (2 + 2)];
+# 	const = 4;
 
-	nestedList = [2, [3]];
+# 	p = x -> x;
 
-	const = 4;
+# 	a = lambda -> lambda 2 3;
 
-	p = x -> x;
+# 	factorial = input -> |>
+# 		| input == 0 ->> 1
+# 		| ->> input * factorial (input - 1);
 
-	a = lambda -> lambda 2 3;
+# 	# Standard library
+# 	all = list -> match list 
+# 		| [] ->> true
+# 		| ->> |> | head list ->> all (tail list) | ->> false;
 
-	factorial = input -> |>
-		| input == 0 ->> 1
-		| ->> input * factorial (input - 1);
+# 	any = list -> match list
+# 		| [] ->> false
+# 		| ->> |> | head list ->> true | ->> any (tail list);
 
-	# Standard library
-	all = list -> match list 
-		| [] ->> true
-		| ->> |> | head list ->> all (tail list) | ->> false;
+# 	length = list -> match list
+# 		| [] ->> 0
+# 		| ->> 1 + sizeOfList (tail list);
 
-	any = list -> match list
-		| [] ->> false
-		| ->> |> | head list ->> true | ->> any (tail list);
+# 	genList = num -> formula -> match num
+# 		| 0 ->> []
+# 		| ->> [(formula num)] ++ genList (num - 1) formula;
 
-	length = list -> match list
-		| [] ->> 0
-		| ->> 1 + sizeOfList (tail list);
-
-	genList = num -> formula -> match num
-		| 0 ->> []
-		| ->> [(formula num)] ++ genList (num - 1) formula;
-
-	not = bool -> |> | bool ->> false | ->> true;
+# 	not = bool -> |> | bool ->> false | ->> true;
 			
-	# Pattern matching on Strings:
-	isInt = str -> match str
-		| "I_AM_AN_INT" ->> true
-		| '[0-9]+' ->> true
-		| '-[0-9]+' ->> true
-		| ->> false;
+# 	# Pattern matching on Strings:
+# 	isInt = str -> match str
+# 		| "I_AM_AN_INT" ->> true
+# 		| '[0-9]+' ->> true
+# 		| '-[0-9]+' ->> true
+# 		| ->> false;
 
-	isFloat = str -> match str
-		| '-?[0-9]+\.[0-9]+' ->> true
-		| ->> false;
+# 	isFloat = str -> match str
+# 		| '-?[0-9]+\.[0-9]+' ->> true
+# 		| ->> false;
 
-	# isInt = str -> '[0-9]+';
+# 	# isInt = str -> '[0-9]+';
 
-	isEmpty = list -> match list
-		| [] ->> true
-		| ->> false;
+# 	isEmpty = list -> match list
+# 		| [] ->> true
+# 		| ->> false;
 
-	map = list -> f -> match list
-		| [] ->> []
-		| ->> [f (head list)] ++ map (tail list) f;
+# 	map = list -> f -> match list
+# 		| [] ->> []
+# 		| ->> [f (head list)] ++ map (tail list) f;
 
-	# map' = f -> list -> match list
-	#     | [] ->> []
-	#     | ->> [f (head list)] ++ map' f (tail list);
+# 	# map' = f -> list -> match list
+# 	#     | [] ->> []
+# 	#     | ->> [f (head list)] ++ map' f (tail list);
 
-	isDerivation = set -> set ? "derivation";
+# 	isDerivation = set -> set ? "derivation";
 
-	mySet' = {
-		item1 = {
-			item2 = {
-				item3 = "hello";
-			};
-		};
-	}."item1".("item2"."item3");
+# 	mySet' = {
+# 		item1 = {
+# 			item2 = {
+# 				item3 = "hello";
+# 			};
+# 		};
+# 	}."item1".("item2"."item3");
 
-	mySet = {
-		item1 = "hello";
-		item2 = "world";
-		item3 = {
-			item4 = {
-				item6 = "!!";
-				item7 = "??";
-			};
-			item5 = "??";
-		};
-	};
+# 	mySet = {
+# 		item1 = "hello";
+# 		item2 = "world";
+# 		item3 = {
+# 			item4 = {
+# 				item6 = "!!";
+# 				item7 = "??";
+# 			};
+# 			item5 = "??";
+# 		};
+# 	};
 
-} in 
+# } in 
 ### Expect:
 |> 3 + 4 * 5 + 6
 => 3 + (4 * 5) + 6 
 => 3 + 20 + 6 
 => 29
 ###
-(3 + 4) * 5 + 6
+#(3 + 4) * 5
+
+# Tests:
+# P 3 + 4 * 5
+# F (3 + 4) * 5
+# P 3 + (4 * 5)
+# P (3 + 4 * 5)
+# F ((3 + 4 * 5))
+(3 + 4) * 5
 # factorial 5
 
 

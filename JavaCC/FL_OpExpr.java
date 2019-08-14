@@ -47,6 +47,10 @@ public class FL_OpExpr implements Evaluatable {
 		return this.operator;
 	}
 
+	public boolean hasBrackets() {
+		return this.bracketed;
+	}
+
 	@Override public String toString() {
 		StringBuilder builder = new StringBuilder("FL_OpExpr[");
 		builder.append(leftExpr);

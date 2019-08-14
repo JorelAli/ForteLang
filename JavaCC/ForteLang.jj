@@ -497,25 +497,61 @@ public class ForteLang {
 	}
 
 	public static Object evaluateOpExpr(FL_Set scope, FL_OpExpr flOpExpr) throws Exception {
-		printOPEX("About to evaluate OpExpr:");
+		printOPEX("About to evaluate OpExpr");
+	  	printOPEX();		
 		printOPEX(flOpExpr);
 		
 	  	Object left = flOpExpr.getLeftExpr();
 	  	Object right = flOpExpr.getRightExpr();
 		Token operatorToUse = flOpExpr.getOperator();
 
-		printOPEX("OpExpr to eval: " + left + " " + operatorToUse.image + " " + right);
-		printOPEX("");
 		printOPEX("Phase 1: Flattening");
 
-		
-		
+		class OpFlattener {
+			private final FL_OpExpr expr;
+
+			public OpFlattener(FL_OpExpr expr) {
+				this.expr = expr;
+			}
+
+			public LinkedList<Object> flatten() {
+				LinkedList<Object> elements = new LinkedList<Object>();
+				if(expr.hasBrackets()) {
+					elements.add("(");
+				}
+
+				if(expr.getLeftExpr() instanceof FL_OpExpr) {
+					elements.addAll(new OpFlattener((FL_OpExpr) expr.getLeftExpr()).flatten());
+				} else {
+					elements.add(expr.getLeftExpr());
+				}
+
+				elements.add(expr.getOperator());
+
+				if(expr.getRightExpr() instanceof FL_OpExpr) {
+					elements.addAll(new OpFlattener((FL_OpExpr) expr.getRightExpr()).flatten());
+				} else {
+					elements.add(expr.getRightExpr());
+				}
+
+				if(expr.hasBrackets()) {
+					elements.add(")");
+				}
+				return elements;
+			}
+		} 
+
+		//Flatten the elements of OpExpr into a linked list for evaluation
+		LinkedList<Object> elements = new OpFlattener(flOpExpr).flatten();
+		printOPEX("Flattened: ", elements);
 		printOPEX("Phase 2: Shunting-yard");
 		printOPEX("Phase 3: Evaluation");
 	  	
 	  	Object newInit = new OperatorParser(operatorToUse, scope).apply(left, right);
 
 	  	printOPEX("OpExpr eval result: ", newInit);
+	  	printOPEX();
+	  	printOPEX("Evaluation complete.");
 
 	  	if(newInit instanceof Evaluatable) {
 			return evaluate(scope, newInit);
@@ -905,14 +941,10 @@ Object enclosedExpression() throws Exception : { Object result; Token vName;  } 
 	)
 }
 
-Object expression() throws Exception : { Object result; } {
-    LOOKAHEAD(3) result = functionCall() { return result; }
-	| result = singleExpression()       { return result; }
-	
-}
-
-Object singleExpression() throws Exception : { Object result; Token token; } {
-	  result = set() { return result; }
+Object expression() throws Exception : { Object result; Token token; } {
+  	LOOKAHEAD(3)
+  	result = functionCall() { return result; }
+    | result = set() { return result; }
 	| result = lambda() { return result; }
 	| result = includedSet() { return result; }
 	| result = list() { return result; }
@@ -931,7 +963,7 @@ Object opExpression(boolean bracketed) throws Exception : {
   Token operator = null;
 } {
   
-  	( LOOKAHEAD(3)  	  leftExpr = expression()
+  	( LOOKAHEAD(3)  	  leftExpr = expression() //This is totally wrong
   	  | <OPENBRACKET> leftExpr = expression() <CLOSEBRACKET>
   	)
 	(
@@ -942,8 +974,6 @@ Object opExpression(boolean bracketed) throws Exception : {
 	
 	{
 		if(operator != null) {
-		  	//TODO: Check for nested OpExprs here and
-		  	//handle the order of operations.
 			return new FL_OpExpr(leftExpr, rightExpr, operator, bracketed);
 		} else {
 			return leftExpr;

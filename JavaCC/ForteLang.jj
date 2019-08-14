@@ -889,10 +889,10 @@ double number() throws Exception : { Token value; double f; } {
 /** Expressions */
 Object enclosedExpression() throws Exception : { Object result; Token vName;  } {
 	LOOKAHEAD(3)
-	result = opExpression() {return result; }
+	result = opExpression(false) {return result; }
 	| (
 	  <OPENBRACKET>
-	  result = opExpression() 
+	  result = opExpression(true) 
 	  <CLOSEBRACKET>
 	   { return result; }
 	)
@@ -918,7 +918,7 @@ Object singleExpression() throws Exception : { Object result; Token token; } {
 	| result = builtinFunctions() { return result; }
 }
 
-Object opExpression() throws Exception : {
+Object opExpression(boolean bracketed) throws Exception : {
   Object leftExpr;
   Object rightExpr = null;
   Token operator = null;
@@ -937,7 +937,7 @@ Object opExpression() throws Exception : {
 		if(operator != null) {
 		  	//TODO: Check for nested OpExprs here and
 		  	//handle the order of operations.
-			return new FL_OpExpr(leftExpr, rightExpr, operator);
+			return new FL_OpExpr(leftExpr, rightExpr, operator, bracketed);
 		} else {
 			return leftExpr;
 		}

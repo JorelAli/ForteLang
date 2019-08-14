@@ -4,32 +4,36 @@ public class FL_OpExpr implements Evaluatable {
 	private Object leftExpr;
 	private Object rightExpr;
 	private Token operator;
+
+	//Indicates whether this OpExpr is surrounded by brackets
+	private final boolean bracketed;
 	
-	public FL_OpExpr(Object left, Object right, Token operator) {
+	public FL_OpExpr(Object left, Object right, Token operator, boolean bracketed) {
 		this.leftExpr = left;
 		this.rightExpr = right;
 		this.operator = operator;
-		restructureOpExpr();
+		this.bracketed = bracketed;
+		// restructureOpExpr();
 	}
 
-	private void restructureOpExpr() {
-		if(operator.image.equals(".")) {
-			if(rightExpr instanceof FL_OpExpr) {
-				FL_OpExpr right = (FL_OpExpr) rightExpr;
+	// private void restructureOpExpr() {
+	// 	if(operator.image.equals(".")) {
+	// 		if(rightExpr instanceof FL_OpExpr) {
+	// 			FL_OpExpr right = (FL_OpExpr) rightExpr;
 
-				// if(right.operator.image.equals(".")) {
+	// 			// if(right.operator.image.equals(".")) {
 
-					this.rightExpr = right.getLeftExpr();
+	// 				this.rightExpr = right.getLeftExpr();
 
-					FL_OpExpr inner = new FL_OpExpr(leftExpr, rightExpr, operator);
+	// 				FL_OpExpr inner = new FL_OpExpr(leftExpr, rightExpr, operator);
 
-					this.leftExpr = inner;
-					this.rightExpr = right.getRightExpr();
-					this.operator = right.getOperator();
-				// }
-			}
-		}
-	}
+	// 				this.leftExpr = inner;
+	// 				this.rightExpr = right.getRightExpr();
+	// 				this.operator = right.getOperator();
+	// 			// }
+	// 		}
+	// 	}
+	// }
 
 	public Object getLeftExpr() {
 		return this.leftExpr;

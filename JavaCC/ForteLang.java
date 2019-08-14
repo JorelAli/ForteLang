@@ -911,13 +911,13 @@ public class ForteLang implements ForteLangConstants {
   final public Object enclosedExpression() throws ParseException, Exception {
                                                  Object result; Token vName;
     if (jj_2_2(3)) {
-      result = opExpression();
-                                 {if (true) return result;}
+      result = opExpression(false);
+                                      {if (true) return result;}
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case OPENBRACKET:
         jj_consume_token(OPENBRACKET);
-        result = opExpression();
+        result = opExpression(true);
         jj_consume_token(CLOSEBRACKET);
              {if (true) return result;}
         break;
@@ -1033,7 +1033,7 @@ public class ForteLang implements ForteLangConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Object opExpression() throws ParseException, Exception {
+  final public Object opExpression(boolean bracketed) throws ParseException, Exception {
   Object leftExpr;
   Object rightExpr = null;
   Token operator = null;
@@ -1061,7 +1061,7 @@ public class ForteLang implements ForteLangConstants {
                 if(operator != null) {
                         //TODO: Check for nested OpExprs here and
                         //handle the order of operations.
-                        {if (true) return new FL_OpExpr(leftExpr, rightExpr, operator);}
+                        {if (true) return new FL_OpExpr(leftExpr, rightExpr, operator, bracketed);}
                 } else {
                         {if (true) return leftExpr;}
                 }

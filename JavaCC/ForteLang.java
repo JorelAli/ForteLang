@@ -496,11 +496,10 @@ public class ForteLang implements ForteLangConstants {
                 printOPEX();
                 printOPEX(flOpExpr);
 
-                Object left = flOpExpr.getLeftExpr();
-                Object right = flOpExpr.getRightExpr();
-                Token operatorToUse = flOpExpr.getOperator();
-
                 printOPEX("Phase 1: Flattening");
+
+                class LeftBracket { public String toString () { return "("; }}
+                class RightBracket { public String toString () { return ")"; }}
 
                 class OpFlattener {
                         private final FL_OpExpr expr;
@@ -512,7 +511,7 @@ public class ForteLang implements ForteLangConstants {
                         public LinkedList<Object> flatten() {
                                 LinkedList<Object> elements = new LinkedList<Object>();
                                 if(expr.hasBrackets()) {
-                                        elements.add("(");
+                                        elements.add(new LeftBracket());
                                 }
 
                                 if(expr.getLeftExpr() instanceof FL_OpExpr) {
@@ -530,29 +529,113 @@ public class ForteLang implements ForteLangConstants {
                                 }
 
                                 if(expr.hasBrackets()) {
-                                        elements.add(")");
+                                        elements.add(new RightBracket());
                                 }
                                 return elements;
                         }
                 }
 
+                class Op {
+                        private Token token;
+
+                        public Op(Object token) {
+                                this.token = (Token) token;
+                        }
+
+                        public int precedence() {
+                                switch(token.image) {
+                                        case ".": return 10;
+                                        case "?": return 9;
+                                        case "++": return 8;
+                                        case "*":
+                                        case "%":
+                                        case "/": return 7;
+                                        case "+":
+                                        case "-": return 6;
+                                        case "/+":
+                                        case "/-":
+                                        case "//": return 5;
+                                        case "<":
+                                        case "<=":
+                                        case ">":
+                                        case ">=": return 4;
+                                        case "==":
+                                        case "!=": return 3;
+                                        case "&&":
+                                        case "||": return 2;
+                                }
+                                return 0;
+                        }
+                }
+
                 //Flatten the elements of OpExpr into a linked list for evaluation
                 LinkedList<Object> elements = new OpFlattener(flOpExpr).flatten();
-                printOPEX("Flattened: ", elements);
+                printOPEX("\u005ctFlattened: ", elements);
+
                 printOPEX("Phase 2: Shunting-yard");
+
+                Stack<Object> stack = new Stack<Object>();
+                LinkedList<Object> output = new LinkedList<Object>();
+                while(!elements.isEmpty()) {
+                        Object element = elements.pop();
+                        if(element instanceof Token) {
+                                while(!stack.isEmpty() &&
+                                        stack.peek() instanceof Token &&
+                                        new Op(stack.peek()).precedence() > new Op(element).precedence()) {
+                                        output.add(stack.pop());
+                                }
+                                stack.push(element);
+                        } else if(element instanceof LeftBracket) {
+                                stack.push(element);
+                        } else if(element instanceof RightBracket) {
+                                while(!(stack.peek() instanceof LeftBracket)) {
+                                        output.add(stack.pop());
+                                }
+                                stack.pop();
+                        } else { //It's a "number"
+                                output.add(element);
+                        }
+                }
+                while(!stack.isEmpty()) {
+                        output.add(stack.pop());
+                }
+
+                printOPEX("\u005ctFinished Shunting Yard: ", output);
                 printOPEX("Phase 3: Evaluation");
 
-                Object newInit = new OperatorParser(operatorToUse, scope).apply(left, right);
+                Stack<Object> evalStack = new Stack<Object>();
+                while(!output.isEmpty()) {
+                        evalStack.push(output.pop());
+                        if(evalStack.peek() instanceof Token) {
+                                Token operator = (Token) evalStack.pop();
+                                Object secondExpr = evalStack.pop();
+                                Object firstExpr = evalStack.pop();
 
-                printOPEX("OpExpr eval result: ", newInit);
-                printOPEX();
-                printOPEX("Evaluation complete.");
-
-                if(newInit instanceof Evaluatable) {
-                        return evaluate(scope, newInit);
-                } else {
-                        return newInit;
+                                Object result = new OperatorParser(operator, scope).apply(firstExpr, secondExpr);
+                                evalStack.push(result);
+                        }
                 }
+
+                Object result = evalStack.pop();
+                printOPEX("\u005ctFinished evaluation: ", result);
+
+                if(result instanceof Evaluatable) {
+                        return evaluate(scope, result);
+                } else {
+                        return result;
+                }
+
+//	  	Object newInit = new OperatorParser(flOpExpr.getOperator(), scope).apply(flOpExpr.getLeftExpr(), flOpExpr.getRightExpr());
+//
+//	  	printOPEX("OpExpr eval result: ", newInit);
+//	  	printOPEX();
+//	  	printOPEX("Evaluation complete.");
+//
+//	  	if(newInit instanceof Evaluatable) {
+//			return evaluate(scope, newInit);
+//	  	} else { 
+//		  	return newInit;
+//		}	
         }
 
         /**
@@ -1278,6 +1361,127 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
+  private boolean jj_3R_31() {
+    if (jj_scan_token(SELECT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_15() {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    if (jj_scan_token(CONTAINS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_29() {
+    if (jj_scan_token(CONCAT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_28() {
+    if (jj_scan_token(COMPARATOR_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_27() {
+    if (jj_scan_token(SET_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_26() {
+    if (jj_scan_token(OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_9() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_3()) {
+    jj_scanpos = xsp;
+    if (jj_3R_14()) {
+    jj_scanpos = xsp;
+    if (jj_3R_15()) {
+    jj_scanpos = xsp;
+    if (jj_3R_16()) {
+    jj_scanpos = xsp;
+    if (jj_3R_17()) {
+    jj_scanpos = xsp;
+    if (jj_3R_18()) {
+    jj_scanpos = xsp;
+    if (jj_3R_19()) {
+    jj_scanpos = xsp;
+    if (jj_3R_20()) {
+    jj_scanpos = xsp;
+    if (jj_3R_21()) {
+    jj_scanpos = xsp;
+    if (jj_3R_22()) {
+    jj_scanpos = xsp;
+    if (jj_3R_23()) {
+    jj_scanpos = xsp;
+    if (jj_3R_24()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_3R_8()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_14() {
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_10() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_25()) {
+    jj_scanpos = xsp;
+    if (jj_3R_26()) {
+    jj_scanpos = xsp;
+    if (jj_3R_27()) {
+    jj_scanpos = xsp;
+    if (jj_3R_28()) {
+    jj_scanpos = xsp;
+    if (jj_3R_29()) {
+    jj_scanpos = xsp;
+    if (jj_3R_30()) {
+    jj_scanpos = xsp;
+    if (jj_3R_31()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_25() {
+    if (jj_scan_token(BOOLEAN_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3_8() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
   private boolean jj_3R_12() {
     if (jj_scan_token(OPENBRACKET)) return true;
     if (jj_3R_7()) return true;
@@ -1598,127 +1802,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_16() {
     if (jj_3R_35()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_31() {
-    if (jj_scan_token(SELECT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_15() {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    if (jj_scan_token(CONTAINS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_29() {
-    if (jj_scan_token(CONCAT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_28() {
-    if (jj_scan_token(COMPARATOR_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_27() {
-    if (jj_scan_token(SET_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_26() {
-    if (jj_scan_token(OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_9() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_3()) {
-    jj_scanpos = xsp;
-    if (jj_3R_14()) {
-    jj_scanpos = xsp;
-    if (jj_3R_15()) {
-    jj_scanpos = xsp;
-    if (jj_3R_16()) {
-    jj_scanpos = xsp;
-    if (jj_3R_17()) {
-    jj_scanpos = xsp;
-    if (jj_3R_18()) {
-    jj_scanpos = xsp;
-    if (jj_3R_19()) {
-    jj_scanpos = xsp;
-    if (jj_3R_20()) {
-    jj_scanpos = xsp;
-    if (jj_3R_21()) {
-    jj_scanpos = xsp;
-    if (jj_3R_22()) {
-    jj_scanpos = xsp;
-    if (jj_3R_23()) {
-    jj_scanpos = xsp;
-    if (jj_3R_24()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_3R_8()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_14() {
-    if (jj_3R_34()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_10() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_25()) {
-    jj_scanpos = xsp;
-    if (jj_3R_26()) {
-    jj_scanpos = xsp;
-    if (jj_3R_27()) {
-    jj_scanpos = xsp;
-    if (jj_3R_28()) {
-    jj_scanpos = xsp;
-    if (jj_3R_29()) {
-    jj_scanpos = xsp;
-    if (jj_3R_30()) {
-    jj_scanpos = xsp;
-    if (jj_3R_31()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_25() {
-    if (jj_scan_token(BOOLEAN_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3_8() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
     return false;
   }
 

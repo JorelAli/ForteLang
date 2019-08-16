@@ -113,6 +113,9 @@ include {
 
 	someList = [];
 
+	@println = 2;
+	string = 2;
+
 } in isEmpty someList
 ### Expect:
 |> 3 + 4 * 5 + 6

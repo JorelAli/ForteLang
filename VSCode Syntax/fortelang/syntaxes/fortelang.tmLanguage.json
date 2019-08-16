@@ -31,7 +31,7 @@
 				"match": "impure|@[a-zA-Z0-9'_]+"
 			}, {
 				"name": "storage.type.fortelang",
-				"match": "\\b(include|in)\\b"
+				"match": "\\b(include|in|num|list|set|func|bool|str)\\b"
 			}, {
 				"name": "entity.name.function.fortelang",
 				"match": "[a-zA-Z0-9'_]+(?=\\s+\\=)"

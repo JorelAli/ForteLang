@@ -897,12 +897,12 @@ TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
 
 //Types
-TOKEN : { < NUM : "num" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
-TOKEN : { < LST : "list" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
-TOKEN : { < SET : "set" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
-TOKEN : { < FUN : "func" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
-TOKEN : { < BOO : "bool" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
-TOKEN : { < STR : "str" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
+TOKEN : { < NUM : "num" > }
+TOKEN : { < LST : "list" > }
+TOKEN : { < SET : "set" > }
+TOKEN : { < FUN : "func" > }
+TOKEN : { < BOO : "bool" > }
+TOKEN : { < STR : "str" > }
 TOKEN : { < COLON : ":" > }
 
 //Functions

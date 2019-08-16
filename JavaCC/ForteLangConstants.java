@@ -105,6 +105,8 @@ public interface ForteLangConstants {
 
   /** Lexical state. */
   int DEFAULT = 0;
+  /** Lexical state. */
+  int BlockComment = 1;
 
   /** Literal token values. */
   String[] tokenImage = {
@@ -157,7 +159,10 @@ public interface ForteLangConstants {
     "\"|\"",
     "\"->>\"",
     "<token of kind 48>",
-    "<token of kind 49>",
+    "\"#[\"",
+    "\"#[\"",
+    "<token of kind 51>",
+    "\"]#\"",
     "\"\\n\"",
     "\"\\r\"",
     "\" \"",

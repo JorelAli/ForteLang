@@ -29,6 +29,7 @@ public class ForteLang {
 	static String fileName;
 	static boolean LOGGING_ENABLE = true;
 	static Scanner globalScanner = null;
+	public static int innerComments = 0;
 
 	static void printSECD()                   { print("SECD"); }
 	static void printSECD(Object o)           { print("SECD", o); }
@@ -900,7 +901,7 @@ TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
 
 //Types
-TOKEN : { < NUM : "num" > }
+TOKEN : { < NUM : "num" > } 
 TOKEN : { < LST : "list" > }
 TOKEN : { < SET : "set" > }
 TOKEN : { < FUN : "func" > }
@@ -916,8 +917,13 @@ TOKEN : { < GUARD : "|" > }
 TOKEN : { < GUARD_ARROW : "->>" > }
 
 //Comments
-SKIP : { < "#[" (~["#"])* "]#" > }
 SKIP : { < "##" (~["\r", "\n"])* > }
+SKIP : { "#[" : BlockComment }
+<BlockComment> MORE : { < "#[" > { ForteLang.innerComments++; } }
+<BlockComment> MORE : { < ~[] > }
+<BlockComment> MORE : { < "]#" > { ForteLang.innerComments--; } : DEFAULT }
+
+//SKIP : { < "#[" (~["#"])* "]#" > }
 
 //Whitespace
 SKIP : { "\n" | "\r" | " " | "\t" }
@@ -928,7 +934,8 @@ Object input() throws Exception : { Object expression; } {
   <EOF>
   {
 
-	if(LOGGING_ENABLE) { 
+	if(LOGGING_ENABLE) {
+	  	System.out.println(innerComments);
 		System.out.println();
 		System.out.println("=== Parsing complete ===");
 		System.out.println();

@@ -919,11 +919,18 @@ TOKEN : { < GUARD_ARROW : "->>" > }
 //Comments
 SKIP : { < "##" (~["\r", "\n"])* > }
 SKIP : { "#[" : BlockComment }
-<BlockComment> MORE : { < "#[" > { ForteLang.innerComments++; } }
+<BlockComment> SKIP : { < "#[" > { System.out.println("a"); ForteLang.innerComments++; } }
 <BlockComment> MORE : { < ~[] > }
-<BlockComment> MORE : { < "]#" > { ForteLang.innerComments--; } : DEFAULT }
-
-//SKIP : { < "#[" (~["#"])* "]#" > }
+<BlockComment> SKIP : { < "]#" >
+	{
+  		System.out.println("c");
+  		if(ForteLang.innerComments == 0) {
+	  	    SwitchTo(DEFAULT);
+	  	} else {
+  	    	ForteLang.innerComments--;
+  		}
+	}
+}
 
 //Whitespace
 SKIP : { "\n" | "\r" | " " | "\t" }

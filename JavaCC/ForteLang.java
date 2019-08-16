@@ -1436,20 +1436,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_8() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_6()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(43)) return true;
-    }
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_7()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
   private boolean jj_3R_11() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1916,6 +1902,20 @@ public class ForteLang implements ForteLangConstants {
     if (jj_3R_41()) jj_scanpos = xsp;
     if (jj_scan_token(FUNCTION_ARROW)) return true;
     if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_6()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(43)) return true;
+    }
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_7()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 

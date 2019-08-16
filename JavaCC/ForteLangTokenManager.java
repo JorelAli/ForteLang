@@ -969,10 +969,10 @@ static final long[] jjtoToken = {
    0xffffffffffffL, 
 };
 static final long[] jjtoSkip = {
-   0x1e3000000000000L, 
+   0x1f7000000000000L, 
 };
 static final long[] jjtoMore = {
-   0x1c000000000000L, 
+   0x8000000000000L, 
 };
 protected SimpleCharStream input_stream;
 private final int[] jjrounds = new int[46];
@@ -1118,11 +1118,12 @@ public Token getNextToken()
         }
         else if ((jjtoSkip[jjmatchedKind >> 6] & (1L << (jjmatchedKind & 077))) != 0L)
         {
+           SkipLexicalActions(null);
          if (jjnewLexState[jjmatchedKind] != -1)
            curLexState = jjnewLexState[jjmatchedKind];
            continue EOFLoop;
         }
-        MoreLexicalActions();
+        jjimageLen += jjmatchedPos + 1;
       if (jjnewLexState[jjmatchedKind] != -1)
         curLexState = jjnewLexState[jjmatchedKind];
         curPos = 0;
@@ -1157,20 +1158,22 @@ public Token getNextToken()
   }
 }
 
-void MoreLexicalActions()
+void SkipLexicalActions(Token matchedToken)
 {
-   jjimageLen += (lengthOfMatch = jjmatchedPos + 1);
    switch(jjmatchedKind)
    {
       case 50 :
-         image.append(input_stream.GetSuffix(jjimageLen));
-         jjimageLen = 0;
-                                   ForteLang.innerComments++;
+         image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
+                                   System.out.println("a"); ForteLang.innerComments++;
          break;
       case 52 :
-         image.append(input_stream.GetSuffix(jjimageLen));
-         jjimageLen = 0;
-                                   ForteLang.innerComments--;
+         image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
+                System.out.println("c");
+                if(ForteLang.innerComments == 0) {
+                    SwitchTo(DEFAULT);
+                } else {
+                ForteLang.innerComments--;
+                }
          break;
       default :
          break;

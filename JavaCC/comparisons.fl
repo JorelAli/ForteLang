@@ -1,4 +1,3 @@
 include {
     two = 2;
-    aSet = { value = two; };
-} in aSet == { value = 2; other = 3; }
+} in [two, 2]

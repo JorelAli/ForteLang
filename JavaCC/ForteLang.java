@@ -686,7 +686,7 @@ public class ForteLang implements ForteLangConstants {
                                                         if(list.isEmpty()) {
                                                                 throw new EvaluationException("List is empty, cannot retrieve the head of the list");
                                                         }
-                                                        return list.getFirst();
+                                                        return evaluate(scope, list.getFirst());
                                                 }
                                         case TAIL:
                                                 if(!(builtinParam instanceof FL_List)) {
@@ -822,13 +822,14 @@ public class ForteLang implements ForteLangConstants {
                         } else if(expression instanceof FL_OpExpr) {
                                 return evaluateOpExpr(scope, (FL_OpExpr) expression);
                         } else if(expression instanceof FL_List) {
-                                FL_List list = (FL_List) expression;
-                                ListIterator<Object> iterator = list.listIterator(0);
-                                while(iterator.hasNext()) {
-                                        Object expr = iterator.next();
-                                        iterator.set(evaluate(scope, expr));
-                                }
-                                return list;
+//				FL_List list = (FL_List) expression;
+//				ListIterator<Object> iterator = list.listIterator(0);
+//				while(iterator.hasNext()) {
+//					Object expr = iterator.next();
+//					iterator.set(evaluate(scope, expr));
+//				}
+//				return list;
+                                return expression;
                         } else if(expression instanceof FL_Set) {
                                 // TODO: Handle purity tests here!
                                 return expression;
@@ -1439,16 +1440,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_33()) return true;
-    }
-    return false;
-  }
-
   private boolean jj_3_5() {
     if (jj_3R_10()) return true;
     if (jj_3R_6()) return true;
@@ -1918,6 +1909,16 @@ public class ForteLang implements ForteLangConstants {
     while (true) {
       xsp = jj_scanpos;
       if (jj_3_7()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_33()) return true;
     }
     return false;
   }

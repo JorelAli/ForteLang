@@ -268,6 +268,7 @@ public class ForteLang {
 		  	}
 		}
 
+		//TODO: For contains, each element needs to be evaluated!
 		public Object applyContains(Object o1, Object o2) throws Exception {
 			if(o1 instanceof FL_List) {
 				FL_List l1 = (FL_List) o1;
@@ -691,7 +692,7 @@ public class ForteLang {
 						  	if(list.isEmpty()) {
 								throw new EvaluationException("List is empty, cannot retrieve the head of the list");
 						  	}
-						  	return list.getFirst();
+						  	return evaluate(scope, list.getFirst());
 						} 
 					case TAIL:
 						if(!(builtinParam instanceof FL_List)) {
@@ -827,13 +828,14 @@ public class ForteLang {
 			} else if(expression instanceof FL_OpExpr) {
 			  	return evaluateOpExpr(scope, (FL_OpExpr) expression);
 			} else if(expression instanceof FL_List) {
-				FL_List list = (FL_List) expression;
-				ListIterator<Object> iterator = list.listIterator(0);
-				while(iterator.hasNext()) {
-					Object expr = iterator.next();
-					iterator.set(evaluate(scope, expr));
-				}
-				return list;
+//				FL_List list = (FL_List) expression;
+//				ListIterator<Object> iterator = list.listIterator(0);
+//				while(iterator.hasNext()) {
+//					Object expr = iterator.next();
+//					iterator.set(evaluate(scope, expr));
+//				}
+//				return list;
+				return expression;
 			} else if(expression instanceof FL_Set) {
 			  	// TODO: Handle purity tests here!
 				return expression;

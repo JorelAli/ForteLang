@@ -1,117 +1,119 @@
-# include {
-# 	# Adds two parameters together
-# 	add = x -> y -> x + y;
+include {
+	# Adds two parameters together
+	add = x -> y -> x + y;
 
-# 	basicOperation = 123.25 + 2;
-# 	# Lists
-# 	someList      = [1, 2];
-# 	someOtherList = [3];
-# 	emptyList     = [];
-# 	#Example with guards
-# 	maxOr0 = x -> y -> |>
-# 		| x > y ->> x 
-# 		| x < y ->> y 
-# 		| ->> 0;
+	basicOperation = 123.25 + 2;
+	# Lists
+	someList      = [1, 2];
+	someOtherList = [3];
+	emptyList     = [];
+	#Example with guards
+	maxOr0 = x -> y -> |>
+		| x > y ->> x 
+		| x < y ->> y 
+		| ->> 0;
 
-# 	nestedGuard = x -> |>
-# 		| x == 0 ->> 0
-# 		| ->> |>
-# 			| x == 1 ->> 1
-# 			| ->> -1;
+	nestedGuard = x -> |>
+		| x == 0 ->> 0
+		| ->> |>
+			| x == 1 ->> 1
+			| ->> -1;
 
-# 	inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
+	inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
 
-# 	# Set operations
-# 	union =      set1 -> set2 -> set1 /+ set2;
-# 	intersect =  set1 -> set2 -> set1 /- set2;
-# 	difference = set1 -> set2 -> set1 // set2;
+	# Set operations
+	union =      set1 -> set2 -> set1 /+ set2;
+	intersect =  set1 -> set2 -> set1 /- set2;
+	difference = set1 -> set2 -> set1 // set2;
 
-# 	# Adds sets to scope of expressions
-# 	myFunctions2 = include {
-# 		myAdd = x -> y -> x + y;
-# 	} in myAdd 2;
+	# Adds sets to scope of expressions
+	myFunctions2 = include {
+		myAdd = x -> y -> x + y;
+	} in myAdd 2;
 
-# 	head' = list -> list ++ [2, 3, (2 + 2)];
+	head' = l -> l ++ [2, 3, (2 + 2)];
 
-# 	nestedList = [2, [3]];
+	nestedList = [2, [3]];
 
-# 	const = 4;
+	const = 4;
 
-# 	p = x -> x;
+	p = x -> x;
 
-# 	a = lambda -> lambda 2 3;
+	a = lambda -> lambda 2 3;
 
-# 	factorial = input -> |>
-# 		| input == 0 ->> 1
-# 		| ->> input * factorial (input - 1);
+	factorial = input -> |>
+		| input == 0 ->> 1
+		| ->> input * factorial (input - 1);
 
-# 	# Standard library
-# 	all = list -> match list 
-# 		| [] ->> true
-# 		| ->> |> | head list ->> all (tail list) | ->> false;
+	# Standard library
+	all = l -> match l 
+		| [] ->> true
+		| ->> |> | head l ->> all (tail l) | ->> false;
 
-# 	any = list -> match list
-# 		| [] ->> false
-# 		| ->> |> | head list ->> true | ->> any (tail list);
+	any = l -> match l
+		| [] ->> false
+		| ->> |> | head l ->> true | ->> any (tail l);
 
-# 	length = list -> match list
-# 		| [] ->> 0
-# 		| ->> 1 + sizeOfList (tail list);
+	length = l -> match l
+		| [] ->> 0
+		| ->> 1 + sizeOfList (tail l);
 
-# 	genList = num -> formula -> match num
-# 		| 0 ->> []
-# 		| ->> [(formula num)] ++ genList (num - 1) formula;
+	genList = number -> formula -> match number
+		| 0 ->> []
+		| ->> [(formula number)] ++ genList (number - 1) formula;
 
-# 	not = bool -> |> | bool ->> false | ->> true;
+	not = b -> |> | b ->> false | ->> true;
 			
-# 	# Pattern matching on Strings:
-# 	isInt = str -> match str
-# 		| "I_AM_AN_INT" ->> true
-# 		| '[0-9]+' ->> true
-# 		| '-[0-9]+' ->> true
-# 		| ->> false;
+	# Pattern matching on Strings:
+	isInt = string -> match string
+		| "I_AM_AN_INT" ->> true
+		| '[0-9]+' ->> true
+		| '-[0-9]+' ->> true
+		| ->> false;
 
-# 	isFloat = str -> match str
-# 		| '-?[0-9]+\.[0-9]+' ->> true
-# 		| ->> false;
+	isFloat = string -> match string
+		| '-?[0-9]+\.[0-9]+' ->> true
+		| ->> false;
 
-# 	# isInt = str -> '[0-9]+';
+	# isInt = string -> '[0-9]+';
 
-# 	isEmpty = list -> match list
-# 		| [] ->> true
-# 		| ->> false;
+	isEmpty= l:list -> match l
+		| [] ->> true
+		| ->> false;
 
-# 	map = list -> f -> match list
-# 		| [] ->> []
-# 		| ->> [f (head list)] ++ map (tail list) f;
+	map = l -> f -> match l
+		| [] ->> []
+		| ->> [f (head l)] ++ map (tail l) f;
 
-# 	# map' = f -> list -> match list
-# 	#     | [] ->> []
-# 	#     | ->> [f (head list)] ++ map' f (tail list);
+	# map' = f -> l -> match l
+	#     | [] ->> []
+	#     | ->> [f (head l)] ++ map' f (tail l);
 
-# 	isDerivation = set -> set ? "derivation";
+	isDerivation = s -> s ? "derivation";
 
-# 	mySet' = {
-# 		item1 = {
-# 			item2 = {
-# 				item3 = "hello";
-# 			};
-# 		};
-# 	}."item1".("item2"."item3");
+	mySet' = {
+		item1 = {
+			item2 = {
+				item3 = "hello";
+			};
+		};
+	}."item1".("item2"."item3");
 
-# 	mySet = {
-# 		item1 = "hello";
-# 		item2 = "world";
-# 		item3 = {
-# 			item4 = {
-# 				item6 = "!!";
-# 				item7 = "??";
-# 			};
-# 			item5 = "??";
-# 		};
-# 	};
+	mySet = {
+		item1 = "hello";
+		item2 = "world";
+		item3 = {
+			item4 = {
+				item6 = "!!";
+				item7 = "??";
+			};
+			item5 = "??";
+		};
+	};
 
-# } in 
+	someList = [];
+
+} in isEmpty someList
 ### Expect:
 |> 3 + 4 * 5 + 6
 => 3 + (4 * 5) + 6 
@@ -130,10 +132,10 @@
 # (3 + 4) * 5 + 6
 # factorial 5
 # include { a = 5; } in ((3 + ((4 * 5))) + (((2)))) / a
+# include { a = 5; b = 5 * 5; } in
+# (3 + 4) * a + 6
 
-(3 + 4) * 5 + 6
-
-
+# ~>
 
 # include {
 # 	hello = { hello = "hello"; }.((hello -> hello ++ "hello") |> | |> | hello' ->> hello' | ->> hello' ->> "" | ->> "hello");

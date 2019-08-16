@@ -441,7 +441,13 @@ public class ForteLang {
 					
 	
 					//Bind it properly in the current environment
-					environment.put(lambda.getParameter(), value);
+					//Type check
+					Type type = lambda.getParameter().getType();
+					if(!Type.isType(value, type)) {
+						throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getName()); 
+					}
+					
+					environment.put(lambda.getParameter().getName(), value);
 					Object result = lambda.getExpression();
 
 					printSECD("Added complete. Result: ", result);
@@ -890,6 +896,15 @@ TOKEN : { < SEMICOLON : ";" > }
 TOKEN : { < OPENCBRACKET : "{" > }
 TOKEN : { < CLOSECBRACKET : "}" > }
 
+//Types
+TOKEN : { < NUM : "num" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
+TOKEN : { < LST : "list" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
+TOKEN : { < SET : "set" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
+TOKEN : { < FUN : "func" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
+TOKEN : { < BOO : "bool" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
+TOKEN : { < STR : "str" ~["A"-"Z", "a"-"z", "0"-"9", "@"] > }
+TOKEN : { < COLON : ":" > }
+
 //Functions
 TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
 TOKEN : { < FUNCTION_ARROW : "->" > }
@@ -938,6 +953,35 @@ Token anyOperator() throws Exception : { Token op; } {
 	| op = <SELECT>        { return op; }
 }
 
+Type anyType() throws Exception : { Token type; } {
+	(	    type = <NUM>
+	  | type = <LST>
+	  | type = <SET>
+	  | type = <FUN>
+	  | type = <BOO>
+	  | type = <STR>
+	)
+	{
+		switch(token.kind) {
+			case ForteLangConstants.NUM:
+				return Type.NUMBER;
+			case ForteLangConstants.LST:
+				return Type.LIST;
+			case ForteLangConstants.SET:
+				return Type.SET;
+			case ForteLangConstants.FUN:
+				return Type.FUNCTION;
+			case ForteLangConstants.BOO:
+				return Type.BOOLEAN;
+			case ForteLangConstants.STR:
+				return Type.STRING;
+			default:
+				return Type.ANY;
+		}
+	}
+	
+}
+
 FL_IncludedSet includedSet() throws Exception : { FL_Set set; Object expression; } {
 	<INCLUDE>
 	set = set()
@@ -967,23 +1011,26 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	}
 }
 
-FL_Function lambda() throws Exception : { Token paramName; Object innerExpression; } {
+FL_Function lambda() throws Exception : { Token paramName; Object innerExpression; Type type; } {
+  	{ type = Type.ANY; }
 	(
-		(			paramName = <VAR_NAME>
+		(			paramName = <VAR_NAME>(<COLON> type = anyType())?
 			<FUNCTION_ARROW>
 			innerExpression = enclosedExpression()
 		)
 		|
 		(
 			<OPENBRACKET>
-			paramName = <VAR_NAME>
+			paramName = <VAR_NAME>(<COLON> type = anyType())?
 			<FUNCTION_ARROW>
 			innerExpression = enclosedExpression()
 			<CLOSEBRACKET>
 		)
 	)
 	  
-	{ return new FL_Function(paramName.image, innerExpression); }
+	{
+	  return new FL_Function(new FL_TypedParam(paramName.image, type), innerExpression);
+	}
 }
 
 FL_List list() throws Exception : { FL_List list; Object nextItem; } {

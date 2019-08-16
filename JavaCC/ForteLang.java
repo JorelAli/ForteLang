@@ -263,6 +263,7 @@ public class ForteLang implements ForteLangConstants {
                         }
                 }
 
+                //TODO: For contains, each element needs to be evaluated!
                 public Object applyContains(Object o1, Object o2) throws Exception {
                         if(o1 instanceof FL_List) {
                                 FL_List l1 = (FL_List) o1;
@@ -307,7 +308,7 @@ public class ForteLang implements ForteLangConstants {
                                         }
                                         return o1.equals(o2);
                                 case "!=":
-                                        return !o1.equals(o2);
+                                        return !applyComparator(o1, o2);
                         }
                         throw new Exception ("Invalid operator (expected comparator operator");
                 }

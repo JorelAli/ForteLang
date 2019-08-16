@@ -313,7 +313,7 @@ public class ForteLang {
 					} 
 					return o1.equals(o2);
 				case "!=":
-					return !o1.equals(o2);
+					return !applyComparator(o1, o2);
 			}
 			throw new Exception ("Invalid operator (expected comparator operator");
 		}

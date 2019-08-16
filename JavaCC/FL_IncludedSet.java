@@ -18,4 +18,7 @@ public class FL_IncludedSet implements Evaluatable {
 	@Override public String toString() {
 	  return "FL_IncludedSet[set=" + set + ", expr=" + expression + "]";
 	}
+	
+    @Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { return false; }
 }

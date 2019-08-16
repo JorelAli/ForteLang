@@ -13,27 +13,7 @@ public class FL_OpExpr implements Evaluatable {
 		this.rightExpr = right;
 		this.operator = operator;
 		this.bracketed = bracketed;
-		// restructureOpExpr();
 	}
-
-	// private void restructureOpExpr() {
-	// 	if(operator.image.equals(".")) {
-	// 		if(rightExpr instanceof FL_OpExpr) {
-	// 			FL_OpExpr right = (FL_OpExpr) rightExpr;
-
-	// 			// if(right.operator.image.equals(".")) {
-
-	// 				this.rightExpr = right.getLeftExpr();
-
-	// 				FL_OpExpr inner = new FL_OpExpr(leftExpr, rightExpr, operator);
-
-	// 				this.leftExpr = inner;
-	// 				this.rightExpr = right.getRightExpr();
-	// 				this.operator = right.getOperator();
-	// 			// }
-	// 		}
-	// 	}
-	// }
 
 	public Object getLeftExpr() {
 		return this.leftExpr;
@@ -59,5 +39,10 @@ public class FL_OpExpr implements Evaluatable {
 		builder.append(" ");
 		builder.append(rightExpr);
 		return builder.append("]").toString();
+	}
+
+	@Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { 
+		return false;
 	}
 }

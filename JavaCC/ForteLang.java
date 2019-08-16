@@ -301,6 +301,10 @@ public class ForteLang implements ForteLangConstants {
                                 case ">=":
                                         return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
                                 case "==":
+                                        if(o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
+                                                Evaluatable e1 = (Evaluatable) o1;
+                                                return e1.equalsWithScope(o2, scope);
+                                        }
                                         return o1.equals(o2);
                                 case "!=":
                                         return !o1.equals(o2);
@@ -845,7 +849,6 @@ public class ForteLang implements ForteLangConstants {
     expression = enclosedExpression();
     jj_consume_token(0);
         if(LOGGING_ENABLE) {
-                System.out.println(innerComments);
                 System.out.println();
                 System.out.println("=== Parsing complete ===");
                 System.out.println();

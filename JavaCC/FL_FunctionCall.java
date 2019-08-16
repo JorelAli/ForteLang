@@ -19,4 +19,9 @@ public class FL_FunctionCall implements Evaluatable {
 	public Object getInitFunction() {
 		return this.initFunction;
 	}
+
+	@Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { 
+		return false;
+	}
 }

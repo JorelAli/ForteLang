@@ -33,4 +33,9 @@ public class FL_Match implements Evaluatable {
     @Override public String toString() {
       return "FL_Match[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
     }
+
+    @Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { 
+		return false;
+	}
 }

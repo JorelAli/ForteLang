@@ -1164,11 +1164,10 @@ void SkipLexicalActions(Token matchedToken)
    {
       case 50 :
          image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                                   System.out.println("a"); ForteLang.innerComments++;
+                                   ForteLang.innerComments++;
          break;
       case 52 :
          image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-                System.out.println("c");
                 if(ForteLang.innerComments == 0) {
                     SwitchTo(DEFAULT);
                 } else {

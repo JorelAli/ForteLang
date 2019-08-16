@@ -25,4 +25,9 @@ public class FL_Builtin implements Evaluatable {
 	public Builtin getType() {
 		return this.type;
 	}
+
+	@Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { 
+		return false;
+	}
 }

@@ -18,4 +18,9 @@ public class FL_TypedParam implements Evaluatable {
 	@Override public String toString() {
 		return "FL_TypedParam[" + name + "]";
 	}
+
+	@Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { 
+		return false;
+	}
 }

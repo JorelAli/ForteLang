@@ -1,1 +1,5 @@
-#[ #[]# ]# 2#[]# 
+include {
+	invert = b:bool -> |>
+		| b ->> false
+		| ->> true;
+} in invert true

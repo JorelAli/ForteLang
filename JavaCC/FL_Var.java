@@ -12,4 +12,13 @@ public class FL_Var implements Evaluatable {
 	@Override public String toString() {
 		return "Var[" + name + "]";
 	}
+
+    @Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { 
+		if(o instanceof FL_Var) {
+			FL_Var var = (FL_Var) o;
+			return var.getName().equals(this.name);
+		}
+		return false;
+	}
 }

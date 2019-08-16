@@ -21,4 +21,9 @@ public class FL_Function implements Evaluatable {
 	public String toString() { 
 		return "FL_Function(" + parameter + ") -> (" + expression + ")"; 
 	}
+
+	@Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { 
+		return false;
+	}
 }

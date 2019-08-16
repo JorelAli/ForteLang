@@ -37,4 +37,7 @@ public class FL_Guards implements Evaluatable {
       builder.append(finalStatement);
       return builder.append(" }").toString();
     }
+
+    @Override
+    public boolean equalsWithScope(Object o, FL_Set scope) { return false; }
 }

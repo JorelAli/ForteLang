@@ -126,7 +126,8 @@ include {
 	##String -> (String ->{IO} String)
 	concatHi = s:str -> "hi" ++ getLine s;
 
-} in 2 + #[hi]# 2 #[hello]# 
+} in blah (x->x)
+
 #[ Expect:
 |> 3 + 4 * 5 + 6
 => 3 + (4 * 5) + 6 

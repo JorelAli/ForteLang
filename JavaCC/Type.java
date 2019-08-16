@@ -1,10 +1,12 @@
+import java.math.BigDecimal;
+
 public enum Type { 
     NUMBER, LIST, SET, FUNCTION, BOOLEAN, STRING, ANY;
 
     public static boolean isType(Object o, Type type) {
         switch(type) {
             case NUMBER:
-                return o instanceof Double;
+                return o instanceof BigDecimal;
             case LIST:
                 return o instanceof FL_List;
             case SET:

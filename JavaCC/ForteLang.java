@@ -15,6 +15,9 @@ import java.io.ByteArrayInputStream;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class ForteLang implements ForteLangConstants {
 
         /** Static fields */
@@ -52,10 +55,10 @@ public class ForteLang implements ForteLangConstants {
         static String prettifyOutput(Object result) {
                 if(result instanceof String) {
                         return "\u005c"" + result + "\u005c"";
-                } else if(result instanceof Double) {
-                        double d = (double) result;
-                        if((d % 1) == 0) {
-                                result = (long) d;
+                } else if(result instanceof BigDecimal) {
+                        BigDecimal d = (BigDecimal) result;
+                        if(d.stripTrailingZeros().scale() > 0) {
+                                result = d.doubleValue();
                         }
                 }
                 return String.valueOf(result);
@@ -201,7 +204,7 @@ public class ForteLang implements ForteLangConstants {
                                 case BOOLEAN:
                                         return applyBoolean((boolean) o1, (boolean) o2);
                                 case NUMERICAL:
-                                        return applyDouble((double) o1, (double) o2);
+                                        return applyNumber((BigDecimal) o1, (BigDecimal) o2);
                                 case SET:
                                         return applySetObjects((FL_Set) o1, (FL_Set) o2);
                                 case COMPARATOR:
@@ -289,13 +292,13 @@ public class ForteLang implements ForteLangConstants {
                 public boolean applyComparator(Object o1, Object o2) throws Exception {
                         switch(op) {
                                 case ">":
-                                        return (double) o1 > (double) o2;
+                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) > 0;
                                 case "<":
-                                        return (double) o1 < (double) o2;
+                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) < 0;
                                 case "<=":
-                                        return (double) o1 <= (double) o2;
+                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) <= 0;
                                 case ">=":
-                                        return (double) o1 >= (double) o2;
+                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
                                 case "==":
                                         return o1.equals(o2);
                                 case "!=":
@@ -304,22 +307,22 @@ public class ForteLang implements ForteLangConstants {
                         throw new Exception ("Invalid operator (expected comparator operator");
                 }
 
-                public double applyDouble(double f1, double f2) throws Exception {
+                public BigDecimal applyNumber(BigDecimal f1, BigDecimal f2) throws Exception {
                         if(operatorKind != Operator.NUMERICAL) {
                                 throw new Exception("Invalid operator (expected numerical operator)");
                         }
 
                         switch(op) {
                                 case "+":
-                                        return f1 + f2;
+                                        return f1.add(f2);
                                 case "*":
-                                        return f1 * f2;
+                                        return f1.multiply(f2);
                                 case "-":
-                                        return f1 - f2;
+                                        return f1.subtract(f2);
                                 case "/":
-                                        return f1 / f2;
+                                        return f1.divide(f2, 128, RoundingMode.HALF_DOWN);
                                 case "%":
-                                        return (int) f1 % (int) f2;
+                                        return f1.remainder(f2);
                         }
                         throw new Exception("Invalid operator " + op);
                 }
@@ -1084,16 +1087,16 @@ public class ForteLang implements ForteLangConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public double number() throws ParseException, Exception {
-                                     Token value; double f;
+  final public BigDecimal number() throws ParseException, Exception {
+                                         Token value;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NUMBER:
       value = jj_consume_token(NUMBER);
-                                                            {if (true) return Double.valueOf(value.image);}
+                                                            {if (true) return new BigDecimal(value.image);}
       break;
     case FLOATING_POINT_NUMBER:
       value = jj_consume_token(FLOATING_POINT_NUMBER);
-                                            {if (true) return Double.valueOf(value.image);}
+                                            {if (true) return new BigDecimal(value.image);}
       break;
     default:
       jj_la1[8] = jj_gen;

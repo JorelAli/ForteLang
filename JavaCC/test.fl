@@ -114,9 +114,10 @@ include {
 	someList = [];
 
 	@println = 2;
-	string = 2;
+	isTwo = i:num -> i == 2;
 
-} in isEmpty someList
+
+} in isTwo 2
 ### Expect:
 |> 3 + 4 * 5 + 6
 => 3 + (4 * 5) + 6 

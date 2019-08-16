@@ -916,8 +916,8 @@ TOKEN : { < GUARD : "|" > }
 TOKEN : { < GUARD_ARROW : "->>" > }
 
 //Comments
-SKIP : { < "#" (~["\r", "\n"])* > }
-SKIP : { < "###" (~["#"])* "###" > }
+SKIP : { < "#[" (~["#"])* "]#" > }
+SKIP : { < "##" (~["\r", "\n"])* > }
 
 //Whitespace
 SKIP : { "\n" | "\r" | " " | "\t" }

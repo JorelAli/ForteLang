@@ -1,13 +1,13 @@
 include {
-	# Adds two parameters together
+	## Adds two parameters together
 	add = x -> y -> x + y;
 
 	basicOperation = 123.25 + 2;
-	# Lists
+	## Lists
 	someList      = [1, 2];
 	someOtherList = [3];
 	emptyList     = [];
-	#Example with guards
+	##Example with guards
 	maxOr0 = x -> y -> |>
 		| x > y ->> x 
 		| x < y ->> y 
@@ -21,12 +21,12 @@ include {
 
 	inlineMax = x -> y -> |>| x > y ->> x | x < y ->> y |->> 0;
 
-	# Set operations
+	## Set operations
 	union =      set1 -> set2 -> set1 /+ set2;
 	intersect =  set1 -> set2 -> set1 /- set2;
 	difference = set1 -> set2 -> set1 // set2;
 
-	# Adds sets to scope of expressions
+	## Adds sets to scope of expressions
 	myFunctions2 = include {
 		myAdd = x -> y -> x + y;
 	} in myAdd 2;
@@ -45,7 +45,7 @@ include {
 		| input == 0 ->> 1
 		| ->> input * factorial (input - 1);
 
-	# Standard library
+	## Standard library
 	all = l -> match l 
 		| [] ->> true
 		| ->> |> | head l ->> all (tail l) | ->> false;
@@ -64,7 +64,7 @@ include {
 
 	not = b -> |> | b ->> false | ->> true;
 			
-	# Pattern matching on Strings:
+	## Pattern matching on Strings:
 	isInt = string -> match string
 		| "I_AM_AN_INT" ->> true
 		| '[0-9]+' ->> true
@@ -75,7 +75,7 @@ include {
 		| '-?[0-9]+\.[0-9]+' ->> true
 		| ->> false;
 
-	# isInt = string -> '[0-9]+';
+	## isInt = string -> '[0-9]+';
 
 	isEmpty= l:list -> match l
 		| [] ->> true
@@ -85,9 +85,9 @@ include {
 		| [] ->> []
 		| ->> [f (head l)] ++ map (tail l) f;
 
-	# map' = f -> l -> match l
-	#     | [] ->> []
-	#     | ->> [f (head l)] ++ map' f (tail l);
+	## map' = f -> l -> match l
+	##     | [] ->> []
+	##     | ->> [f (head l)] ++ map' f (tail l);
 
 	isDerivation = s -> s ? "derivation";
 
@@ -117,95 +117,103 @@ include {
 
 	isTwo = i:num -> i == 2;
 
-	blah = i:func -> 2;
+	blah = i:func ->2;
 
+	##getLine :: String ->{IO} String
+	##getLine = string:str {IO}-> @input string;
+	getLine = string:str -> @input string;
 
-} in 2 != 2
-### Expect:
+	##String -> (String ->{IO} String)
+	concatHi = s:str -> "hi" ++ getLine s;
+
+} in 2 + #[hi]# 2 #[hello]# 
+#[ Expect:
 |> 3 + 4 * 5 + 6
 => 3 + (4 * 5) + 6 
 => 3 + 20 + 6 
 => 29
-###
-#(3 + 4) * 5
+]#
 
-# Tests:
-# P 3 + 4 * 5
-# F (3 + 4) * 5
-# P 3 + (4 * 5)
-# P (3 + 4 * 5)
-# F ((3 + 4 * 5))
-# (3 + 4) * 5
-# (3 + 4) * 5 + 6
-# factorial 5
-# include { a = 5; } in ((3 + ((4 * 5))) + (((2)))) / a
-# include { a = 5; b = 5 * 5; } in
-# (3 + 4) * a + 6
+## []##
+##(3 + 4) * 5
 
-# ~>
+## Tests:
+## P 3 + 4 * 5
+## F (3 + 4) * 5
+## P 3 + (4 * 5)
+## P (3 + 4 * 5)
+## F ((3 + 4 * 5))
+## (3 + 4) * 5
+## (3 + 4) * 5 + 6
+## factorial 5
+## include { a = 5; } in ((3 + ((4 * 5))) + (((2)))) / a
+## include { a = 5; b = 5 * 5; } in
+## (3 + 4) * a + 6
 
-# include {
-# 	hello = { hello = "hello"; }.((hello -> hello ++ "hello") |> | |> | hello' ->> hello' | ->> hello' ->> "" | ->> "hello");
-# 	hello' = true;
-# 	world = {world = "hello";} /+ {world = "world!";};
-# } in {hello = hello ++ ", " ++ match "world!" | '\w[o|r]+ld!' ->> |> | world.world == "world!" ->> "world!" | ->> "hello" | ->> "hello";}.hello
+## ~>
+
+## include {
+## 	hello = { hello = "hello"; }.((hello -> hello ++ "hello") |> | |> | hello' ->> hello' | ->> hello' ->> "" | ->> "hello");
+## 	hello' = true;
+## 	world = {world = "hello";} /+ {world = "world!";};
+## } in {hello = hello ++ ", " ++ match "world!" | '\w[o|r]+ld!' ->> |> | world.world == "world!" ->> "world!" | ->> "hello" | ->> "hello";}.hello
 
 
-	# { a = "hello"; }.((x -> x ++ "a") "") 
-	# ++ 
-	# { b = "world"; }.((x -> y -> x -> "b") 1 2 3)
+	## { a = "hello"; }.((x -> x ++ "a") "") 
+	## ++ 
+	## { b = "world"; }.((x -> y -> x -> "b") 1 2 3)
 
-#include { myFunc = "hello"; } in { hello = 2; }.myFunc
+##include { myFunc = "hello"; } in { hello = 2; }.myFunc
 
-#{ a = 2; }.((x -> x ++ "a") "")
+##{ a = 2; }.((x -> x ++ "a") "")
 
-#mySet.((x -> "item2") 2)
+##mySet.((x -> "item2") 2)
 	
-	 #{a={a=b;};}."a"."a"
+	 ##{a={a=b;};}."a"."a"
 
-#mySet."item3"."item4"
+##mySet."item3"."item4"
 
-#isDerivation {derivation = true;}
-#factorial 5#impure {} // {a=2;} #impure { @a = 2; } ? "a"
+##isDerivation {derivation = true;}
+##factorial 5##impure {} // {a=2;} ##impure { @a = 2; } ? "a"
 
-#not false #genList 3 (x -> 2) 
+##not false ##genList 3 (x -> 2) 
 
-#any [false, false, false] #all [true, true, true, true]
+##any [false, false, false] ##all [true, true, true, true]
 
-#map [1, 2, 3, 4, 5] (x -> 5) 
+##map [1, 2, 3, 4, 5] (x -> 5) 
 
-#map' (x -> 5)  [1, 2, 3]
+##map' (x -> 5)  [1, 2, 3]
 
-#sizeOfList [1, 2, 3]
+##sizeOfList [1, 2, 3]
 
-#factorial 5 #1 + 2 + 3 + 4 + 5 #factorial 2
+##factorial 5 ##1 + 2 + 3 + 4 + 5 ##factorial 2
 
-#isEmpty (tail [2, 3, 4]) #@print "hi" #isInt "yo"# ("23" ++ "2.2")
+##isEmpty (tail [2, 3, 4]) ##@print "hi" ##isInt "yo"## ("23" ++ "2.2")
 
 
-#factorial 1
+##factorial 1
 
-#maxOr0 (nestedGuard 2) -2
+##maxOr0 (nestedGuard 2) -2
 
-#union {} {}
+##union {} {}
 
-#(x -> x -> x) 2 3
+##(x -> x -> x) 2 3
 
-#(y -> (x -> y)) 2 3
+##(y -> (x -> y)) 2 3
 
-#add 2 3
+##add 2 3
 
-# a add 
-#add ((x -> x) 2) 3
+## a add 
+##add ((x -> x) 2) 3
 
-#add 2 3 #(x -> x) 2
+##add 2 3 ##(x -> x) 2
 
-#add (2) 3
+##add (2) 3
 
-#a add
-#add (p 2) 3
-#head' [] []
-#head'
-#head' [5, 6, 1, 0]
-#add 1 2
-#const + 10 #add (add 1 2) 3 #Expect 6 
+##a add
+##add (p 2) 3
+##head' [] []
+##head'
+##head' [5, 6, 1, 0]
+##add 1 2
+##const + 10 ##add (add 1 2) 3 ##Expect 6 

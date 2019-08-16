@@ -3,13 +3,13 @@
 	"name": "ForteLang",
 	"patterns": [
 		{
+			"include": "#comments"
+		},
+		{
 			"include": "#keywords"
 		},
 		{
 			"include": "#strings"
-		},
-		{
-			"include": "#comments"
 		},
 		{
 			"include": "#regexstrs"
@@ -66,12 +66,12 @@
 			"patterns": [
 				{
 					"name": "comment.block.fortelang",
-					"begin": "###",
-					"end": "###"
+					"begin": "#\\[",
+					"end": "\\]#"
 				},
 				{
 					"name": "comment.line.number-sign.fortelang",
-					"begin": "#",
+					"begin": "##",
 					"end": "\n"
 				}
 

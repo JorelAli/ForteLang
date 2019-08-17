@@ -678,10 +678,10 @@ public class ForteLang implements ForteLangConstants {
                                 Object builtinParam = evaluate(scope, builtin.getParameter());
                                 switch(builtin.getType()) {
                                         case IMPORT:
-                                                File file = new File((String) builtinParam);
+                                                File file = new File(((FL_String) builtinParam).stringValue());
                                                 return new ForteLang(new FileInputStream(file)).input();
                                         case PRINT:
-                                                System.out.println((String) builtinParam);
+                                                System.out.println(((FL_String) builtinParam).stringValue());
                                                 return builtinParam;
                                         case EXEC:
                                                 break;
@@ -711,18 +711,18 @@ public class ForteLang implements ForteLangConstants {
 
                                                 }
                                         case INPUT:
-                                                if(!(builtinParam instanceof String)) {
+                                                if(!(builtinParam instanceof FL_String)) {
                                                         throw new EvaluationException("Expected a string for input");
                                                 }
-                                                System.out.println("[@input] " + builtinParam);
+                                                System.out.println("[@input] " + ((FL_String) builtinParam).stringValue());
                                                 System.out.print("@input> ");
                                                 return getGlobalScanner().nextLine();
                                         case INPUTBOX:
-                                                if(!(builtinParam instanceof String)) {
+                                                if(!(builtinParam instanceof FL_String)) {
                                                         throw new EvaluationException("Expected a string for inputbox");
                                                 }
                                                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                                                String inputBox = JOptionPane.showInputDialog(null, builtinParam, "ForteLang @inputbox", -1);
+                                                String inputBox = JOptionPane.showInputDialog(null, ((FL_String) builtinParam).stringValue(), "ForteLang @inputbox", -1);
                                                 return (inputBox == null ? "" : inputBox);
                                 }
 

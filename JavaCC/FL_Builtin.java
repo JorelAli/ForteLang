@@ -27,6 +27,11 @@ public class FL_Builtin implements Evaluatable {
 	}
 
 	@Override
+	public String toString() {
+		return "builtin:" + type.name().toLowerCase();
+	}
+
+	@Override
     public boolean equalsWithScope(Object o, FL_Set scope) { 
 		return false;
 	}

@@ -31,7 +31,7 @@ public class FL_Match implements Evaluatable {
     }
 
     @Override public String toString() {
-      return "FL_Match[stmts=" + statements + ", finalStmt=" + finalStatement + "]";
+      return "match " + matchOn + " [stmts=" + statements + ", finalStmt=" + finalStatement + "]";
     }
 
     @Override

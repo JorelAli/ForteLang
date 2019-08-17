@@ -1,6 +1,12 @@
 include {
+    ##| Returns the number 2
     two = 2;
+
+    ##| Checks whether an input String is a number
+    ##| Type signature: isInt :: String -> Boolean
     isInt = x:str -> match x
         | '[0-9]+' ->> true
         | ->> false;
-} in {a = 2;} ? "a"
+
+        
+} in {a = {b=2;c=3;};}.a

@@ -5,6 +5,7 @@ options {
 PARSER_BEGIN(ForteLang)
 
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Stack;
@@ -30,6 +31,9 @@ public class ForteLang {
 	static boolean LOGGING_ENABLE = true;
 	static Scanner globalScanner = null;
 	public static int innerComments = 0;
+	
+	final static boolean GENERATE_DOCS = true;
+	static LinkedHashMap<String, String> docs = new LinkedHashMap<String, String>();
 
 	static void printSECD()                   { print("SECD"); }
 	static void printSECD(Object o)           { print("SECD", o); }
@@ -127,6 +131,15 @@ public class ForteLang {
 				System.out.println();
 				System.out.println("=== Evaluation complete ===");
 				System.out.println("==> " + prettifyOutput(result));
+
+				if(GENERATE_DOCS) {
+					System.out.println();
+					System.out.println("=== Generated documentation ===");
+					for(String key : docs.keySet()) {
+						System.out.println(key);
+						System.out.println("  " + docs.get(key).replace("\n", "\n  "));
+					}
+				}
 				
 			} catch(Exception e) {
 			  	e.printStackTrace();
@@ -227,10 +240,8 @@ public class ForteLang {
 
 		public Object applySelect(Object o1, Object o2) throws Exception {
 		  
-		  	if (o1 instanceof Evaluatable) {
-		  	  	printEVAL("EvalOpExpr left part", o1);
-				o1 = evaluate(scope, o1);
-		  	}
+	  	  	printEVAL("EvalOpExpr left part", o1);
+			o1 = evaluate(scope, o1);
 		  	
 		  	if(o1 instanceof FL_Set) {
 				FL_Set set = (FL_Set) o1;
@@ -940,6 +951,7 @@ TOKEN : { < GUARD : "|" > }
 TOKEN : { < GUARD_ARROW : "->>" > }
 
 //Comments
+SPECIAL_TOKEN : { < "##|" (~["\r", "\n"])* > }
 SKIP : { < "##" (~["\r", "\n"])* > }
 SKIP : { "#[" : BlockComment }
 <BlockComment> SKIP : { < "#[" > { ForteLang.innerComments++; } }
@@ -958,7 +970,7 @@ SKIP : { "#[" : BlockComment }
 SKIP : { "\n" | "\r" | " " | "\t" }
 
 /** Main endpoint */
-Object input() throws Exception : { Object expression; } {
+Object input() throws Exception : { Object expression; Token eof; } {
   expression = enclosedExpression()
   <EOF>
   {
@@ -1037,6 +1049,25 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	setDeclaration = <OPENCBRACKET>
 	(
 	  	attrName = <VAR_NAME>
+	  	{
+	  	  if (attrName.specialToken != null && GENERATE_DOCS) {
+		  	Token tmp_t = attrName.specialToken;
+		  	while (tmp_t.specialToken != null) tmp_t = tmp_t.specialToken;
+		    // The above line walks back the special token chain until it
+		    // reaches the first special token after the previous regular
+		    // token.
+		    StringBuilder docBuilder = new StringBuilder();
+		  	while (tmp_t != null) {
+		  	  	String documentation = tmp_t.image;
+		    	docBuilder.append(documentation.substring(4, documentation.length()));
+		    	docBuilder.append("\n");
+		    	tmp_t = tmp_t.next;
+		  	}
+		  	docs.put(attrName.image, docBuilder.toString());
+		    // The above loop now walks the special token chain in the forward
+		    // direction printing them in the process.
+		}
+	  	}
 	  	<EQUALS>
 	  	attrValue = enclosedExpression()
 	  	<SEMICOLON>

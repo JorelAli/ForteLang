@@ -277,16 +277,21 @@ public class ForteLang implements ForteLangConstants {
                 }
 
                 public Object applyConcat(Object o1, Object o2) throws Exception {
-                        if(o1 instanceof FL_List && o2 instanceof FL_List) {
-                                FL_List l1 = (FL_List) o1;
-                                FL_List l2 = (FL_List) o2;
+                        if(o1 instanceof LinkedList && o2 instanceof LinkedList) {
+                                LinkedList l1 = (LinkedList) o1;
+                                LinkedList l2 = (LinkedList) o2;
                                 l1.addAll(l2);
                                 return l1;
-                        } else if(o1 instanceof FL_String && o2 instanceof FL_String) {
-                                FL_String s1 = (FL_String) o1;
-                                FL_String s2 = (FL_String) o2;
-                                s1.addAll(s2);
-                                return s1;
+//		  	if(o1 instanceof FL_List && o2 instanceof FL_List) {
+//		  	  	FL_List l1 = (FL_List) o1;
+//		  	  	FL_List l2 = (FL_List) o2;
+//				l1.addAll(l2);
+//				return l1;
+//			} else if(o1 instanceof FL_String && o2 instanceof FL_String) {
+//				FL_String s1 = (FL_String) o1;
+//				FL_String s2 = (FL_String) o2;
+//				s1.addAll(s2);
+//				return s1;
                         } else {
                                 throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
                         }
@@ -1455,16 +1460,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_24() {
-    if (jj_3R_40()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_scan_token(BOOLEAN)) return true;
-    return false;
-  }
-
   private boolean jj_3R_39() {
     if (jj_scan_token(MATCH)) return true;
     if (jj_3R_6()) return true;
@@ -1935,6 +1930,16 @@ public class ForteLang implements ForteLangConstants {
     }
     xsp = jj_scanpos;
     if (jj_3_5()) jj_scanpos = xsp;
+    return false;
+  }
+
+  private boolean jj_3R_24() {
+    if (jj_3R_40()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_scan_token(BOOLEAN)) return true;
     return false;
   }
 

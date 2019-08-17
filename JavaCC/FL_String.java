@@ -7,6 +7,16 @@ public class FL_String extends LinkedList<Character> implements Evaluatable {
         super(e);
     }
 
+    @Override
+    public boolean addAll(Collection<? extends Character> e) throws RuntimeException {
+        for(Object o : e) {
+            if(!(o instanceof Character)) {
+                throw new RuntimeException("Tried to add " + o.getClass().getSimpleName() + " to a String");
+            }
+        }
+        return super.addAll(e);
+    }
+
     public FL_String(String str) {
         for(char c : str.toCharArray()) {
             this.add(c);

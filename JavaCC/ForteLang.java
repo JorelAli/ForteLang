@@ -276,7 +276,6 @@ public class ForteLang implements ForteLangConstants {
                                 }
                         } else if(o1 instanceof FL_Set) {
                                 FL_Set s1 = (FL_Set) o1;
-
                                 if(o2 instanceof FL_String) {
                                         FL_String s2 = (FL_String) o2;
                                         return s1.containsKey(s2.stringValue());
@@ -291,16 +290,6 @@ public class ForteLang implements ForteLangConstants {
                                 LinkedList l2 = (LinkedList) o2;
                                 l1.addAll(l2);
                                 return l1;
-//		  	if(o1 instanceof FL_List && o2 instanceof FL_List) {
-//		  	  	FL_List l1 = (FL_List) o1;
-//		  	  	FL_List l2 = (FL_List) o2;
-//				l1.addAll(l2);
-//				return l1;
-//			} else if(o1 instanceof FL_String && o2 instanceof FL_String) {
-//				FL_String s1 = (FL_String) o1;
-//				FL_String s2 = (FL_String) o2;
-//				s1.addAll(s2);
-//				return s1;
                         } else {
                                 throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
                         }
@@ -1469,6 +1458,87 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
+  private boolean jj_3R_24() {
+    if (jj_3R_40()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_39() {
+    if (jj_scan_token(MATCH)) return true;
+    if (jj_3R_6()) return true;
+    Token xsp;
+    if (jj_3_9()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_9()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_34() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_42()) jj_scanpos = xsp;
+    if (jj_scan_token(OPENCBRACKET)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_43()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSECBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_22() {
+    if (jj_scan_token(REGEX_STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_21() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_20() {
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_19() {
+    if (jj_3R_38()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_18() {
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_17() {
+    if (jj_3R_36()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_16() {
+    if (jj_3R_35()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_15() {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    if (jj_scan_token(INCLUDE)) return true;
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
   private boolean jj_3R_9() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1868,87 +1938,6 @@ public class ForteLang implements ForteLangConstants {
     }
     xsp = jj_scanpos;
     if (jj_3_5()) jj_scanpos = xsp;
-    return false;
-  }
-
-  private boolean jj_3R_24() {
-    if (jj_3R_40()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_scan_token(BOOLEAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_39() {
-    if (jj_scan_token(MATCH)) return true;
-    if (jj_3R_6()) return true;
-    Token xsp;
-    if (jj_3_9()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_9()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_34() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_42()) jj_scanpos = xsp;
-    if (jj_scan_token(OPENCBRACKET)) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_43()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSECBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_scan_token(REGEX_STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_21() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_20() {
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_19() {
-    if (jj_3R_38()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_18() {
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_17() {
-    if (jj_3R_36()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_16() {
-    if (jj_3R_35()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_15() {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    if (jj_scan_token(INCLUDE)) return true;
-    if (jj_3R_34()) return true;
     return false;
   }
 

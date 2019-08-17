@@ -287,10 +287,11 @@ public class ForteLang {
 		  	  	FL_List l2 = (FL_List) o2;
 				l1.addAll(l2);
 				return l1;
-			} else if(o1 instanceof String && o2 instanceof String) {
-				String s1 = (String) o1;
-				String s2 = (String) o2;
-				return s1 + s2;
+			} else if(o1 instanceof FL_String && o2 instanceof FL_String) {
+				FL_String s1 = (FL_String) o1;
+				FL_String s2 = (FL_String) o2;
+				s1.addAll(s2);
+				return s1;
 			} else {
 				throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
 			}
@@ -690,24 +691,29 @@ public class ForteLang {
 					case EXEC:
 						break;
 					case HEAD:
-						if(!(builtinParam instanceof FL_List)) {
+						if(!(builtinParam instanceof LinkedList)) {
 							throw new EvaluationException("head function requires a list as a parameter");
 						} else {
-						  	FL_List list = ((FL_List) builtinParam);
+						  	LinkedList list = ((LinkedList) builtinParam);
 						  	if(list.isEmpty()) {
 								throw new EvaluationException("List is empty, cannot retrieve the head of the list");
 						  	}
 						  	return evaluate(scope, list.getFirst());
 						} 
 					case TAIL:
-						if(!(builtinParam instanceof FL_List)) {
+						if(!(builtinParam instanceof LinkedList)) {
 							throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());
 						} else {
-						  	FL_List list = ((FL_List) builtinParam);
+						  	LinkedList list = ((LinkedList) builtinParam);
 						  	if(list.isEmpty()) {
 								throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
 						  	}
-						  	return new FL_List(list.subList(1, list.size()));
+						  	if(builtinParam instanceof FL_List) {
+								return new FL_List(list.subList(1, list.size()));
+						  	} else if(builtinParam instanceof FL_String) {
+								return new FL_String(list.subList(1, list.size()));
+						  	}
+						  	
 						}
 					case INPUT:
 						if(!(builtinParam instanceof String)) {
@@ -804,9 +810,9 @@ public class ForteLang {
 				for(Object matchExpr : match.getStatements().keySet()) {
 					Object result = evaluate(scope, matchExpr);
 
-					if(result instanceof Pattern && matchOn instanceof String) {
+					if(result instanceof Pattern && matchOn instanceof FL_String) {
 						Pattern pattern = (Pattern) result;
-						if(pattern.matcher((String) matchOn).matches()) {
+						if(pattern.matcher(((FL_String) matchOn).stringValue()).matches()) {
 							return evaluate(scope, match.getStatements().get(matchExpr));
 						}
 					} else if(matchOn.equals(result)) {
@@ -848,6 +854,9 @@ public class ForteLang {
 			  	FL_IncludedSet incSet = (FL_IncludedSet) expression;
 				scope.putAll(incSet.getFLSet());
 				return evaluate(scope, incSet.getExpression());
+			} else if(expression instanceof FL_String) {
+//			  	FL_String str = (FL_String) expression;
+			  	return expression;
 			}
 			throw new Exception("Not implemented yet, could not evaluate: " + expression);
 	  	} else {
@@ -1107,7 +1116,7 @@ Object expression() throws Exception : { Object result; Token token; } {
 	| result = number() { return result; }
 	| result = guards() { return result; }
 	| result = match() { return result; }
-	| token = <STRING> { return parseString(token); }
+	| token = <STRING> { return new FL_String(parseString(token)); }
 	| token = <REGEX_STRING> { return Pattern.compile(parseString(token)); }
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
 	| result = builtinFunctions() { return result; }

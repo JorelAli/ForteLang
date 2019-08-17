@@ -1,3 +1,6 @@
 include {
     two = 2;
-} in [two, 2, 3, (x -> 4 + x) 2, "hello"]
+    isInt = x:str -> match x
+        | '[0-9]+' ->> true
+        | ->> false;
+} in isInt "123"

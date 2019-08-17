@@ -16,7 +16,7 @@ public enum Type {
             case BOOLEAN:
                 return o instanceof Boolean;
             case STRING:
-                return o instanceof String;
+                return o instanceof FL_String;
             case ANY:
                 return true;
         }

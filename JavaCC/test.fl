@@ -1,5 +1,3 @@
 include {
-	invert = b:bool -> |>
-		| b ->> false
-		| ->> true;
-} in invert true
+    two = 2;
+} in {a = two;} != {a = 2;}

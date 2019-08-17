@@ -302,13 +302,18 @@ public class ForteLang implements ForteLangConstants {
                                 case ">=":
                                         return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
                                 case "==":
+                                        System.out.println("Comparing " + o1 + " to " + o2);
                                         if(o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
                                                 Evaluatable e1 = (Evaluatable) o1;
                                                 return e1.equalsWithScope(o2, scope);
                                         }
                                         return o1.equals(o2);
                                 case "!=":
-                                        return !applyComparator(o1, o2);
+                                        if(o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
+                                                Evaluatable e1 = (Evaluatable) o1;
+                                                return !e1.equalsWithScope(o2, scope);
+                                        }
+                                        return !o1.equals(o2);
                         }
                         throw new Exception ("Invalid operator (expected comparator operator");
                 }
@@ -1441,25 +1446,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3_5() {
-    if (jj_3R_10()) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_43() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(EQUALS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_13() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_3R_7()) return true;
-    if (jj_scan_token(CLOSEBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3_9() {
     if (jj_scan_token(GUARD)) return true;
     if (jj_3R_6()) return true;
@@ -1921,6 +1907,25 @@ public class ForteLang implements ForteLangConstants {
     jj_scanpos = xsp;
     if (jj_3R_33()) return true;
     }
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_3R_10()) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_43() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(EQUALS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_13() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_3R_7()) return true;
+    if (jj_scan_token(CLOSEBRACKET)) return true;
     return false;
   }
 

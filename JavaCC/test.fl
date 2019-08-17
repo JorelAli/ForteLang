@@ -3,4 +3,4 @@ include {
     isInt = x:str -> match x
         | '[0-9]+' ->> true
         | ->> false;
-} in "123" ++ "a" ++ [2]
+} in {a = 2;} ? "a"

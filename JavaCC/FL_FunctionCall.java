@@ -21,6 +21,21 @@ public class FL_FunctionCall implements Evaluatable {
 	}
 
 	@Override
+	public String toString() {
+		if(initFunction instanceof FL_Var) {
+			return ((FL_Var) initFunction).getName();
+		} else if(initFunction instanceof FL_Function) {
+			FL_Function func = (FL_Function) initFunction;
+			if(arguments.size() == 0) {
+				return "(" + func.toString() + ")";
+			} else {
+				return "(" + func.toString() + ", and " + arguments.size() + " argument" + (arguments.size() == 1 ? "" : "s") + ")";
+			}
+		}
+		return super.toString();
+	}
+
+	@Override
     public boolean equalsWithScope(Object o, FL_Set scope) { 
 		return false;
 	}

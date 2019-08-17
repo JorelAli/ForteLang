@@ -62,6 +62,16 @@ public class ForteLang implements ForteLangConstants {
                                 result = d.doubleValue();
                         }
                 }
+//		else if(result instanceof FL_List) {
+//		  	FL_List list = (FL_List) result;
+//		  	ListIterator it = list.listIterator();
+//		  	while(it.hasNext()) {
+//				if(it.next() instanceof Evaluatable) {
+//					it.set("...");
+//				}
+//		  	}
+//		  	result = list;
+//		}
                 return String.valueOf(result);
         }
 
@@ -1446,34 +1456,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3_9() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_42() {
-    if (jj_scan_token(IMPURE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_7() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_4()) {
-    jj_scanpos = xsp;
-    if (jj_3R_13()) return true;
-    }
-    xsp = jj_scanpos;
-    if (jj_3_5()) jj_scanpos = xsp;
-    return false;
-  }
-
   private boolean jj_3R_24() {
     if (jj_3R_40()) return true;
     return false;
@@ -1926,6 +1908,34 @@ public class ForteLang implements ForteLangConstants {
     if (jj_scan_token(OPENBRACKET)) return true;
     if (jj_3R_7()) return true;
     if (jj_scan_token(CLOSEBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3_9() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_42() {
+    if (jj_scan_token(IMPURE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_7() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_4()) {
+    jj_scanpos = xsp;
+    if (jj_3R_13()) return true;
+    }
+    xsp = jj_scanpos;
+    if (jj_3_5()) jj_scanpos = xsp;
     return false;
   }
 

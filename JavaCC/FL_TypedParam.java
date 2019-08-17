@@ -16,7 +16,7 @@ public class FL_TypedParam implements Evaluatable {
 	}
 
 	@Override public String toString() {
-		return "FL_TypedParam[" + name + "]";
+		return name + ":" + type.name().toLowerCase();
 	}
 
 	@Override

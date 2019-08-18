@@ -11,7 +11,7 @@ public class FL_List extends LinkedList<Object> implements Evaluatable {
     }
 
     @Override
-    public boolean equalsWithScope(Object o, FL_Set scope) throws Exception { 
+    public boolean equalsWithScope(Object o, Scope scope) throws Exception { 
         if(o instanceof FL_List) {
             FL_List other = (FL_List) o;
             if(this.size() == other.size()) {

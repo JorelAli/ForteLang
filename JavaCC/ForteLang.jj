@@ -172,9 +172,9 @@ public class ForteLang {
 
 		Operator operatorKind;
 		String op;
-		FL_Set scope;
+		Scope scope;
 	  
-		public OperatorParser(Token operator, FL_Set scope) throws Exception {
+		public OperatorParser(Token operator, Scope scope) throws Exception {
 		  	this.scope = scope;
 		  	
 			switch(operator.kind) {
@@ -404,7 +404,7 @@ public class ForteLang {
 		} 
 	}
 
-	public static Object secd(FL_FunctionCall functionCall, FL_Set globalScope) throws Exception {
+	public static Object secd(FL_FunctionCall functionCall, Scope globalScope) throws Exception {
 
 		class Dump {
 			Stack<Object> stack;
@@ -528,13 +528,12 @@ public class ForteLang {
 
 		} while(!control.isEmpty() || !dump.isEmpty());
 
-		FL_Set newEnv = new FL_Set();
-		newEnv.putAll(environment);
+		Scope newEnv = new Scope(environment);
 		printSECD("SECD ended with " + stack.peek());		
 		return evaluate(newEnv, stack.pop());
 	}
 
-	public static Object evaluateOpExpr(FL_Set scope, FL_OpExpr flOpExpr) throws Exception {
+	public static Object evaluateOpExpr(Scope scope, FL_OpExpr flOpExpr) throws Exception {
 		printOPEX("About to evaluate OpExpr");
 	  	printOPEX();		
 		printOPEX(flOpExpr);
@@ -702,7 +701,7 @@ public class ForteLang {
 	 * thus used to check for purity in evaluation which cannot be
 	 * determined during the parse phase.
 	 */
-	public static Object evaluate(FL_Set scope, Object expression) throws Exception {
+	public static Object evaluate(Scope scope, Object expression) throws Exception {
 	  	scope = scope.copy();
 //		System.out.println(scope);
 	  	if(expression instanceof Evaluatable) {
@@ -999,9 +998,9 @@ Object input() throws Exception : { Object expression; Token eof; } {
     Object result = null;
     if(expression instanceof FL_IncludedSet) {
     	FL_IncludedSet flIS = (FL_IncludedSet) expression;
-    	result = evaluate(flIS.getFLSet(), flIS.getExpression());
+    	result = evaluate(new Scope(flIS.getFLSet()), flIS.getExpression());
     } else {
-		result = evaluate(new FL_Set(), expression);
+		result = evaluate(new Scope(), expression);
     }
 	
     return result;

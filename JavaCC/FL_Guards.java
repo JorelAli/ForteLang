@@ -39,5 +39,5 @@ public class FL_Guards implements Evaluatable {
     }
 
     @Override
-    public boolean equalsWithScope(Object o, FL_Set scope) { return false; }
+    public boolean equalsWithScope(Object o, Scope scope) { return false; }
 }

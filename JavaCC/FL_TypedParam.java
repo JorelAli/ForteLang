@@ -20,7 +20,7 @@ public class FL_TypedParam implements Evaluatable {
 	}
 
 	@Override
-    public boolean equalsWithScope(Object o, FL_Set scope) { 
+    public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
 	}
 }

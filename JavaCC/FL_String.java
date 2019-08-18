@@ -37,7 +37,7 @@ public class FL_String extends LinkedList<Character> implements Evaluatable {
     }
 
     @Override
-    public boolean equalsWithScope(Object o, FL_Set scope) throws Exception { 
+    public boolean equalsWithScope(Object o, Scope scope) throws Exception { 
         if(o instanceof FL_String) {
             FL_String other = (FL_String) o;
             return this.stringValue().equals(other.stringValue());

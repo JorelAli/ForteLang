@@ -16,7 +16,7 @@ public class FL_Set extends LinkedHashMap<String, Object> implements Evaluatable
 	}
 
 	@Override
-	public boolean equalsWithScope(Object o, FL_Set scope) throws Exception {
+	public boolean equalsWithScope(Object o, Scope scope) throws Exception {
 		if(o instanceof FL_Set) {
 			FL_Set set = (FL_Set) o;
 			if(this.keySet().equals(set.keySet())) {

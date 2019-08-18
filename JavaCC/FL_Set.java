@@ -37,4 +37,9 @@ public class FL_Set extends LinkedHashMap<String, Object> implements Evaluatable
 			return false;
 		}
 	}
+
+	@Override
+	public Scope getLocalScope() {
+		return new Scope();
+	}
 }

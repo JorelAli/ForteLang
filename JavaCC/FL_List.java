@@ -30,4 +30,9 @@ public class FL_List extends LinkedList<Object> implements Evaluatable {
             return false; 
         }
     }
+
+    @Override
+	public Scope getLocalScope() {
+		return new Scope();
+	}
 }  

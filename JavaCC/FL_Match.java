@@ -37,5 +37,10 @@ public class FL_Match implements Evaluatable {
     @Override
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
+    }
+    
+    @Override
+	public Scope getLocalScope() {
+		return new Scope();
 	}
 }

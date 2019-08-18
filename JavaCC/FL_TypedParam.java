@@ -23,4 +23,9 @@ public class FL_TypedParam implements Evaluatable {
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
 	}
+
+	@Override
+	public Scope getLocalScope() {
+		return new Scope();
+	}
 }

@@ -139,16 +139,6 @@ isNumber = str -> match str
 	| ->> false
 ```
 
-#### Enums
-
-```
-myEnum = {| ENUM_ITEM, OTHER_ENUM_ITEM |};
-
-matchExample = x -> match x
-	| myEnum.ENUM_ITEM ->> true
-	| myEnum.OTHER_ENUM_ITEM ->> false
-```
-
 #### Sets
 
 Sets are where functions can be declared. Sets can be declared as pure, meaning that all elements within the sets perform pure operations, or impure, where one or more elements perform an impure operation. Sets are declared with curly brackets.
@@ -255,3 +245,20 @@ And the file `file2.fl`:
 
 This will evaluate to 15.
 
+## Match vs Guards
+
+Match and guards are both capable of performing the same task. Take the following example below which checks if a parameter `x` is empty (an empty list, set or String).
+
+```
+isEmpty = x -> match x
+    | {} ->> true
+    | [] ->> true
+    | "" ->> true
+    | ->> false;
+
+isEmpty' = x -> |>
+    | x == {} || x == [] || x == "" ->> true
+    | ->> false;
+```
+
+In the first example, it uses the `match` keyword, whereas the second example uses guards. In this case, the match expression is _much_ faster than the guard statement as it has to parse each `||` operator and perform the Boolean OR, whereas the match expression is like a jump table.

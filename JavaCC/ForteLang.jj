@@ -279,11 +279,10 @@ public class ForteLang {
 		  	}
 		}
 
-		//TODO: For contains, each element needs to be evaluated!
 		public Object applyContains(Object o1, Object o2) throws Exception {
 			if(o1 instanceof FL_List) {
 				FL_List l1 = (FL_List) o1;
-				return l1.contains(o2);
+				return l1.contains(o2); //TODO: Fix this
 			} else if(o1 instanceof FL_String) {
 				FL_String s1 = (FL_String) o1;
 				if(o2 instanceof FL_String) {
@@ -381,7 +380,6 @@ public class ForteLang {
 			switch(op) {
 			  	//union
 				case "/+": {
-				  	newSet.setImpure(s1.isImpure() || s2.isImpure());
 				  	newSet.putAll(s2);
 					break;
 				}
@@ -392,7 +390,6 @@ public class ForteLang {
 				  	for(String key : newSet.keySet()) {
 						newSet.put(key, s1.get(key));
 				  	}
-				  	newSet.setImpure(newSet.isImpure()); 
 					break;
 				}
 				//difference
@@ -400,7 +397,6 @@ public class ForteLang {
 				  	for(String key : s2.keySet()) {
 						newSet.remove(key);
 				  	}
-				  	newSet.setImpure(newSet.isImpure()); 
 					break;
 				}
 			}
@@ -448,12 +444,12 @@ public class ForteLang {
 		do {
 			while(!control.isEmpty()) {
 				controlItem = control.pop();
-
+				printSECD("Popped: ", controlItem);
 	
 				if(controlItem instanceof ApplyObj) {
 					//Begin application
 					printSECD();
-					printSECD("Applying...");
+					printSECD("Applying... ");
 	
 					//Pop two items from the top of the stack
 					Object value = stack.pop();
@@ -467,19 +463,22 @@ public class ForteLang {
 						FL_FunctionCall lambdaCall = (FL_FunctionCall) potentialFunction;
 						lambda = (FL_Function) lambdaCall.getInitFunction();
 					}
+
+					printSECD("Value: ", value);
+					printSECD("potentialFunction: ", potentialFunction);
 					
 	
 					//Bind it properly in the current environment
 					//Type check
 					Type type = lambda.getParameter().getType();
 					if(!Type.isType(value, type)) {
-						throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getName()); 
+						throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName()); 
 					}
 					
 					environment.put(lambda.getParameter().getName(), value);
 					Object result = lambda.getExpression();
 
-					printSECD("Added complete. Result: ", result);
+					printSECD("Added complete. Result: " + result.getClass().getName(), result);
 	
 					//If the result is an abstraction, dump it
 					if(result instanceof FL_Function) {
@@ -499,13 +498,17 @@ public class ForteLang {
 						stack.push(result);
 					}
 				} else {
+					printSECD("Evaluated control item... ", controlItem.getClass().getName());
+				  	
 					//If it's a FL_Var, evaluate it
 					if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
 					  	//TODO: Check here - this might not be properly evaluating the inputs	
 						controlItem = evaluate(globalScope, controlItem);
+						printSECD("Evaluated control item as: ", controlItem);
 					}
 					//Otherwise, don't. Push the control item on the stack
 					stack.push(controlItem);
+					printSECD("Added control item to stack.");
 				}
 			}
 
@@ -525,7 +528,7 @@ public class ForteLang {
 
 		} while(!control.isEmpty() || !dump.isEmpty());
 
-		FL_Set newEnv = new FL_Set(false);
+		FL_Set newEnv = new FL_Set();
 		newEnv.putAll(environment);
 		printSECD("SECD ended with " + stack.peek());		
 		return evaluate(newEnv, stack.pop());
@@ -914,7 +917,6 @@ TOKEN : { < REGEX_STRING : "'" ("\\" ~[] | ~["'", "\\"])* "'" >}
 //Keywords
 TOKEN : { < INCLUDE : "include" > }
 TOKEN : { < IN : "in" > }
-TOKEN : { < IMPURE : "impure" > }
 TOKEN : { < MATCH : "match" > }
 
 //Built-in functions
@@ -999,7 +1001,7 @@ Object input() throws Exception : { Object expression; Token eof; } {
     	FL_IncludedSet flIS = (FL_IncludedSet) expression;
     	result = evaluate(flIS.getFLSet(), flIS.getExpression());
     } else {
-		result = evaluate(new FL_Set(false), expression);
+		result = evaluate(new FL_Set(), expression);
     }
 	
     return result;
@@ -1054,11 +1056,7 @@ FL_IncludedSet includedSet() throws Exception : { FL_Set set; Object expression;
 }
 
 FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrName; Object attrValue; } {
-  	{ set = new FL_Set(false); }
-	(
-		<IMPURE>
-	  	{ set.setImpure(true); }
-	)?
+  	{ set = new FL_Set(); }
 	setDeclaration = <OPENCBRACKET>
 	(
 	  	attrName = <VAR_NAME>

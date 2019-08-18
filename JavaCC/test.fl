@@ -5,8 +5,30 @@ include {
     ##| Checks whether an input String is a number
     ##| Type signature: isInt :: String -> Boolean
     isInt = x:str -> match x
-        | '[0-9]+' ->> true
+        | '(\+|-)?[0-9]+' ->> true
         | ->> false;
 
-        
-} in {a = {b=2;c=3;};}.a.b
+    isEmpty = x -> match x
+        | {} ->> true
+        | [] ->> true
+        | "" ->> true
+        | ->> false;
+    
+    isEmpty' = x -> |>
+        | x == {} || x == [] || x == "" ->> true
+        | ->> false;
+
+    ## genList = f -> size -> 
+    ##     [f size];## ++ genList f (size - 1);
+
+    apply = f:func -> input -> f input;
+
+    map = l -> f -> match l
+        | [] ->> []
+        | ->> [f l] ++ map (tail l) f;
+
+} in head(map [1, 2, 3] (x -> x + 1))
+
+##{ a = 2; }.(isEmpty 2)
+##isEmpty ""
+##{a = {b=2;c=3;};}.a.(@print "b")

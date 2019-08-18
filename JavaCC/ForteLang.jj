@@ -405,7 +405,7 @@ public class ForteLang {
 	}
 
 	public static Object secd(FL_FunctionCall functionCall, Scope globalScope) throws Exception {
-
+		System.out.println();
 		class Dump {
 			Stack<Object> stack;
 			LinkedList<Object> control;
@@ -506,7 +506,8 @@ public class ForteLang {
 				  	
 					//If it's a FL_Var, evaluate it
 					if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
-					  	//TODO: Check here - this might not be properly evaluating the inputs	
+					  	//TODO: Check here - this might not be properly evaluating the inputs
+					  	printSECD("Evaluated control item as: ", controlItem);	
 						controlItem = evaluate(globalScope, controlItem);
 						printSECD("Evaluated control item as: ", controlItem);
 					}
@@ -540,6 +541,7 @@ public class ForteLang {
 	}
 
 	public static Object evaluateOpExpr(Scope scope, FL_OpExpr flOpExpr) throws Exception {
+	  	System.out.println();
 		printOPEX("About to evaluate OpExpr");
 	  	printOPEX();		
 		printOPEX(flOpExpr);
@@ -626,7 +628,7 @@ public class ForteLang {
 
 		//Flatten the elements of OpExpr into a linked list for evaluation
 		LinkedList<Object> elements = new OpFlattener(flOpExpr).flatten();
-		printOPEX("\tFlattened: ", elements);
+		printOPEX("\t\tFlattened: ", elements);
 		
 		printOPEX("Phase 2: Shunting-yard");
 
@@ -661,7 +663,7 @@ public class ForteLang {
 			output.add(stack.pop());
 		}
 		
-		printOPEX("\tFinished Shunting Yard: ", output);
+		printOPEX("\t\tFinished Shunting Yard: ", output);
 		printOPEX("Phase 3: Evaluation");
 
 		Stack<Object> evalStack = new Stack<Object>();
@@ -678,7 +680,7 @@ public class ForteLang {
 		}
 
 		Object result = evalStack.pop();
-		printOPEX("\tFinished evaluation: ", result);
+		printOPEX("\t\tFinished evaluation: ", result);
 
 		if(result instanceof Evaluatable) {
 			return evaluate(scope, result);
@@ -786,7 +788,7 @@ public class ForteLang {
 				}
 				
 				if(call.getArguments().isEmpty()) {
-//				  	System.out.println("Evaluating because arguments are empty...");
+				  	System.out.println("Evaluating because arguments are empty...");
 					return evaluate(scope, call.getInitFunction());
 				}
 
@@ -863,23 +865,20 @@ public class ForteLang {
 			} else if(expression instanceof FL_OpExpr) {
 			  	return evaluateOpExpr(scope, (FL_OpExpr) expression);
 			} else if(expression instanceof FL_List) {
-//				FL_List list = (FL_List) expression;
-//				ListIterator<Object> iterator = list.listIterator(0);
-//				while(iterator.hasNext()) {
-//					Object expr = iterator.next();
-//					iterator.set(evaluate(scope, expr));
-//				}
-//				return list;
-				return expression;
+				FL_List list = (FL_List) expression;
+				ListIterator<Object> iterator = list.listIterator(0);
+				while(iterator.hasNext()) {
+					Object expr = iterator.next();
+					iterator.set(evaluate(scope, expr));
+				}
+				return list;
 			} else if(expression instanceof FL_Set) {
-			  	// TODO: Handle purity tests here!
 				return expression;
 			} else if(expression instanceof FL_IncludedSet) {
 			  	FL_IncludedSet incSet = (FL_IncludedSet) expression;
 				scope.putAll(incSet.getFLSet());
 				return evaluate(scope, incSet.getExpression());
 			} else if(expression instanceof FL_String) {
-//			  	FL_String str = (FL_String) expression;
 			  	return expression;
 			}
 			throw new Exception("Not implemented yet, could not evaluate: " + expression);

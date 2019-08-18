@@ -400,7 +400,7 @@ public class ForteLang implements ForteLangConstants {
         }
 
         public static Object secd(FL_FunctionCall functionCall, Scope globalScope) throws Exception {
-
+                System.out.println();
                 class Dump {
                         Stack<Object> stack;
                         LinkedList<Object> control;
@@ -501,7 +501,8 @@ public class ForteLang implements ForteLangConstants {
 
                                         //If it's a FL_Var, evaluate it
                                         if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
-                                                //TODO: Check here - this might not be properly evaluating the inputs	
+                                                //TODO: Check here - this might not be properly evaluating the inputs
+                                                printSECD("Evaluated control item as: ", controlItem);
                                                 controlItem = evaluate(globalScope, controlItem);
                                                 printSECD("Evaluated control item as: ", controlItem);
                                         }
@@ -535,6 +536,7 @@ public class ForteLang implements ForteLangConstants {
         }
 
         public static Object evaluateOpExpr(Scope scope, FL_OpExpr flOpExpr) throws Exception {
+                System.out.println();
                 printOPEX("About to evaluate OpExpr");
                 printOPEX();
                 printOPEX(flOpExpr);
@@ -621,7 +623,7 @@ public class ForteLang implements ForteLangConstants {
 
                 //Flatten the elements of OpExpr into a linked list for evaluation
                 LinkedList<Object> elements = new OpFlattener(flOpExpr).flatten();
-                printOPEX("\u005ctFlattened: ", elements);
+                printOPEX("\u005ct\u005ctFlattened: ", elements);
 
                 printOPEX("Phase 2: Shunting-yard");
 
@@ -657,7 +659,7 @@ public class ForteLang implements ForteLangConstants {
                         output.add(stack.pop());
                 }
 
-                printOPEX("\u005ctFinished Shunting Yard: ", output);
+                printOPEX("\u005ct\u005ctFinished Shunting Yard: ", output);
                 printOPEX("Phase 3: Evaluation");
 
                 Stack<Object> evalStack = new Stack<Object>();
@@ -674,7 +676,7 @@ public class ForteLang implements ForteLangConstants {
                 }
 
                 Object result = evalStack.pop();
-                printOPEX("\u005ctFinished evaluation: ", result);
+                printOPEX("\u005ct\u005ctFinished evaluation: ", result);
 
                 if(result instanceof Evaluatable) {
                         return evaluate(scope, result);
@@ -773,7 +775,7 @@ public class ForteLang implements ForteLangConstants {
                                         } else {
                                                 if(function instanceof FL_FunctionCall) {
                                                         printEVAL("Adding " + functionName + " to FunctionCall's scope");
-//						  	call.getLocalScope().put(functionName.getName(), function);
+                                                        call.getLocalScope().put(functionName.getName(), function);
                                                         call.setInitFunction(((FL_FunctionCall) function).getInitFunction());
                                                 } else {
                                                         printEVAL("Reading from closure... ", function.getClass().getName());
@@ -782,7 +784,7 @@ public class ForteLang implements ForteLangConstants {
                                 }
 
                                 if(call.getArguments().isEmpty()) {
-//				  	System.out.println("Evaluating because arguments are empty...");
+                                        System.out.println("Evaluating because arguments are empty...");
                                         return evaluate(scope, call.getInitFunction());
                                 }
 
@@ -859,23 +861,20 @@ public class ForteLang implements ForteLangConstants {
                         } else if(expression instanceof FL_OpExpr) {
                                 return evaluateOpExpr(scope, (FL_OpExpr) expression);
                         } else if(expression instanceof FL_List) {
-//				FL_List list = (FL_List) expression;
-//				ListIterator<Object> iterator = list.listIterator(0);
-//				while(iterator.hasNext()) {
-//					Object expr = iterator.next();
-//					iterator.set(evaluate(scope, expr));
-//				}
-//				return list;
-                                return expression;
+                                FL_List list = (FL_List) expression;
+                                ListIterator<Object> iterator = list.listIterator(0);
+                                while(iterator.hasNext()) {
+                                        Object expr = iterator.next();
+                                        iterator.set(evaluate(scope, expr));
+                                }
+                                return list;
                         } else if(expression instanceof FL_Set) {
-                                // TODO: Handle purity tests here!
                                 return expression;
                         } else if(expression instanceof FL_IncludedSet) {
                                 FL_IncludedSet incSet = (FL_IncludedSet) expression;
                                 scope.putAll(incSet.getFLSet());
                                 return evaluate(scope, incSet.getExpression());
                         } else if(expression instanceof FL_String) {
-//			  	FL_String str = (FL_String) expression;
                                 return expression;
                         }
                         throw new Exception("Not implemented yet, could not evaluate: " + expression);
@@ -1486,6 +1485,23 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
+  private boolean jj_3R_51() {
+    if (jj_scan_token(TAIL)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_44() {
+    if (jj_3R_6()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_1()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
   private boolean jj_3R_50() {
     if (jj_scan_token(HEAD)) return true;
     if (jj_3R_6()) return true;
@@ -1942,23 +1958,6 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3R_52() {
     if (jj_scan_token(INPUT)) return true;
     if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_51() {
-    if (jj_scan_token(TAIL)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_44() {
-    if (jj_3R_6()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_1()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSESBRACKET)) return true;
     return false;
   }
 

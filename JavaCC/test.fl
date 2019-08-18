@@ -31,10 +31,22 @@ include {
 
     ## add = x -> y -> x + y;
 
-} in ##add 2 3
+    factorial = i:num -> match i
+        | 1 ->> 1
+        | ->> i * (factorial (i - 1));
+
+    replaceWithOnes = l:list -> match l
+        | [] ->> []
+        | ->> [1] ++ replaceWithOnes (tail l);
+
+} in replaceWithOnes [0, 0, 0]
+
+##factorial 5
+
+##add 2 3
 
 
-head(map [1, 2, 3] (x -> x + 1))
+## head(map [1, 2, 3] (x -> x + 1))
 
 ##{ a = 2; }.(isEmpty 2)
 ##isEmpty ""

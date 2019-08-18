@@ -422,7 +422,7 @@ public class ForteLang implements ForteLangConstants {
 
                 Stack<Object> stack = new Stack<Object>();
                 HashMap<String, Object> environment = new HashMap<String, Object>();
-                environment.putAll(globalScope); //TODO: Make sure this isn't busted
+                //environment.putAll(globalScope); //TODO: Make sure this isn't busted
                 LinkedList<Object> control = new LinkedList<Object>();
                 Stack<Dump> dump = new Stack<Dump>();
 
@@ -476,11 +476,15 @@ public class ForteLang implements ForteLangConstants {
                                         printSECD("Added complete. Result: " + result.getClass().getName(), result);
 
                                         //If the result is an abstraction, dump it
-                                        if(result instanceof FL_Function) {
+                                        if(result instanceof FL_FunctionCall) {
                                             //Dump
                                                 printSECD("Beginning dump...");
                                                 @SuppressWarnings("unchecked")
-                                                Dump newDump = new Dump((Stack<Object>) stack.clone(), new LinkedList<Object>(control), new HashMap<String, Object>(environment));
+                                                Dump newDump = new Dump(
+                                                  (Stack<Object>) stack.clone(),
+                                                  new LinkedList<Object>(control),
+                                                  new HashMap<String, Object>(environment)
+                                                );
                                                 dump.push(newDump);
 
                                                 stack.clear();
@@ -524,7 +528,9 @@ public class ForteLang implements ForteLangConstants {
                 } while(!control.isEmpty() || !dump.isEmpty());
 
                 Scope newEnv = new Scope(environment);
-                printSECD("SECD ended with " + stack.peek());
+                newEnv.putAll(functionCall.getLocalScope());
+                printSECD("SECD ended with ", stack.peek());
+                printSECD("SECD scope was ", newEnv);
                 return evaluate(newEnv, stack.pop());
         }
 
@@ -675,18 +681,6 @@ public class ForteLang implements ForteLangConstants {
                 } else {
                         return result;
                 }
-
-//	  	Object newInit = new OperatorParser(flOpExpr.getOperator(), scope).apply(flOpExpr.getLeftExpr(), flOpExpr.getRightExpr());
-//
-//	  	printOPEX("OpExpr eval result: ", newInit);
-//	  	printOPEX();
-//	  	printOPEX("Evaluation complete.");
-//
-//	  	if(newInit instanceof Evaluatable) {
-//			return evaluate(scope, newInit);
-//	  	} else { 
-//		  	return newInit;
-//		}	
         }
 
         /**
@@ -701,7 +695,7 @@ public class ForteLang implements ForteLangConstants {
                 scope = scope.copy();
 //		System.out.println(scope);
                 if(expression instanceof Evaluatable) {
-                        printEVAL("Evaluating ", expression);
+                        printEVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + ")");
 
                         if(expression instanceof FL_Builtin) {
                                 FL_Builtin builtin = (FL_Builtin) expression;
@@ -778,6 +772,8 @@ public class ForteLang implements ForteLangConstants {
                                                 throw new Exception("Function \u005c"" + functionName.getName() + "\u005c" has not been declared!");
                                         } else {
                                                 if(function instanceof FL_FunctionCall) {
+                                                        printEVAL("Adding " + functionName + " to FunctionCall's scope");
+//						  	call.getLocalScope().put(functionName.getName(), function);
                                                         call.setInitFunction(((FL_FunctionCall) function).getInitFunction());
                                                 } else {
                                                         printEVAL("Reading from closure... ", function.getClass().getName());
@@ -789,7 +785,6 @@ public class ForteLang implements ForteLangConstants {
 //				  	System.out.println("Evaluating because arguments are empty...");
                                         return evaluate(scope, call.getInitFunction());
                                 }
-
 
 
                                 if(call.getInitFunction() instanceof FL_Function) {
@@ -1491,6 +1486,23 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
+  private boolean jj_3R_50() {
+    if (jj_scan_token(HEAD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_49() {
+    if (jj_scan_token(EXEC)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_43() {
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
   private boolean jj_3R_47() {
     if (jj_scan_token(IMPORT)) return true;
     if (jj_3R_6()) return true;
@@ -1946,23 +1958,6 @@ public class ForteLang implements ForteLangConstants {
       xsp = jj_scanpos;
       if (jj_3_1()) { jj_scanpos = xsp; break; }
     }
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_50() {
-    if (jj_scan_token(HEAD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_49() {
-    if (jj_scan_token(EXEC)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_43() {
     if (jj_scan_token(CLOSESBRACKET)) return true;
     return false;
   }

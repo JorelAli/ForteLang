@@ -27,7 +27,14 @@ include {
         | [] ->> []
         | ->> [f l] ++ map (tail l) f;
 
-} in head(map [1, 2, 3] (x -> x + 1))
+    someInnerFunc = f:func -> f;
+
+    ## add = x -> y -> x + y;
+
+} in ##add 2 3
+
+
+head(map [1, 2, 3] (x -> x + 1))
 
 ##{ a = 2; }.(isEmpty 2)
 ##isEmpty ""

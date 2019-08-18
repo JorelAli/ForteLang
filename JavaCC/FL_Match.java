@@ -4,10 +4,12 @@ public class FL_Match implements Evaluatable {
     private final LinkedHashMap<Object, Object> statements;
     private Object finalStatement;
     private final Object matchOn;
+    private Scope scope;
 
     public FL_Match(Object matchOn) { 
         this.statements = new LinkedHashMap<Object, Object>(); 
         this.matchOn = matchOn;
+        this.scope = new Scope();
     }
 
     public void addStatement(Object key, Object value) {
@@ -41,6 +43,6 @@ public class FL_Match implements Evaluatable {
     
     @Override
 	public Scope getLocalScope() {
-		return new Scope();
+		return this.scope;
 	}
 }

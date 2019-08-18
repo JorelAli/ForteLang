@@ -4,6 +4,7 @@ public class FL_OpExpr implements Evaluatable {
 	private Object leftExpr;
 	private Object rightExpr;
 	private Token operator;
+	private Scope scope;
 
 	//Indicates whether this OpExpr is surrounded by brackets
 	private final boolean bracketed;
@@ -13,6 +14,7 @@ public class FL_OpExpr implements Evaluatable {
 		this.rightExpr = right;
 		this.operator = operator;
 		this.bracketed = bracketed;
+		this.scope = new Scope();
 	}
 
 	public Object getLeftExpr() {
@@ -48,6 +50,6 @@ public class FL_OpExpr implements Evaluatable {
 
 	@Override
 	public Scope getLocalScope() {
-		return new Scope();
+		return this.scope;
 	}
 }

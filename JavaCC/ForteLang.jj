@@ -207,15 +207,25 @@ public class ForteLang {
 
 		public Object apply(Object o1, Object o2) throws Exception {
 
-			if(operatorKind != Operator.SELECT) { 
+			if(operatorKind != Operator.SELECT) {
+			  	printEVAL("Current scope in OpExpr: ", scope);
 			  	if (o1 instanceof Evaluatable) {
+					Evaluatable e = (Evaluatable) o1;
+					e.getLocalScope().putAll(scope);
 			  	  	printEVAL("EvalOpExpr left part", o1);
-					o1 = evaluate(scope, o1);
+					o1 = evaluate(scope, e);
+			  	  	
+//					o1 = evaluate(scope, o1);
 			  	}
 	
 			  	if (o2 instanceof Evaluatable) {
+//			  	  	printEVAL("EvalOpExpr right part", o2);
+//					o2 = evaluate(scope, o2);
+
+					Evaluatable e = (Evaluatable) o2;
+					e.getLocalScope().putAll(scope);
 			  	  	printEVAL("EvalOpExpr right part", o2);
-					o2 = evaluate(scope, o2);
+					o2 = evaluate(scope, e);
 			  	}
 		 	}
 			
@@ -429,6 +439,8 @@ public class ForteLang {
 	  	Stack<Object> stack = new Stack<Object>();
 	  	HashMap<String, Object> environment = new HashMap<String, Object>();
 	  	//environment.putAll(globalScope); //TODO: Make sure this isn't busted
+	  	environment.putAll(functionCall.getLocalScope());
+	  	printSECD("Initialized environment: ", environment);
 	  	LinkedList<Object> control = new LinkedList<Object>();
 	  	Stack<Dump> dump = new Stack<Dump>();
 
@@ -476,7 +488,10 @@ public class ForteLang {
 					}
 
 					printSECD("Value: ", value);
-					printSECD("potentialFunction: ", potentialFunction);
+					printSECD("Lambda: ", lambda);
+					printSECD("Current environment: ", environment);
+					printSECD("Function Call Scope: ", functionCall.getLocalScope());
+					printSECD("Global Scope: ", globalScope);
 					
 	
 					//Bind it properly in the current environment
@@ -490,7 +505,7 @@ public class ForteLang {
 					environment.put(lambda.getParameter().getName(), value);
 					Object result = lambda.getExpression();
 
-					printSECD("Added complete. Result: " + result.getClass().getName(), result);
+//					printSECD("Added complete. Result: " + result.getClass().getName(), result);
 	
 					//If the result is an abstraction, dump it
 					if(result instanceof FL_FunctionCall) {
@@ -514,12 +529,16 @@ public class ForteLang {
 						stack.push(result);
 					}
 				} else {
-					printSECD("Evaluated control item... ", controlItem.getClass().getName());
 				  	
 					//If it's a FL_Var, evaluate it
 					if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
 					  	//TODO: Check here - this might not be properly evaluating the inputs
-					  	printSECD("Evaluated control item as: ", controlItem);	
+					  	printSECD("control item to evaluate: ", controlItem);
+
+						Evaluatable e = (Evaluatable) controlItem;
+						e.getLocalScope().putAll(environment);
+						controlItem = e;
+					  	
 						//controlItem = evaluate(globalScope, controlItem);
 						controlItem = evaluate(new Scope(environment), controlItem);
 						printSECD("Evaluated control item as: ", controlItem);
@@ -548,15 +567,21 @@ public class ForteLang {
 
 		Scope newEnv = new Scope(environment);
 		newEnv.putAll(functionCall.getLocalScope());
-		printSECD("SECD ended with ", stack.peek());
+		printSECD("SECD ended with ", stack.peek().getClass().getSimpleName());
 		printSECD("SECD scope was ", newEnv);
+		Object result = stack.pop();
+		if(result instanceof Evaluatable) {
+			Evaluatable e = (Evaluatable) result;
+			e.getLocalScope().putAll(newEnv);
+			return evaluate(newEnv, e);
+		}
 		return evaluate(newEnv, stack.pop());
 	}
 
 	public static Object evaluateOpExpr(Scope scope, FL_OpExpr flOpExpr) throws Exception {
 	  	System.out.println();
 		printOPEX("About to evaluate OpExpr");
-	  	printOPEX();		
+	  	printOPEX("Current scope: ", scope);		
 		printOPEX(flOpExpr);
 
 		printOPEX("Phase 1: Flattening");
@@ -686,7 +711,8 @@ public class ForteLang {
 				Token operator = (Token) evalStack.pop();
 				Object secondExpr = evalStack.pop();
 				Object firstExpr = evalStack.pop();
-				
+
+				printOPEX("Applying the " + operator.image + " operator");
 				Object result = new OperatorParser(operator, scope).apply(firstExpr, secondExpr);
 				evalStack.push(result);
 			}
@@ -713,10 +739,19 @@ public class ForteLang {
 	public static Object evaluate(Scope scope, Object expression) throws Exception {
 	  	scope = scope.copy();
 	  	if(expression instanceof Evaluatable) {
-			printEVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + ")");
+			printEVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + "), scope:", ((Evaluatable) expression).getLocalScope());
 	  	  	
 	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
+				
+//				return builtin.getParameter();
+				printEVAL("About to process builtin");
+				printEVAL(builtin.getParameter().getClass().getName());
+//				printEVAL(scope);
+				printEVAL(builtin.getParameter());
+				printEVAL("Builtin scope: ", builtin.getLocalScope());
+//				System.exit(0);
+				
 				Object builtinParam = evaluate(scope, builtin.getParameter());
 				switch(builtin.getType()) {
 					case IMPORT:
@@ -745,11 +780,13 @@ public class ForteLang {
 						  	if(list.isEmpty()) {
 								throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
 						  	}
+						  	Evaluatable result = null;
 						  	if(builtinParam instanceof FL_List) {
-								return new FL_List(list.subList(1, list.size()));
+						  	  	result = new FL_List(list.subList(1, list.size()))
 						  	} else if(builtinParam instanceof FL_String) {
-								return new FL_String(list.subList(1, list.size()));
+								result = new FL_String(list.subList(1, list.size()));
 						  	}
+						  	return result;
 						  	
 						}
 					case INPUT:
@@ -768,9 +805,7 @@ public class ForteLang {
 						return (inputBox == null ? "" : inputBox);
 				}
 	  	  	  
-			} else
-
-			if(expression instanceof FL_Function) {
+			} else if(expression instanceof FL_Function) {
 			  	FL_Function function = (FL_Function) expression;
 			  	FL_FunctionCall newFunctionCall = new FL_FunctionCall();
 			  	newFunctionCall.setInitFunction(function);
@@ -792,6 +827,9 @@ public class ForteLang {
 						if(function instanceof FL_FunctionCall) {
 						  	printEVAL("Adding " + functionName + " to FunctionCall's scope");
 						  	call.getLocalScope().put(functionName.getName(), function);
+//						  	printEVAL("Merging other scopes");
+//						  	call.getLocalScope().putAll(scope);
+//						  	printEVAL("Resultant scope: ", call.getLocalScope());
 							call.setInitFunction(((FL_FunctionCall) function).getInitFunction());
 						} else {
 							printEVAL("Reading from closure... ", function.getClass().getName());
@@ -808,6 +846,7 @@ public class ForteLang {
 				if(call.getInitFunction() instanceof FL_Function) {
 					printEVAL("About to evaluate the following: ");
 					printEVAL(call.getInitFunction());
+					
 
 					return secd(call, scope);
 					
@@ -840,6 +879,7 @@ public class ForteLang {
 				FL_Match match = (FL_Match) expression;
 
 				Object matchOn = evaluate(scope, match.getMatchOn());
+				Object statement = match.getFinalStatement();
 				
 				for(Object matchExpr : match.getStatements().keySet()) {
 					Object result = evaluate(scope, matchExpr);
@@ -847,13 +887,20 @@ public class ForteLang {
 					if(result instanceof Pattern && matchOn instanceof FL_String) {
 						Pattern pattern = (Pattern) result;
 						if(pattern.matcher(((FL_String) matchOn).stringValue()).matches()) {
-							return evaluate(scope, match.getStatements().get(matchExpr));
+							statement = match.getStatements().get(matchExpr);
+							break;
 						}
 					} else if(matchOn.equals(result)) {
-						return evaluate(scope, match.getStatements().get(matchExpr));
+						statement = match.getStatements().get(matchExpr);
+						break;
 					}
 				}
-				return evaluate(scope, match.getFinalStatement());
+				if(statement instanceof Evaluatable) {
+					Evaluatable e = (Evaluatable) statement;
+					e.getLocalScope().putAll(scope);
+					return evaluate(scope, e);
+				}
+				return evaluate(scope, statement);
 			} else if(expression instanceof FL_Var) {
 				FL_Var flVar = (FL_Var) expression;
 				Object var = scope.get(flVar.getName());

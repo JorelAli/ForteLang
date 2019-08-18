@@ -38,6 +38,6 @@ public class FL_List extends LinkedList<Object> implements Evaluatable {
 
     @Override
 	public Scope getLocalScope() {
-		return scope;
+		return this.scope;
 	}
 }  

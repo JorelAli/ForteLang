@@ -12,7 +12,7 @@ public enum Type {
             case SET:
                 return o instanceof FL_Set;
             case FUNCTION:
-                return o instanceof FL_FunctionCall;
+                return o instanceof FL_FunctionCall || o instanceof FL_Function;
             case BOOLEAN:
                 return o instanceof Boolean;
             case STRING:

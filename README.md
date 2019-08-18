@@ -6,3 +6,4 @@ TODO:
 - Fix closures
 - Create standard library
 - Impurity checks
+

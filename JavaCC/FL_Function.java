@@ -19,7 +19,7 @@ public class FL_Function implements Evaluatable {
 
 	@Override 
 	public String toString() { 
-		return parameter + " -> "/* + expression*/; 
+		return parameter + " ->"/* + expression*/; 
 	}
 
 	@Override

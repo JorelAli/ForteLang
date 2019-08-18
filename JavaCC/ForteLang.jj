@@ -406,6 +406,7 @@ public class ForteLang {
 
 	public static Object secd(FL_FunctionCall functionCall, Scope globalScope) throws Exception {
 		System.out.println();
+		printSECD("Starting SECD machine");
 		class Dump {
 			Stack<Object> stack;
 			LinkedList<Object> control;
@@ -434,7 +435,17 @@ public class ForteLang {
 	  	//Convert to reverse polish
 		control.add(functionCall.getInitFunction());
 		for(Object object : functionCall.getArguments()) {
-			control.add(object);
+		  	if(object instanceof FL_FunctionCall) {
+		  	  	printSECD("FLATTEN");
+		  	  	control.add(((FL_FunctionCall) object).getInitFunction());
+				for(Object o1 : ((FL_FunctionCall) object).getArguments()) {
+					control.add(new ApplyObj());
+				  
+					control.add(o1);
+				}
+		  	} else { 
+				control.add(object);
+			}
 			control.add(new ApplyObj());
 		}
 		printSECD("Initial control: ", control);
@@ -474,7 +485,8 @@ public class ForteLang {
 					if(!Type.isType(value, type)) {
 						throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName()); 
 					}
-					
+
+					printSECD("Binding " + value + " to " + lambda.getParameter().getName());
 					environment.put(lambda.getParameter().getName(), value);
 					Object result = lambda.getExpression();
 
@@ -494,7 +506,7 @@ public class ForteLang {
 			
 						stack.clear();
 						control.clear();
-						environment.clear();
+//						environment.clear();
 			
 						control.add(result);
 					} else {
@@ -508,7 +520,8 @@ public class ForteLang {
 					if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
 					  	//TODO: Check here - this might not be properly evaluating the inputs
 					  	printSECD("Evaluated control item as: ", controlItem);	
-						controlItem = evaluate(globalScope, controlItem);
+						//controlItem = evaluate(globalScope, controlItem);
+						controlItem = evaluate(new Scope(environment), controlItem);
 						printSECD("Evaluated control item as: ", controlItem);
 					}
 					//Otherwise, don't. Push the control item on the stack
@@ -699,7 +712,6 @@ public class ForteLang {
 	 */
 	public static Object evaluate(Scope scope, Object expression) throws Exception {
 	  	scope = scope.copy();
-//		System.out.println(scope);
 	  	if(expression instanceof Evaluatable) {
 			printEVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + ")");
 	  	  	
@@ -788,7 +800,7 @@ public class ForteLang {
 				}
 				
 				if(call.getArguments().isEmpty()) {
-				  	System.out.println("Evaluating because arguments are empty...");
+//				  	System.out.println("Evaluating because arguments are empty...");
 					return evaluate(scope, call.getInitFunction());
 				}
 
@@ -796,10 +808,6 @@ public class ForteLang {
 				if(call.getInitFunction() instanceof FL_Function) {
 					printEVAL("About to evaluate the following: ");
 					printEVAL(call.getInitFunction());
-
-					printEVAL();
-					printEVAL("Starting SECD machine");
-					printEVAL();
 
 					return secd(call, scope);
 					

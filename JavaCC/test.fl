@@ -38,10 +38,14 @@ include {
     replaceWithOnes = l:list -> match l
         | [] ->> []
         | ->> [1] ++ replaceWithOnes (tail l);
+        
+    a = (x -> x);
 
-} in replaceWithOnes [0, 0, 0]
+} in someInnerFunc (x -> x) 2
 
-##factorial 5
+## replaceWithOnes [0, 0, 0]
+
+## factorial 5
 
 ##add 2 3
 

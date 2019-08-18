@@ -31,7 +31,7 @@ public class FL_FunctionCall implements Evaluatable {
 			if(arguments.size() == 0) {
 				return "(" + func.toString() + ")";
 			} else {
-				return "(" + func.toString() + ", and " + arguments.size() + " argument" + (arguments.size() == 1 ? "" : "s") + ")";
+				return "(" + func.toString() + " and " + arguments.size() + " argument" + (arguments.size() == 1 ? "" : "s") + ")";
 			}
 		}
 		return super.toString();

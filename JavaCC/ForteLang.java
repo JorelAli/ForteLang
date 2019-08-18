@@ -401,6 +401,7 @@ public class ForteLang implements ForteLangConstants {
 
         public static Object secd(FL_FunctionCall functionCall, Scope globalScope) throws Exception {
                 System.out.println();
+                printSECD("Starting SECD machine");
                 class Dump {
                         Stack<Object> stack;
                         LinkedList<Object> control;
@@ -429,7 +430,17 @@ public class ForteLang implements ForteLangConstants {
                 //Convert to reverse polish
                 control.add(functionCall.getInitFunction());
                 for(Object object : functionCall.getArguments()) {
-                        control.add(object);
+                        if(object instanceof FL_FunctionCall) {
+                                printSECD("FLATTEN");
+                                control.add(((FL_FunctionCall) object).getInitFunction());
+                                for(Object o1 : ((FL_FunctionCall) object).getArguments()) {
+                                        control.add(new ApplyObj());
+
+                                        control.add(o1);
+                                }
+                        } else {
+                                control.add(object);
+                        }
                         control.add(new ApplyObj());
                 }
                 printSECD("Initial control: ", control);
@@ -470,6 +481,7 @@ public class ForteLang implements ForteLangConstants {
                                                 throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName());
                                         }
 
+                                        printSECD("Binding " + value + " to " + lambda.getParameter().getName());
                                         environment.put(lambda.getParameter().getName(), value);
                                         Object result = lambda.getExpression();
 
@@ -489,7 +501,7 @@ public class ForteLang implements ForteLangConstants {
 
                                                 stack.clear();
                                                 control.clear();
-                                                environment.clear();
+//						environment.clear();
 
                                                 control.add(result);
                                         } else {
@@ -503,7 +515,8 @@ public class ForteLang implements ForteLangConstants {
                                         if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
                                                 //TODO: Check here - this might not be properly evaluating the inputs
                                                 printSECD("Evaluated control item as: ", controlItem);
-                                                controlItem = evaluate(globalScope, controlItem);
+                                                //controlItem = evaluate(globalScope, controlItem);
+                                                controlItem = evaluate(new Scope(environment), controlItem);
                                                 printSECD("Evaluated control item as: ", controlItem);
                                         }
                                         //Otherwise, don't. Push the control item on the stack
@@ -695,7 +708,6 @@ public class ForteLang implements ForteLangConstants {
 	 */
         public static Object evaluate(Scope scope, Object expression) throws Exception {
                 scope = scope.copy();
-//		System.out.println(scope);
                 if(expression instanceof Evaluatable) {
                         printEVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + ")");
 
@@ -784,7 +796,7 @@ public class ForteLang implements ForteLangConstants {
                                 }
 
                                 if(call.getArguments().isEmpty()) {
-                                        System.out.println("Evaluating because arguments are empty...");
+//				  	System.out.println("Evaluating because arguments are empty...");
                                         return evaluate(scope, call.getInitFunction());
                                 }
 
@@ -792,10 +804,6 @@ public class ForteLang implements ForteLangConstants {
                                 if(call.getInitFunction() instanceof FL_Function) {
                                         printEVAL("About to evaluate the following: ");
                                         printEVAL(call.getInitFunction());
-
-                                        printEVAL();
-                                        printEVAL("Starting SECD machine");
-                                        printEVAL();
 
                                         return secd(call, scope);
 
@@ -1485,77 +1493,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_51() {
-    if (jj_scan_token(TAIL)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_44() {
-    if (jj_3R_6()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_1()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_50() {
-    if (jj_scan_token(HEAD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_49() {
-    if (jj_scan_token(EXEC)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_43() {
-    if (jj_scan_token(CLOSESBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_47() {
-    if (jj_scan_token(IMPORT)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_40() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_47()) {
-    jj_scanpos = xsp;
-    if (jj_3R_48()) {
-    jj_scanpos = xsp;
-    if (jj_3R_49()) {
-    jj_scanpos = xsp;
-    if (jj_3R_50()) {
-    jj_scanpos = xsp;
-    if (jj_3R_51()) {
-    jj_scanpos = xsp;
-    if (jj_3R_52()) {
-    jj_scanpos = xsp;
-    if (jj_3R_53()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_48() {
-    if (jj_scan_token(PRINT)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
   private boolean jj_3_7() {
     if (jj_3R_6()) return true;
     return false;
@@ -1957,6 +1894,77 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_52() {
     if (jj_scan_token(INPUT)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_51() {
+    if (jj_scan_token(TAIL)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_44() {
+    if (jj_3R_6()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_1()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_50() {
+    if (jj_scan_token(HEAD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_49() {
+    if (jj_scan_token(EXEC)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_43() {
+    if (jj_scan_token(CLOSESBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_47() {
+    if (jj_scan_token(IMPORT)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_40() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_47()) {
+    jj_scanpos = xsp;
+    if (jj_3R_48()) {
+    jj_scanpos = xsp;
+    if (jj_3R_49()) {
+    jj_scanpos = xsp;
+    if (jj_3R_50()) {
+    jj_scanpos = xsp;
+    if (jj_3R_51()) {
+    jj_scanpos = xsp;
+    if (jj_3R_52()) {
+    jj_scanpos = xsp;
+    if (jj_3R_53()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_48() {
+    if (jj_scan_token(PRINT)) return true;
     if (jj_3R_6()) return true;
     return false;
   }

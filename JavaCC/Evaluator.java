@@ -43,7 +43,7 @@ public class Evaluator {
 			FL_Match match = (FL_Match) closure.getExpression();
 			return evaluateMatch(match, closure.getScope());
 		} else if(closure.getExpression() instanceof FL_OpExpr) {
-			
+			return evaluateOpExpr(closure.getScope(), (FL_OpExpr) closure.getExpression());
 		} else if(closure.getExpression() instanceof FL_Set) {
 			return closure.getExpression(); //TODO: Actually need to keep the closure though
 		} else if(closure.getExpression() instanceof FL_String) {
@@ -51,7 +51,20 @@ public class Evaluator {
 		} else if(closure.getExpression() instanceof FL_TypedParam) {
 			
 		} else if(closure.getExpression() instanceof FL_Var) {
+			//Resolves an FL_Var into whatever it is defined as in the current closure.
+			//Since FL_TypedParam exists, FL_Var is therefore ALWAYS going to be a
+			//function call of some form,
 			
+			//EXCEPTIONS:
+			// - Set accessing
+			
+			FL_Var flVar = (FL_Var) closure.getExpression();
+			Object result = closure.getScope().get(flVar.getName());
+			if(result == null) {
+				throw new Exception("Could not find function \"" + flVar.getName() + "\" in the program!");
+			}
+			
+			return evaluate(new Closure(closure.getScope(), result));
 		}
 		
 		System.out.println(closure.getExpression() + " (" + closure.getExpression().getClass().getSimpleName() + ")");

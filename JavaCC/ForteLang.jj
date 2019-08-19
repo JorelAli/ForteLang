@@ -35,26 +35,6 @@ public class ForteLang {
 	final static boolean GENERATE_DOCS = false;
 	static LinkedHashMap<String, String> docs = new LinkedHashMap<String, String>();
 
-	static void printSECD()                   { print("SECD"); }
-	static void printSECD(Object o)           { print("SECD", o); }
-	static void printSECD(String s, Object o) { print("SECD", s, o); }
-
-	static void printEVAL()                   { print("EVAL"); }
-	static void printEVAL(Object o)           { print("EVAL", o); }
-	static void printEVAL(String s, Object o) { print("EVAL", s, o); }
-
-	static void printOPEX()                   { print("OPEX"); }
-	static void printOPEX(Object o)           { print("OPEX", o); }
-	static void printOPEX(String s, Object o) { print("OPEX", s, o); }
-	
-	static void print(String title)           { print(title, "", ""); }
-	static void print(String title, Object o) { print(title, "", o); }
-	static void print(String title, String init, Object o) {
-	  	if(LOGGING_ENABLE) {
-		  	System.out.println("[" + title + "] " + init + (init.isEmpty() ? "" : " ") + o);
-	  	}
-	}
-
 	static Scanner getGlobalScanner() {
 		if(globalScanner == null) {
 			globalScanner = new Scanner(System.in);
@@ -148,12 +128,6 @@ public class ForteLang {
 	  	}
 	}
 
-	static class EvaluationException extends Exception {
-		public EvaluationException(String message) {
-			super(message);
-		}
-	}
-
 	/** Helper functions */
 
 	static String location(Token token) {
@@ -208,23 +182,23 @@ public class ForteLang {
 		public Object apply(Object o1, Object o2) throws Exception {
 
 			if(operatorKind != Operator.SELECT) {
-			  	printEVAL("Current scope in OpExpr: ", scope);
+			  	Print.EVAL("Current scope in OpExpr: ", scope);
 			  	if (o1 instanceof Evaluatable) {
 					Evaluatable e = (Evaluatable) o1;
 					e.getLocalScope().putAll(scope);
-			  	  	printEVAL("EvalOpExpr left part", o1);
+			  	  	Print.EVAL("EvalOpExpr left part", o1);
 					o1 = evaluate(scope, e);
 			  	  	
 //					o1 = evaluate(scope, o1);
 			  	}
 	
 			  	if (o2 instanceof Evaluatable) {
-//			  	  	printEVAL("EvalOpExpr right part", o2);
+//			  	  	Print.EVAL("EvalOpExpr right part", o2);
 //					o2 = evaluate(scope, o2);
 
 					Evaluatable e = (Evaluatable) o2;
 					e.getLocalScope().putAll(scope);
-			  	  	printEVAL("EvalOpExpr right part", o2);
+			  	  	Print.EVAL("EvalOpExpr right part", o2);
 					o2 = evaluate(scope, e);
 			  	}
 		 	}
@@ -250,7 +224,7 @@ public class ForteLang {
 
 		public Object applySelect(Object o1, Object o2) throws Exception {
 		  
-	  	  	printEVAL("EvalOpExpr left part", o1);
+	  	  	Print.EVAL("EvalOpExpr left part", o1);
 			o1 = evaluate(scope, o1);
 		  	
 		  	if(o1 instanceof FL_Set) {
@@ -414,177 +388,13 @@ public class ForteLang {
 		} 
 	}
 
-	public static Object secd(FL_FunctionCall functionCall, Scope globalScope) throws Exception {
-		System.out.println();
-		printSECD("Starting SECD machine");
-		class Dump {
-			Stack<Object> stack;
-			LinkedList<Object> control;
-			HashMap<String, Object> environment;
-	
-			public Dump(Stack<Object> s, LinkedList<Object> control, HashMap<String, Object> env) {
-				this.stack = s;
-				this.control = control;
-				this.environment = env;
-			}
-		}
-
-		class ApplyObj {
-			@Override
-		  	public String toString() {
-		    	return "ap";
-		    }
-		}
-		
-	  	Stack<Object> stack = new Stack<Object>();
-	  	HashMap<String, Object> environment = new HashMap<String, Object>();
-	  	//environment.putAll(globalScope); //TODO: Make sure this isn't busted
-	  	environment.putAll(functionCall.getLocalScope());
-	  	printSECD("Initialized environment: ", environment);
-	  	LinkedList<Object> control = new LinkedList<Object>();
-	  	Stack<Dump> dump = new Stack<Dump>();
-
-	  	//Convert to reverse polish
-		control.add(functionCall.getInitFunction());
-		for(Object object : functionCall.getArguments()) {
-		  	if(object instanceof FL_FunctionCall) {
-		  	  	printSECD("FLATTEN");
-		  	  	control.add(((FL_FunctionCall) object).getInitFunction());
-				for(Object o1 : ((FL_FunctionCall) object).getArguments()) {
-					control.add(new ApplyObj());
-				  
-					control.add(o1);
-				}
-		  	} else { 
-				control.add(object);
-			}
-			control.add(new ApplyObj());
-		}
-		printSECD("Initial control: ", control);
-
-		Object controlItem = null;
-
-		do {
-			while(!control.isEmpty()) {
-				controlItem = control.pop();
-				printSECD("Popped: ", controlItem);
-	
-				if(controlItem instanceof ApplyObj) {
-					//Begin application
-					printSECD();
-					printSECD("Applying... ");
-	
-					//Pop two items from the top of the stack
-					Object value = stack.pop();
-
-					Object potentialFunction = stack.pop();
-					
-					FL_Function lambda = null;
-					if(potentialFunction instanceof FL_Function) {
-						lambda = (FL_Function) potentialFunction;
-					} else if(potentialFunction instanceof FL_FunctionCall) {
-						FL_FunctionCall lambdaCall = (FL_FunctionCall) potentialFunction;
-						lambda = (FL_Function) lambdaCall.getInitFunction();
-					}
-
-					printSECD("Value: ", value);
-					printSECD("Lambda: ", lambda);
-					printSECD("Current environment: ", environment);
-					printSECD("Function Call Scope: ", functionCall.getLocalScope());
-					printSECD("Global Scope: ", globalScope);
-					
-	
-					//Bind it properly in the current environment
-					//Type check
-					Type type = lambda.getParameter().getType();
-					if(!Type.isType(value, type)) {
-						throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName()); 
-					}
-
-					printSECD("Binding " + value + " to " + lambda.getParameter().getName());
-					environment.put(lambda.getParameter().getName(), value);
-					Object result = lambda.getExpression();
-
-//					printSECD("Added complete. Result: " + result.getClass().getName(), result);
-	
-					//If the result is an abstraction, dump it
-					if(result instanceof FL_FunctionCall) {
-					    //Dump
-					  	printSECD("Beginning dump...");
-					  	@SuppressWarnings("unchecked") 
-						Dump newDump = new Dump(
-						  (Stack<Object>) stack.clone(),
-						  new LinkedList<Object>(control),
-						  new HashMap<String, Object>(environment)
-						);
-						dump.push(newDump);
-			
-						stack.clear();
-						control.clear();
-//						environment.clear();
-			
-						control.add(result);
-					} else {
-					  	//Push result on the stack
-						stack.push(result);
-					}
-				} else {
-				  	
-					//If it's a FL_Var, evaluate it
-					if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
-					  	//TODO: Check here - this might not be properly evaluating the inputs
-					  	printSECD("control item to evaluate: ", controlItem);
-
-						Evaluatable e = (Evaluatable) controlItem;
-						e.getLocalScope().putAll(environment);
-						controlItem = e;
-					  	
-						//controlItem = evaluate(globalScope, controlItem);
-						controlItem = evaluate(new Scope(environment), controlItem);
-						printSECD("Evaluated control item as: ", controlItem);
-					}
-					//Otherwise, don't. Push the control item on the stack
-					stack.push(controlItem);
-					printSECD("Added control item to stack.");
-				}
-			}
-
-			if(!dump.isEmpty()) {
-			  	printSECD("Restoring from dump");
-			  	Dump restoredDump = dump.pop();
-
-			  	while(!stack.isEmpty()) {
-					restoredDump.stack.push(stack.pop());
-			  	}
-
-			  	stack = restoredDump.stack;
-			  	control = restoredDump.control;
-			  	environment.putAll(restoredDump.environment);
-			  	printSECD("Dump restored");
-			}
-
-		} while(!control.isEmpty() || !dump.isEmpty());
-
-		Scope newEnv = new Scope(environment);
-		newEnv.putAll(functionCall.getLocalScope());
-		printSECD("SECD ended with ", stack.peek().getClass().getSimpleName());
-		printSECD("SECD scope was ", newEnv);
-		Object result = stack.pop();
-		if(result instanceof Evaluatable) {
-			Evaluatable e = (Evaluatable) result;
-			e.getLocalScope().putAll(newEnv);
-			return evaluate(newEnv, e);
-		}
-		return evaluate(newEnv, stack.pop());
-	}
-
 	public static Object evaluateOpExpr(Scope scope, FL_OpExpr flOpExpr) throws Exception {
 	  	System.out.println();
-		printOPEX("About to evaluate OpExpr");
-	  	printOPEX("Current scope: ", scope);		
-		printOPEX(flOpExpr);
+		Print.OPEX("About to evaluate OpExpr");
+	  	Print.OPEX("Current scope: ", scope);		
+		Print.OPEX(flOpExpr);
 
-		printOPEX("Phase 1: Flattening");
+		Print.OPEX("Phase 1: Flattening");
 
 		class LeftBracket { public String toString () { return "("; }}
 		class RightBracket { public String toString () { return ")"; }}
@@ -666,9 +476,9 @@ public class ForteLang {
 
 		//Flatten the elements of OpExpr into a linked list for evaluation
 		LinkedList<Object> elements = new OpFlattener(flOpExpr).flatten();
-		printOPEX("\t\tFlattened: ", elements);
+		Print.OPEX("\t\tFlattened: ", elements);
 		
-		printOPEX("Phase 2: Shunting-yard");
+		Print.OPEX("Phase 2: Shunting-yard");
 
 		Stack<Object> stack = new Stack<Object>();
 		LinkedList<Object> output = new LinkedList<Object>();
@@ -701,8 +511,8 @@ public class ForteLang {
 			output.add(stack.pop());
 		}
 		
-		printOPEX("\t\tFinished Shunting Yard: ", output);
-		printOPEX("Phase 3: Evaluation");
+		Print.OPEX("\t\tFinished Shunting Yard: ", output);
+		Print.OPEX("Phase 3: Evaluation");
 
 		Stack<Object> evalStack = new Stack<Object>();
 		while(!output.isEmpty()) {
@@ -712,14 +522,14 @@ public class ForteLang {
 				Object secondExpr = evalStack.pop();
 				Object firstExpr = evalStack.pop();
 
-				printOPEX("Applying the " + operator.image + " operator");
+				Print.OPEX("Applying the " + operator.image + " operator");
 				Object result = new OperatorParser(operator, scope).apply(firstExpr, secondExpr);
 				evalStack.push(result);
 			}
 		}
 
 		Object result = evalStack.pop();
-		printOPEX("\t\tFinished evaluation: ", result);
+		Print.OPEX("\t\tFinished evaluation: ", result);
 
 		if(result instanceof Evaluatable) {
 			return evaluate(scope, result);
@@ -739,17 +549,17 @@ public class ForteLang {
 	public static Object evaluate(Scope scope, Object expression) throws Exception {
 	  	scope = scope.copy();
 	  	if(expression instanceof Evaluatable) {
-			printEVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + "), scope:", ((Evaluatable) expression).getLocalScope());
+			Print.EVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + "), scope:", ((Evaluatable) expression).getLocalScope());
 	  	  	
 	  	  	if(expression instanceof FL_Builtin) {
 				FL_Builtin builtin = (FL_Builtin) expression;
 				
 //				return builtin.getParameter();
-				printEVAL("About to process builtin");
-				printEVAL(builtin.getParameter().getClass().getName());
-//				printEVAL(scope);
-				printEVAL(builtin.getParameter());
-				printEVAL("Builtin scope: ", builtin.getLocalScope());
+				Print.EVAL("About to process builtin");
+				Print.EVAL(builtin.getParameter().getClass().getName());
+//				Print.EVAL(scope);
+				Print.EVAL(builtin.getParameter());
+				Print.EVAL("Builtin scope: ", builtin.getLocalScope());
 //				System.exit(0);
 				
 				Object builtinParam = evaluate(scope, builtin.getParameter());
@@ -764,11 +574,11 @@ public class ForteLang {
 						break;
 					case HEAD:
 						if(!(builtinParam instanceof LinkedList)) {
-							throw new EvaluationException("head function requires a list as a parameter");
+							throw new Exception("head function requires a list as a parameter");
 						} else {
 						  	LinkedList list = ((LinkedList) builtinParam);
 						  	if(list.isEmpty()) {
-								throw new EvaluationException("List is empty, cannot retrieve the head of the list");
+								throw new Exception("List is empty, cannot retrieve the head of the list");
 						  	}
 						  	return evaluate(scope, list.getFirst());
 						} 
@@ -778,7 +588,7 @@ public class ForteLang {
 						} else {
 						  	LinkedList list = ((LinkedList) builtinParam);
 						  	if(list.isEmpty()) {
-								throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
+								throw new Exception("List is empty, cannot retrieve the tail of the list");
 						  	}
 						  	Evaluatable result = null;
 						  	if(builtinParam instanceof FL_List) {
@@ -791,14 +601,14 @@ public class ForteLang {
 						}
 					case INPUT:
 						if(!(builtinParam instanceof FL_String)) {
-							throw new EvaluationException("Expected a string for input");
+							throw new Exception("Expected a string for input");
 						}
 						System.out.println("[@input] " + ((FL_String) builtinParam).stringValue());
 						System.out.print("@input> ");
 						return getGlobalScanner().nextLine();
 					case INPUTBOX:
 						if(!(builtinParam instanceof FL_String)) {
-							throw new EvaluationException("Expected a string for inputbox");
+							throw new Exception("Expected a string for inputbox");
 						}
 						UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 						String inputBox = JOptionPane.showInputDialog(null, ((FL_String) builtinParam).stringValue(), "ForteLang @inputbox", -1);
@@ -813,7 +623,7 @@ public class ForteLang {
 				return newFunctionCall;
 			} else
 			if(expression instanceof FL_FunctionCall) {
-				printEVAL();
+				Print.EVAL();
 				FL_FunctionCall call = (FL_FunctionCall) expression;
 
 				if(!(call.getInitFunction() instanceof FL_Function)) {
@@ -825,14 +635,14 @@ public class ForteLang {
 						throw new Exception("Function \"" + functionName.getName() + "\" has not been declared!");
 					} else {
 						if(function instanceof FL_FunctionCall) {
-						  	printEVAL("Adding " + functionName + " to FunctionCall's scope");
+						  	Print.EVAL("Adding " + functionName + " to FunctionCall's scope");
 						  	call.getLocalScope().put(functionName.getName(), function);
-//						  	printEVAL("Merging other scopes");
+//						  	Print.EVAL("Merging other scopes");
 //						  	call.getLocalScope().putAll(scope);
-//						  	printEVAL("Resultant scope: ", call.getLocalScope());
+//						  	Print.EVAL("Resultant scope: ", call.getLocalScope());
 							call.setInitFunction(((FL_FunctionCall) function).getInitFunction());
 						} else {
-							printEVAL("Reading from closure... ", function.getClass().getName());
+							Print.EVAL("Reading from closure... ", function.getClass().getName());
 						}
 					}
 				}
@@ -844,14 +654,14 @@ public class ForteLang {
 
 				
 				if(call.getInitFunction() instanceof FL_Function) {
-					printEVAL("About to evaluate the following: ");
-					printEVAL(call.getInitFunction());
+					Print.EVAL("About to evaluate the following: ");
+					Print.EVAL(call.getInitFunction());
 					
-
-					return secd(call, scope);
+					return SECD secd = new SECD(null).runSECD();
+//					return secd(call, scope);
 					
 				} else {
-				  	printEVAL("Avoiding the SECD machine, because of type ", call.getInitFunction().getClass().getName());
+				  	Print.EVAL("Avoiding the SECD machine, because of type ", call.getInitFunction().getClass().getName());
 				  	if(call.getInitFunction() instanceof Evaluatable) {
 						return evaluate(scope, call.getInitFunction());
 				  	} else {
@@ -911,10 +721,10 @@ public class ForteLang {
 					throw new Exception("Could not find function \"" + flVar.getName() + "\" in the program!");
 				}
 				if(var instanceof FL_Function) {
-					printEVAL("\"" + flVar.getName() + "\" evaluates to a lambda, therefore not resolving");
+					Print.EVAL("\"" + flVar.getName() + "\" evaluates to a lambda, therefore not resolving");
 					return var;
 				} else { 
-					printEVAL("Resolving: " + flVar.getName() + " => ", var);
+					Print.EVAL("Resolving: " + flVar.getName() + " => ", var);
 					return evaluate(scope, var);
 				}
 			} else if(expression instanceof FL_OpExpr) {

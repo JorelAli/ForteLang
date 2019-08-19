@@ -1,18 +1,15 @@
 import java.util.LinkedList;
 import java.util.Collection;
 
+@SuppressWarnings("serial")
 public class FL_List extends LinkedList<Object> implements Evaluatable {
-
-    private Scope scope;
 
     public FL_List(Collection<Object> e) {
         super(e);
-        this.scope = new Scope();
     }
 
     public FL_List() {
         super();
-        this.scope = new Scope();
     }
 
     @Override
@@ -35,9 +32,4 @@ public class FL_List extends LinkedList<Object> implements Evaluatable {
             return false; 
         }
     }
-
-    @Override
-	public Scope getLocalScope() {
-		return this.scope;
-	}
 }  

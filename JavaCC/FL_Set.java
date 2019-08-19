@@ -1,6 +1,7 @@
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@SuppressWarnings("serial")
 public class FL_Set extends LinkedHashMap<String, Object> implements Evaluatable {
 
 	public FL_Set() {
@@ -36,10 +37,5 @@ public class FL_Set extends LinkedHashMap<String, Object> implements Evaluatable
 			System.out.println("Not FL_Set");
 			return false;
 		}
-	}
-
-	@Override
-	public Scope getLocalScope() {
-		return new Scope();
 	}
 }

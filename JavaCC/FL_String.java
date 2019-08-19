@@ -1,6 +1,7 @@
 import java.util.LinkedList;
 import java.util.Collection;
 
+@SuppressWarnings("serial")
 public class FL_String extends LinkedList<Character> implements Evaluatable {
 
     public FL_String(Collection<Character> e) {
@@ -45,9 +46,4 @@ public class FL_String extends LinkedList<Character> implements Evaluatable {
             return false; 
         }
     }
-
-    @Override
-	public Scope getLocalScope() {
-		return new Scope();
-	}
 }  

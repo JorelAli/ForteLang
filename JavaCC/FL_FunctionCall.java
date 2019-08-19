@@ -3,11 +3,9 @@ import java.util.LinkedList;
 public class FL_FunctionCall implements Evaluatable {
 	private Object initFunction;
 	private final LinkedList<Object> arguments;
-	private Scope scope;
 
 	public FL_FunctionCall() {
 		arguments = new LinkedList<Object>();
-		this.scope = new Scope();
 	}
 
 	public LinkedList<Object> getArguments() {
@@ -40,10 +38,5 @@ public class FL_FunctionCall implements Evaluatable {
 	@Override
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
-	}
-
-	@Override
-	public Scope getLocalScope() {
-		return scope;
 	}
 }

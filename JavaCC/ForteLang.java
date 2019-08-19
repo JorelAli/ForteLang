@@ -776,11 +776,13 @@ public class ForteLang implements ForteLangConstants {
                                                         if(list.isEmpty()) {
                                                                 throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
                                                         }
+                                                        Evaluatable result = null;
                                                         if(builtinParam instanceof FL_List) {
-                                                                return new FL_List(list.subList(1, list.size()));
+                                                                result = new FL_List(list.subList(1, list.size()));
                                                         } else if(builtinParam instanceof FL_String) {
-                                                                return new FL_String(list.subList(1, list.size()));
+                                                                result = new FL_String(list.subList(1, list.size()));
                                                         }
+                                                        return result;
 
                                                 }
                                         case INPUT:

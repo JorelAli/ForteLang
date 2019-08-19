@@ -12,12 +12,10 @@ public class FL_Builtin implements Evaluatable {
 
 	private final Object param;
 	private final Builtin type;
-	private Scope scope;
 
 	public FL_Builtin(Builtin type, Object param) {
 		this.type = type;
 		this.param = param;
-		this.scope = new Scope();
 	}
 
 	public Object getParameter() {
@@ -36,10 +34,5 @@ public class FL_Builtin implements Evaluatable {
 	@Override
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
-	}
-
-	@Override
-	public Scope getLocalScope() {
-		return this.scope;
 	}
 }

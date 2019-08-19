@@ -1,5 +1,3 @@
-import java.util.Stack;
-
 public class FL_Function implements Evaluatable {
 	private final FL_TypedParam parameter;
 	private final Object expression;
@@ -25,10 +23,5 @@ public class FL_Function implements Evaluatable {
 	@Override
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
-	}
-
-	@Override
-	public Scope getLocalScope() {
-		return new Scope();
 	}
 }

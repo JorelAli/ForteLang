@@ -41,7 +41,11 @@ include {
 
     a = (x -> x);
 
-} in replaceWithOnes [0, 0, 0]
+    x = 2;
+
+} in a 2 ## (x -> x) x
+
+##replaceWithOnes [0, 0, 0]
 
  ##someInnerFunc (x -> x) 2
 

@@ -1,9 +1,10 @@
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
 public class Evaluator {
-	
+		
 	public static Object evaluate(Closure closure) throws Exception {
 		
 		if(!(closure.getExpression() instanceof Evaluatable)) {
@@ -32,7 +33,12 @@ public class Evaluator {
 			return evaluate(newClosure);
 			
 		} else if(closure.getExpression() instanceof FL_List) {
-			return closure.getExpression(); //TODO: Actually need to keep the closure though
+			FL_List list = (FL_List) closure.getExpression();
+			ListIterator<Object> iterator = list.listIterator(0);
+			while(iterator.hasNext()) {
+				iterator.set(evaluate(new Closure(closure.getScope(), iterator.next())));
+			}
+			return list;
 		} else if(closure.getExpression() instanceof FL_Match) {
 			FL_Match match = (FL_Match) closure.getExpression();
 			return evaluateMatch(match, closure.getScope());

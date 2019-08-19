@@ -29,7 +29,7 @@ include {
 
     someInnerFunc = f:func -> f;
 
-    ## add = x -> y -> x + y;
+    add = x -> y -> x + y;
 
     factorial = i:num -> match i
         | 1 ->> 1
@@ -43,7 +43,8 @@ include {
 
     x = 2;
 
-} in [1, 2, 3, false, (x -> x)]
+} in [x] ++ []
+##[1, 2, 3, false, (x -> x)]
 
 ##|> | 2 == 2 ->> 2 | ->> 4 
 

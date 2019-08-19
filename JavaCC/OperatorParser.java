@@ -14,29 +14,29 @@ public class OperatorParser {
 	public OperatorParser(Token operator) throws Exception {
 
 		switch (operator.kind) {
-		case ForteLangConstants.BOOLEAN_OP:
-			operatorKind = Operator.BOOLEAN;
-			break;
-		case ForteLangConstants.OP:
-			operatorKind = Operator.NUMERICAL;
-			break;
-		case ForteLangConstants.SET_OP:
-			operatorKind = Operator.SET;
-			break;
-		case ForteLangConstants.COMPARATOR_OP:
-			operatorKind = Operator.COMPARATOR;
-			break;
-		case ForteLangConstants.CONCAT:
-			operatorKind = Operator.CONCAT;
-			break;
-		case ForteLangConstants.CONTAINS:
-			operatorKind = Operator.CONTAINS;
-			break;
-		case ForteLangConstants.SELECT:
-			operatorKind = Operator.SELECT;
-			break;
-		default:
-			throw new Exception("Invalid operator for OperatorParser: " + operator.image);
+			case ForteLangConstants.BOOLEAN_OP:
+				operatorKind = Operator.BOOLEAN;
+				break;
+			case ForteLangConstants.OP:
+				operatorKind = Operator.NUMERICAL;
+				break;
+			case ForteLangConstants.SET_OP:
+				operatorKind = Operator.SET;
+				break;
+			case ForteLangConstants.COMPARATOR_OP:
+				operatorKind = Operator.COMPARATOR;
+				break;
+			case ForteLangConstants.CONCAT:
+				operatorKind = Operator.CONCAT;
+				break;
+			case ForteLangConstants.CONTAINS:
+				operatorKind = Operator.CONTAINS;
+				break;
+			case ForteLangConstants.SELECT:
+				operatorKind = Operator.SELECT;
+				break;
+			default:
+				throw new Exception("Invalid operator for OperatorParser: " + operator.image);
 		}
 		op = operator.image;
 	}
@@ -68,20 +68,20 @@ public class OperatorParser {
 		}
 
 		switch (operatorKind) {
-		case BOOLEAN:
-			return applyBoolean((boolean) o1, (boolean) o2);
-		case NUMERICAL:
-			return applyNumber((BigDecimal) o1, (BigDecimal) o2);
-		case SET:
-			return applySetObjects((FL_Set) o1, (FL_Set) o2);
-		case COMPARATOR:
-			return applyComparator(o1, o2);
-		case CONCAT:
-			return applyConcat(o1, o2);
-		case CONTAINS:
-			return applyContains(o1, o2);
-		case SELECT:
-			return applySelect(o1, o2);
+			case BOOLEAN:
+				return applyBoolean((boolean) o1, (boolean) o2);
+			case NUMERICAL:
+				return applyNumber((BigDecimal) o1, (BigDecimal) o2);
+			case SET:
+				return applySetObjects((FL_Set) o1, (FL_Set) o2);
+			case COMPARATOR:
+				return applyComparator(o1, o2);
+			case CONCAT:
+				return applyConcat(o1, o2);
+			case CONTAINS:
+				return applyContains(o1, o2);
+			case SELECT:
+				return applySelect(o1, o2);
 		}
 		throw new Exception("Failed to apply any operators");
 	}

@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 public class Evaluator {
 		
 	public static Object evaluate(Closure closure) throws Exception {
+		Print.EVAL("Starting evaluation of " + closure + ", with scope " + closure.getScope());
 		
 		if(!(closure.getExpression() instanceof Evaluatable)) {
 			return closure.getExpression();
@@ -16,7 +17,8 @@ public class Evaluator {
 		} else if(closure.getExpression() instanceof FL_Function) {
 			
 		} else if(closure.getExpression() instanceof FL_FunctionCall) {
-			
+			Print.EVAL(closure.getScope());
+			return new SECD(closure).runSECD();
 		} else if(closure.getExpression() instanceof FL_Guards) {
 			FL_Guards guards = (FL_Guards) closure.getExpression();
 			return evaluateGuards(guards, closure.getScope());
@@ -33,7 +35,7 @@ public class Evaluator {
 			return evaluate(newClosure);
 			
 		} else if(closure.getExpression() instanceof FL_List) {
-			FL_List list = (FL_List) closure.getExpression();
+			FL_List list = new FL_List((FL_List) closure.getExpression());
 			ListIterator<Object> iterator = list.listIterator(0);
 			while(iterator.hasNext()) {
 				iterator.set(evaluate(new Closure(closure.getScope(), iterator.next())));
@@ -462,7 +464,16 @@ public class Evaluator {
 				Object firstExpr = evalStack.pop();
 
 				Print.OPEX("Applying the " + operator.image + " operator");
-				Object result = null; //TODO: new OperatorParser(operator).apply(firstExpr, secondExpr);
+				
+				if(!(firstExpr instanceof Closure)) {
+					firstExpr = new Closure(scope, firstExpr);
+				}
+				
+				if(!(secondExpr instanceof Closure)) {
+					secondExpr = new Closure(scope, secondExpr);
+				}
+				
+				Object result = new OperatorParser(operator).apply((Closure) firstExpr, (Closure) secondExpr);
 				evalStack.push(result);
 			}
 		}

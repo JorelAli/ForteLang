@@ -138,7 +138,9 @@ public class SECD {
 						controlItem = e;
 					  	
 						//controlItem = evaluate(globalScope, controlItem);
-						controlItem = Evaluator.evaluate(new Closure(new Scope(environment), controlItem));
+						Scope evaluationScope = new Scope(environment);
+						evaluationScope.putAll(closureScope);
+						controlItem = Evaluator.evaluate(new Closure(evaluationScope, controlItem));
 						Print.SECD("Evaluated control item as: ", controlItem);
 					}
 					//Otherwise, don't. Push the control item on the stack
@@ -167,11 +169,7 @@ public class SECD {
 		Print.SECD("SECD ended with ", stack.peek().getClass().getSimpleName());
 		Print.SECD("SECD scope was ", newEnv);
 		Object result = stack.pop();
-		if(result instanceof Evaluatable) {
-			Evaluatable e = (Evaluatable) result;
-			return Evaluator.evaluate(new Closure(newEnv, e));
-		}
-		return Evaluator.evaluate(new Closure(newEnv, stack.pop()));
+		return Evaluator.evaluate(new Closure(newEnv, result));
 	}
 
 }

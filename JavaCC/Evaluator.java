@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class Evaluator {
 		
 	public static Object evaluate(Closure closure) throws Exception {
-		Print.EVAL("Starting evaluation of " + closure + ", with scope " + closure.getScope());
+		Print.EVAL("Starting evaluation of " + closure + "(" + closure.getExpression().getClass().getSimpleName() + "), with scope " + closure.getScope());
 		
 		if(!(closure.getExpression() instanceof Evaluatable)) {
 			return closure.getExpression();
@@ -63,14 +63,12 @@ public class Evaluator {
 			FL_Var flVar = (FL_Var) closure.getExpression();
 			Object result = closure.getScope().get(flVar.getName());
 			if(result == null) {
-				throw new Exception("Could not find function \"" + flVar.getName() + "\" in the program!");
+				Exceptions.FUNCTION_NOT_DEFINED(flVar.getName());
 			}
 			
 			return evaluate(new Closure(closure.getScope(), result));
 		}
-		
-		System.out.println(closure.getExpression() + " (" + closure.getExpression().getClass().getSimpleName() + ")");
-		
+			
 		return null;
 	}
 	

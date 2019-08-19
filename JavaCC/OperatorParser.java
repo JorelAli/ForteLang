@@ -149,6 +149,7 @@ public class OperatorParser {
 		throw new Exception("Cannot check for existance within a " + o1.getClass().getName());
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object applyConcat(Object o1, Object o2) throws Exception {
 		if (o1 instanceof LinkedList && o2 instanceof LinkedList) {
 			LinkedList l1 = (LinkedList) o1;

@@ -43,7 +43,14 @@ include {
 
     x = 2;
 
-} in [x] ++ []
+    something = include {
+        test = 2;
+    } in 5;
+
+} in something + 5
+
+#[include { x = 5;
+} in [x + x] ++ []]#
 ##[1, 2, 3, false, (x -> x)]
 
 ##|> | 2 == 2 ->> 2 | ->> 4 

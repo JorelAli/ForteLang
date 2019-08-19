@@ -228,30 +228,25 @@ SKIP : { "#[" : BlockComment }
 SKIP : { "\n" | "\r" | " " | "\t" }
 
 /** Main endpoint */
-Object input() throws Exception : { Object expression; Token eof; } {
-  expression = enclosedExpression()
-  <EOF>
-  {
-
-	if(LOGGING_ENABLE) {
-		System.out.println();
-		System.out.println("=== Parsing complete ===");
-		System.out.println();
-	}
-
-    Object result = null;
-
-	result = Evaluator.evaluate(new Closure(new Scope(), expression));
-    
-//    if(expression instanceof FL_IncludedSet) {
-//    	FL_IncludedSet flIS = (FL_IncludedSet) expression;
-//    	result = evaluate(new Scope(flIS.getFLSet()), flIS.getExpression());
-//    } else {
-//		result = evaluate(new Scope(), expression);
-//    }
+Object input() throws Exception : { Object expression = null; Token eof; } {
+	try { 
+		expression = enclosedExpression()
+	} catch(ParseException e) { Exceptions.EMPTY_PROGRAM(location(e.currentToken)); }
+	<EOF>
 	
-    return result;
-  }
+	{
+		if(LOGGING_ENABLE) {
+			System.out.println();
+			System.out.println("=== Parsing complete ===");
+			System.out.println();
+		}
+	
+	    Object result = null;
+	
+		result = Evaluator.evaluate(new Closure(new Scope(), expression));
+		
+	    return result;
+  	}
 }
 
 Token anyOperator() throws Exception : { Token op; } {
@@ -307,23 +302,27 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 	(
 	  	attrName = <VAR_NAME>
 	  	{
-	  	  if (attrName.specialToken != null && GENERATE_DOCS) {
-		  	Token tmp_t = attrName.specialToken;
-		  	while (tmp_t.specialToken != null) tmp_t = tmp_t.specialToken;
-		    // The above line walks back the special token chain until it
-		    // reaches the first special token after the previous regular
-		    // token.
-		    StringBuilder docBuilder = new StringBuilder();
-		  	while (tmp_t != null) {
-		  	  	String documentation = tmp_t.image;
-		    	docBuilder.append(documentation.substring(3, documentation.length()));
-		    	docBuilder.append("\n");
-		    	tmp_t = tmp_t.next;
-		  	}
-		  	docs.put(attrName.image, docBuilder.toString());
-		    // The above loop now walks the special token chain in the forward
-		    // direction printing them in the process.
-		}
+	  		if (attrName.specialToken != null && GENERATE_DOCS) {
+			  	Token tmp_t = attrName.specialToken;
+			  	while (tmp_t.specialToken != null) tmp_t = tmp_t.specialToken;
+			    // The above line walks back the special token chain until it
+			    // reaches the first special token after the previous regular
+			    // token.
+			    StringBuilder docBuilder = new StringBuilder();
+			  	while (tmp_t != null) {
+			  	  	String documentation = tmp_t.image;
+			    	docBuilder.append(documentation.substring(3, documentation.length()));
+			    	docBuilder.append("\n");
+			    	tmp_t = tmp_t.next;
+			  	}
+			  	docs.put(attrName.image, docBuilder.toString());
+			    // The above loop now walks the special token chain in the forward
+			    // direction printing them in the process.
+			}
+
+			if(set.keySet().contains(attrName.image)) {
+				Exceptions.ITEM_IN_SET(attrName.image, location(attrName));
+			}
 	  	}
 	  	<EQUALS>
 	  	attrValue = enclosedExpression()

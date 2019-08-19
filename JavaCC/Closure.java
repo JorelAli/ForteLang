@@ -1,14 +1,14 @@
 public class Closure { 
 
     private Scope scope;
-    private Evaluatable expression;
+    private Object expression;
 
-    public Closure(Scope scope, Evaluatable expression) {
+    public Closure(Scope scope, Object expression) {
         this.scope = scope;
         this.expression = expression;
     }
 
-    public Closure(Evaluatable expression) {
+    public Closure(Object expression) {
         this(new Scope(), expression);
     }
 
@@ -16,7 +16,7 @@ public class Closure {
         return this.scope;
     }
 
-    public Evaluatable getExpression() {
+    public Object getExpression() {
         return this.expression;
     }
 }  

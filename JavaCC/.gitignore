@@ -37,3 +37,15 @@
 /Print.class
 /SECD$ApplyObj.class
 /SECD$Dump.class
+/OperatorParser$Operator.class
+/OperatorParser.class
+/Snippet.class
+/Evaluator.class
+/Evaluator$1LeftBracket.class
+/Evaluator$1Op.class
+/Evaluator$1OpFlattener.class
+/Evaluator$1RightBracket.class
+/Evaluator$LeftBracket.class
+/Evaluator$Op.class
+/Evaluator$OpFlattener.class
+/Evaluator$RightBracket.class

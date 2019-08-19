@@ -39,13 +39,11 @@ public class SECD {
 		System.out.println();
 		Print.SECD("Starting SECD machine");
 		
-	  	Stack<Object> stack = new Stack<Object>();
-	  	Scope environment = new Scope();
-	  	//environment.putAll(globalScope); //TODO: Make sure this isn't busted
-	  	environment.putAll(functionCall.getLocalScope());
-	  	Print.SECD("Initialized environment: ", environment);
+		//Initialize stack, environment, control & dump
+	  	Stack<Object> stack        = new Stack<Object>();
+	  	Scope environment          = new Scope();
 	  	LinkedList<Object> control = new LinkedList<Object>();
-	  	Stack<Dump> dump = new Stack<Dump>();
+	  	Stack<Dump> dump           = new Stack<Dump>();
 
 	  	//Convert to reverse polish
 		control.add(functionCall.getInitFunction());
@@ -93,8 +91,6 @@ public class SECD {
 					Print.SECD("Value: ", value);
 					Print.SECD("Lambda: ", lambda);
 					Print.SECD("Current environment: ", environment);
-					Print.SECD("Function Call Scope: ", functionCall.getLocalScope());
-					Print.SECD("Global Scope: ", globalScope);
 					
 	
 					//Bind it properly in the current environment
@@ -139,7 +135,6 @@ public class SECD {
 					  	Print.SECD("control item to evaluate: ", controlItem);
 
 						Evaluatable e = (Evaluatable) controlItem;
-						e.getLocalScope().putAll(environment);
 						controlItem = e;
 					  	
 						//controlItem = evaluate(globalScope, controlItem);
@@ -169,16 +164,14 @@ public class SECD {
 		} while(!control.isEmpty() || !dump.isEmpty());
 
 		Scope newEnv = new Scope(environment);
-		newEnv.putAll(functionCall.getLocalScope());
 		Print.SECD("SECD ended with ", stack.peek().getClass().getSimpleName());
 		Print.SECD("SECD scope was ", newEnv);
 		Object result = stack.pop();
 		if(result instanceof Evaluatable) {
 			Evaluatable e = (Evaluatable) result;
-			e.getLocalScope().putAll(newEnv);
 			return ForteLang.evaluate(newEnv, e);
 		}
-		return ForteLang.evaluate(newEnv, stack.pop());
+		return Evaluator.evaluate(newEnv, stack.pop());
 	}
 
 }

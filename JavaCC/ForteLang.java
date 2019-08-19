@@ -30,26 +30,6 @@ public class ForteLang implements ForteLangConstants {
         final static boolean GENERATE_DOCS = false;
         static LinkedHashMap<String, String> docs = new LinkedHashMap<String, String>();
 
-        static void printSECD()                   { print("SECD"); }
-        static void printSECD(Object o)           { print("SECD", o); }
-        static void printSECD(String s, Object o) { print("SECD", s, o); }
-
-        static void printEVAL()                   { print("EVAL"); }
-        static void printEVAL(Object o)           { print("EVAL", o); }
-        static void printEVAL(String s, Object o) { print("EVAL", s, o); }
-
-        static void printOPEX()                   { print("OPEX"); }
-        static void printOPEX(Object o)           { print("OPEX", o); }
-        static void printOPEX(String s, Object o) { print("OPEX", s, o); }
-
-        static void print(String title)           { print(title, "", ""); }
-        static void print(String title, Object o) { print(title, "", o); }
-        static void print(String title, String init, Object o) {
-                if(LOGGING_ENABLE) {
-                        System.out.println("[" + title + "] " + init + (init.isEmpty() ? "" : " ") + o);
-                }
-        }
-
         static Scanner getGlobalScanner() {
                 if(globalScanner == null) {
                         globalScanner = new Scanner(System.in);
@@ -143,12 +123,6 @@ public class ForteLang implements ForteLangConstants {
                 }
         }
 
-        static class EvaluationException extends Exception {
-                public EvaluationException(String message) {
-                        super(message);
-                }
-        }
-
         /** Helper functions */
 
         static String location(Token token) {
@@ -157,785 +131,6 @@ public class ForteLang implements ForteLangConstants {
 
         static String parseString(Token str) {
                 return str.image.substring(1, str.image.length() - 1);
-        }
-
-        /** Other declared objects */
-
-        static class OperatorParser {
-
-                enum Operator { BOOLEAN, NUMERICAL, SET, COMPARATOR, CONCAT, CONTAINS, SELECT };
-
-                Operator operatorKind;
-                String op;
-                Scope scope;
-
-                public OperatorParser(Token operator, Scope scope) throws Exception {
-                        this.scope = scope;
-
-                        switch(operator.kind) {
-                                case ForteLangConstants.BOOLEAN_OP:
-                                        operatorKind = Operator.BOOLEAN;
-                                        break;
-                                case ForteLangConstants.OP:
-                                        operatorKind = Operator.NUMERICAL;
-                                        break;
-                                case ForteLangConstants.SET_OP:
-                                        operatorKind = Operator.SET;
-                                        break;
-                                case ForteLangConstants.COMPARATOR_OP:
-                                        operatorKind = Operator.COMPARATOR;
-                                        break;
-                                case ForteLangConstants.CONCAT:
-                                        operatorKind = Operator.CONCAT;
-                                        break;
-                                case ForteLangConstants.CONTAINS:
-                                        operatorKind = Operator.CONTAINS;
-                                        break;
-                                case ForteLangConstants.SELECT:
-                                        operatorKind = Operator.SELECT;
-                                        break;
-                                default:
-                                        throw new Exception ("Invalid operator for OperatorParser: " + operator.image);
-                        }
-                        op = operator.image;
-                }
-
-                public Object apply(Object o1, Object o2) throws Exception {
-
-                        if(operatorKind != Operator.SELECT) {
-                                printEVAL("Current scope in OpExpr: ", scope);
-                                if (o1 instanceof Evaluatable) {
-                                        Evaluatable e = (Evaluatable) o1;
-                                        e.getLocalScope().putAll(scope);
-                                        printEVAL("EvalOpExpr left part", o1);
-                                        o1 = evaluate(scope, e);
-
-//					o1 = evaluate(scope, o1);
-                                }
-
-                                if (o2 instanceof Evaluatable) {
-//			  	  	printEVAL("EvalOpExpr right part", o2);
-//					o2 = evaluate(scope, o2);
-
-                                        Evaluatable e = (Evaluatable) o2;
-                                        e.getLocalScope().putAll(scope);
-                                        printEVAL("EvalOpExpr right part", o2);
-                                        o2 = evaluate(scope, e);
-                                }
-                        }
-
-                        switch(operatorKind) {
-                                case BOOLEAN:
-                                        return applyBoolean((boolean) o1, (boolean) o2);
-                                case NUMERICAL:
-                                        return applyNumber((BigDecimal) o1, (BigDecimal) o2);
-                                case SET:
-                                        return applySetObjects((FL_Set) o1, (FL_Set) o2);
-                                case COMPARATOR:
-                                        return applyComparator(o1, o2);
-                                case CONCAT:
-                                        return applyConcat(o1, o2);
-                                case CONTAINS:
-                                        return applyContains(o1, o2);
-                                case SELECT:
-                                        return applySelect(o1, o2);
-                        }
-                        throw new Exception ("Failed to apply any operators");
-                }
-
-                public Object applySelect(Object o1, Object o2) throws Exception {
-
-                        printEVAL("EvalOpExpr left part", o1);
-                        o1 = evaluate(scope, o1);
-
-                        if(o1 instanceof FL_Set) {
-                                FL_Set set = (FL_Set) o1;
-                                if(o2 instanceof FL_String) {
-                                        Object result = set.get(((FL_String) o2).stringValue());
-                                        if(result == null) {
-                                                throw new Exception("Cannot find element \u005c"" + o2 + "\u005c" in set containing " + set.keySet());
-                                        } else {
-                                                return result;
-                                        }
-                                } else if (o2 instanceof FL_FunctionCall) {
-                                        FL_FunctionCall func = (FL_FunctionCall) o2;
-                                        if(func.getInitFunction() instanceof FL_Var) {
-                                                FL_Var var = (FL_Var) func.getInitFunction();
-                                                Object result = set.get(var.getName());
-                                                if(result == null) {
-                                                        throw new Exception("Cannot find element \u005c"" + var.getName() + "\u005c" in set containing " + set.keySet());
-                                                } else {
-                                                        return result;
-                                                }
-                                        } else {
-                                                if(func.getInitFunction() instanceof Evaluatable) {
-                                                        return applySelect(o1, evaluate(scope, func));
-                                                } else {
-                                                        throw new Exception("Cannot select from a set using a " + func.getInitFunction().getClass().getName());
-                                                }
-                                        }
-                                } else if (o2 instanceof Evaluatable) {
-                                        return applySelect(o1, evaluate(scope, o2));
-                                } else {
-                                        throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
-                                }
-                        } else {
-                                throw new Exception("Cannot select from an object that's not a set");
-                        }
-                }
-
-                public Object applyContains(Object o1, Object o2) throws Exception {
-                        if(o1 instanceof FL_List) {
-                                FL_List l1 = (FL_List) o1;
-                                return l1.contains(o2); //TODO: Fix this
-                        } else if(o1 instanceof FL_String) {
-                                FL_String s1 = (FL_String) o1;
-                                if(o2 instanceof FL_String) {
-                                        FL_String s2 = (FL_String) o2;
-                                        return s1.stringValue().contains(s2.stringValue());
-                                }
-                        } else if(o1 instanceof FL_Set) {
-                                FL_Set s1 = (FL_Set) o1;
-                                if(o2 instanceof FL_String) {
-                                        FL_String s2 = (FL_String) o2;
-                                        return s1.containsKey(s2.stringValue());
-                                }
-                        }
-                        throw new Exception("Cannot check for existance within a " + o1.getClass().getName());
-                }
-
-                public Object applyConcat(Object o1, Object o2) throws Exception {
-                        if(o1 instanceof LinkedList && o2 instanceof LinkedList) {
-                                LinkedList l1 = (LinkedList) o1;
-                                LinkedList l2 = (LinkedList) o2;
-                                l1.addAll(l2);
-                                return l1;
-                        } else {
-                                throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
-                        }
-                }
-
-                public boolean applyComparator(Object o1, Object o2) throws Exception {
-                        switch(op) {
-                                case ">":
-                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) > 0;
-                                case "<":
-                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) < 0;
-                                case "<=":
-                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) <= 0;
-                                case ">=":
-                                        return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
-                                case "==":
-                                        System.out.println("Comparing " + o1 + " to " + o2);
-                                        if(o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
-                                                Evaluatable e1 = (Evaluatable) o1;
-                                                return e1.equalsWithScope(o2, scope);
-                                        }
-                                        return o1.equals(o2);
-                                case "!=":
-                                        if(o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
-                                                Evaluatable e1 = (Evaluatable) o1;
-                                                return !e1.equalsWithScope(o2, scope);
-                                        }
-                                        return !o1.equals(o2);
-                        }
-                        throw new Exception ("Invalid operator (expected comparator operator");
-                }
-
-                public BigDecimal applyNumber(BigDecimal f1, BigDecimal f2) throws Exception {
-                        if(operatorKind != Operator.NUMERICAL) {
-                                throw new Exception("Invalid operator (expected numerical operator)");
-                        }
-
-                        switch(op) {
-                                case "+":
-                                        return f1.add(f2);
-                                case "*":
-                                        return f1.multiply(f2);
-                                case "-":
-                                        return f1.subtract(f2);
-                                case "/":
-                                        return f1.divide(f2, 128, RoundingMode.HALF_DOWN);
-                                case "%":
-                                        return f1.remainder(f2);
-                        }
-                        throw new Exception("Invalid operator " + op);
-                }
-
-                public boolean applyBoolean(boolean b1, boolean b2) throws Exception {
-                        if(operatorKind != Operator.BOOLEAN) {
-                                throw new Exception("Invalid operator (expected boolean operator)");
-                        }
-                        switch(op) {
-                                case "||":
-                                        return b1 || b2;
-                                case "&&":
-                                        return b1 && b2;
-                        }
-                        throw new Exception("Invalid operator " + op);
-                }
-
-                public FL_Set applySetObjects(FL_Set s1, FL_Set s2) throws Exception {
-                        if(operatorKind != Operator.SET) {
-                                throw new Exception("Invalid operator (expected set operator)");
-                        }
-
-                        FL_Set newSet = s1.copy();
-
-                        switch(op) {
-                                //union
-                                case "/+": {
-                                        newSet.putAll(s2);
-                                        break;
-                                }
-                                //intersect
-                                case "/-": {
-                                        newSet.putAll(s1);
-                                        newSet.keySet().retainAll(s2.keySet());
-                                        for(String key : newSet.keySet()) {
-                                                newSet.put(key, s1.get(key));
-                                        }
-                                        break;
-                                }
-                                //difference
-                                case "//": {
-                                        for(String key : s2.keySet()) {
-                                                newSet.remove(key);
-                                        }
-                                        break;
-                                }
-                        }
-                        return newSet;
-                }
-        }
-
-        public static Object secd(FL_FunctionCall functionCall, Scope globalScope) throws Exception {
-                System.out.println();
-                printSECD("Starting SECD machine");
-                class Dump {
-                        Stack<Object> stack;
-                        LinkedList<Object> control;
-                        HashMap<String, Object> environment;
-
-                        public Dump(Stack<Object> s, LinkedList<Object> control, HashMap<String, Object> env) {
-                                this.stack = s;
-                                this.control = control;
-                                this.environment = env;
-                        }
-                }
-
-                class ApplyObj {
-                        @Override
-                        public String toString() {
-                        return "ap";
-                    }
-                }
-
-                Stack<Object> stack = new Stack<Object>();
-                HashMap<String, Object> environment = new HashMap<String, Object>();
-                //environment.putAll(globalScope); //TODO: Make sure this isn't busted
-                environment.putAll(functionCall.getLocalScope());
-                printSECD("Initialized environment: ", environment);
-                LinkedList<Object> control = new LinkedList<Object>();
-                Stack<Dump> dump = new Stack<Dump>();
-
-                //Convert to reverse polish
-                control.add(functionCall.getInitFunction());
-                for(Object object : functionCall.getArguments()) {
-                        if(object instanceof FL_FunctionCall) {
-                                printSECD("FLATTEN");
-                                control.add(((FL_FunctionCall) object).getInitFunction());
-                                for(Object o1 : ((FL_FunctionCall) object).getArguments()) {
-                                        control.add(new ApplyObj());
-
-                                        control.add(o1);
-                                }
-                        } else {
-                                control.add(object);
-                        }
-                        control.add(new ApplyObj());
-                }
-                printSECD("Initial control: ", control);
-
-                Object controlItem = null;
-
-                do {
-                        while(!control.isEmpty()) {
-                                controlItem = control.pop();
-                                printSECD("Popped: ", controlItem);
-
-                                if(controlItem instanceof ApplyObj) {
-                                        //Begin application
-                                        printSECD();
-                                        printSECD("Applying... ");
-
-                                        //Pop two items from the top of the stack
-                                        Object value = stack.pop();
-
-                                        Object potentialFunction = stack.pop();
-
-                                        FL_Function lambda = null;
-                                        if(potentialFunction instanceof FL_Function) {
-                                                lambda = (FL_Function) potentialFunction;
-                                        } else if(potentialFunction instanceof FL_FunctionCall) {
-                                                FL_FunctionCall lambdaCall = (FL_FunctionCall) potentialFunction;
-                                                lambda = (FL_Function) lambdaCall.getInitFunction();
-                                        }
-
-                                        printSECD("Value: ", value);
-                                        printSECD("Lambda: ", lambda);
-                                        printSECD("Current environment: ", environment);
-                                        printSECD("Function Call Scope: ", functionCall.getLocalScope());
-                                        printSECD("Global Scope: ", globalScope);
-
-
-                                        //Bind it properly in the current environment
-                                        //Type check
-                                        Type type = lambda.getParameter().getType();
-                                        if(!Type.isType(value, type)) {
-                                                throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName());
-                                        }
-
-                                        printSECD("Binding " + value + " to " + lambda.getParameter().getName());
-                                        environment.put(lambda.getParameter().getName(), value);
-                                        Object result = lambda.getExpression();
-
-//					printSECD("Added complete. Result: " + result.getClass().getName(), result);
-
-                                        //If the result is an abstraction, dump it
-                                        if(result instanceof FL_FunctionCall) {
-                                            //Dump
-                                                printSECD("Beginning dump...");
-                                                @SuppressWarnings("unchecked")
-                                                Dump newDump = new Dump(
-                                                  (Stack<Object>) stack.clone(),
-                                                  new LinkedList<Object>(control),
-                                                  new HashMap<String, Object>(environment)
-                                                );
-                                                dump.push(newDump);
-
-                                                stack.clear();
-                                                control.clear();
-//						environment.clear();
-
-                                                control.add(result);
-                                        } else {
-                                                //Push result on the stack
-                                                stack.push(result);
-                                        }
-                                } else {
-
-                                        //If it's a FL_Var, evaluate it
-                                        if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
-                                                //TODO: Check here - this might not be properly evaluating the inputs
-                                                printSECD("control item to evaluate: ", controlItem);
-
-                                                Evaluatable e = (Evaluatable) controlItem;
-                                                e.getLocalScope().putAll(environment);
-                                                controlItem = e;
-
-                                                //controlItem = evaluate(globalScope, controlItem);
-                                                controlItem = evaluate(new Scope(environment), controlItem);
-                                                printSECD("Evaluated control item as: ", controlItem);
-                                        }
-                                        //Otherwise, don't. Push the control item on the stack
-                                        stack.push(controlItem);
-                                        printSECD("Added control item to stack.");
-                                }
-                        }
-
-                        if(!dump.isEmpty()) {
-                                printSECD("Restoring from dump");
-                                Dump restoredDump = dump.pop();
-
-                                while(!stack.isEmpty()) {
-                                        restoredDump.stack.push(stack.pop());
-                                }
-
-                                stack = restoredDump.stack;
-                                control = restoredDump.control;
-                                environment.putAll(restoredDump.environment);
-                                printSECD("Dump restored");
-                        }
-
-                } while(!control.isEmpty() || !dump.isEmpty());
-
-                Scope newEnv = new Scope(environment);
-                newEnv.putAll(functionCall.getLocalScope());
-                printSECD("SECD ended with ", stack.peek().getClass().getSimpleName());
-                printSECD("SECD scope was ", newEnv);
-                Object result = stack.pop();
-                if(result instanceof Evaluatable) {
-                        Evaluatable e = (Evaluatable) result;
-                        e.getLocalScope().putAll(newEnv);
-                        return evaluate(newEnv, e);
-                }
-                return evaluate(newEnv, stack.pop());
-        }
-
-        public static Object evaluateOpExpr(Scope scope, FL_OpExpr flOpExpr) throws Exception {
-                System.out.println();
-                printOPEX("About to evaluate OpExpr");
-                printOPEX("Current scope: ", scope);
-                printOPEX(flOpExpr);
-
-                printOPEX("Phase 1: Flattening");
-
-                class LeftBracket { public String toString () { return "("; }}
-                class RightBracket { public String toString () { return ")"; }}
-
-                class OpFlattener {
-                        private final FL_OpExpr expr;
-
-                        public OpFlattener(FL_OpExpr expr) {
-                                this.expr = expr;
-                        }
-
-                        public LinkedList<Object> flatten() {
-                                LinkedList<Object> elements = new LinkedList<Object>();
-                                if(expr.hasBrackets()) {
-                                        elements.add(new LeftBracket());
-                                }
-
-                                if(expr.getLeftExpr() instanceof FL_OpExpr) {
-                                        elements.addAll(new OpFlattener((FL_OpExpr) expr.getLeftExpr()).flatten());
-                                } else {
-                                        elements.add(expr.getLeftExpr());
-                                }
-
-                                elements.add(expr.getOperator());
-
-                                if(expr.getRightExpr() instanceof FL_OpExpr) {
-                                        elements.addAll(new OpFlattener((FL_OpExpr) expr.getRightExpr()).flatten());
-                                } else {
-                                        elements.add(expr.getRightExpr());
-                                }
-
-                                if(expr.hasBrackets()) {
-                                        elements.add(new RightBracket());
-                                }
-                                return elements;
-                        }
-                }
-
-                class Op {
-                        private Token token;
-
-                        public Op(Object token) {
-                                this.token = (Token) token;
-                        }
-
-                        public int precedence() {
-                                switch(token.image) {
-                                        case ".": return 10;
-                                        case "?": return 9;
-                                        case "++": return 8;
-                                        case "*":
-                                        case "%":
-                                        case "/": return 7;
-                                        case "+":
-                                        case "-": return 6;
-                                        case "/+":
-                                        case "/-":
-                                        case "//": return 5;
-                                        case "<":
-                                        case "<=":
-                                        case ">":
-                                        case ">=": return 4;
-                                        case "==":
-                                        case "!=": return 3;
-                                        case "&&":
-                                        case "||": return 2;
-                                }
-                                return 0;
-                        }
-
-                        public boolean rightAssociative(Object other) {
-                                switch(token.image) {
-                                        case ".":
-                                                return token.image.equals(((Token) other).image);
-                                }
-                                return false;
-                        }
-                }
-
-                //Flatten the elements of OpExpr into a linked list for evaluation
-                LinkedList<Object> elements = new OpFlattener(flOpExpr).flatten();
-                printOPEX("\u005ct\u005ctFlattened: ", elements);
-
-                printOPEX("Phase 2: Shunting-yard");
-
-                Stack<Object> stack = new Stack<Object>();
-                LinkedList<Object> output = new LinkedList<Object>();
-                while(!elements.isEmpty()) {
-                        Object element = elements.pop();
-                        if(element instanceof Token) {
-                                while(
-                                        !stack.isEmpty() &&
-                                        stack.peek() instanceof Token &&
-                                        (
-                                          new Op(stack.peek()).precedence() > new Op(element).precedence()
-                                          || new Op(stack.peek()).rightAssociative(element)
-                                        )
-                                ) {
-                                        output.add(stack.pop());
-                                }
-
-                                stack.push(element);
-                        } else if(element instanceof LeftBracket) {
-                                stack.push(element);
-                        } else if(element instanceof RightBracket) {
-                                while(!(stack.peek() instanceof LeftBracket)) {
-                                        output.add(stack.pop());
-                                }
-                                stack.pop();
-                        } else { //It's a "number"
-                                output.add(element);
-                        }
-                }
-                while(!stack.isEmpty()) {
-                        output.add(stack.pop());
-                }
-
-                printOPEX("\u005ct\u005ctFinished Shunting Yard: ", output);
-                printOPEX("Phase 3: Evaluation");
-
-                Stack<Object> evalStack = new Stack<Object>();
-                while(!output.isEmpty()) {
-                        evalStack.push(output.pop());
-                        if(evalStack.peek() instanceof Token) {
-                                Token operator = (Token) evalStack.pop();
-                                Object secondExpr = evalStack.pop();
-                                Object firstExpr = evalStack.pop();
-
-                                printOPEX("Applying the " + operator.image + " operator");
-                                Object result = new OperatorParser(operator, scope).apply(firstExpr, secondExpr);
-                                evalStack.push(result);
-                        }
-                }
-
-                Object result = evalStack.pop();
-                printOPEX("\u005ct\u005ctFinished evaluation: ", result);
-
-                if(result instanceof Evaluatable) {
-                        return evaluate(scope, result);
-                } else {
-                        return result;
-                }
-        }
-
-        /**
-	 * Main evaluation method. Evaluates an expression given a
-	 * "scope", which is an FL_Set. An FL_Set is used as opposed
-	 * to a regular HashMap (for example) because an FL_Set contains
-	 * information about the current purity of the scope. This is
-	 * thus used to check for purity in evaluation which cannot be
-	 * determined during the parse phase.
-	 */
-        public static Object evaluate(Scope scope, Object expression) throws Exception {
-                scope = scope.copy();
-                if(expression instanceof Evaluatable) {
-                        printEVAL("Evaluating " + expression + " (" + expression.getClass().getSimpleName() + "), scope:", ((Evaluatable) expression).getLocalScope());
-
-                        if(expression instanceof FL_Builtin) {
-                                FL_Builtin builtin = (FL_Builtin) expression;
-
-//				return builtin.getParameter();
-                                printEVAL("About to process builtin");
-                                printEVAL(builtin.getParameter().getClass().getName());
-//				printEVAL(scope);
-                                printEVAL(builtin.getParameter());
-                                printEVAL("Builtin scope: ", builtin.getLocalScope());
-//				System.exit(0);
-
-                                Object builtinParam = evaluate(scope, builtin.getParameter());
-                                switch(builtin.getType()) {
-                                        case IMPORT:
-                                                File file = new File(((FL_String) builtinParam).stringValue());
-                                                return new ForteLang(new FileInputStream(file)).input();
-                                        case PRINT:
-                                                System.out.println(((FL_String) builtinParam).stringValue());
-                                                return builtinParam;
-                                        case EXEC:
-                                                break;
-                                        case HEAD:
-                                                if(!(builtinParam instanceof LinkedList)) {
-                                                        throw new EvaluationException("head function requires a list as a parameter");
-                                                } else {
-                                                        LinkedList list = ((LinkedList) builtinParam);
-                                                        if(list.isEmpty()) {
-                                                                throw new EvaluationException("List is empty, cannot retrieve the head of the list");
-                                                        }
-                                                        return evaluate(scope, list.getFirst());
-                                                }
-                                        case TAIL:
-                                                if(!(builtinParam instanceof LinkedList)) {
-                                                        throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());
-                                                } else {
-                                                        LinkedList list = ((LinkedList) builtinParam);
-                                                        if(list.isEmpty()) {
-                                                                throw new EvaluationException("List is empty, cannot retrieve the tail of the list");
-                                                        }
-                                                        Evaluatable result = null;
-                                                        if(builtinParam instanceof FL_List) {
-                                                                result = new FL_List(list.subList(1, list.size()));
-                                                        } else if(builtinParam instanceof FL_String) {
-                                                                result = new FL_String(list.subList(1, list.size()));
-                                                        }
-                                                        return result;
-
-                                                }
-                                        case INPUT:
-                                                if(!(builtinParam instanceof FL_String)) {
-                                                        throw new EvaluationException("Expected a string for input");
-                                                }
-                                                System.out.println("[@input] " + ((FL_String) builtinParam).stringValue());
-                                                System.out.print("@input> ");
-                                                return getGlobalScanner().nextLine();
-                                        case INPUTBOX:
-                                                if(!(builtinParam instanceof FL_String)) {
-                                                        throw new EvaluationException("Expected a string for inputbox");
-                                                }
-                                                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                                                String inputBox = JOptionPane.showInputDialog(null, ((FL_String) builtinParam).stringValue(), "ForteLang @inputbox", -1);
-                                                return (inputBox == null ? "" : inputBox);
-                                }
-
-                        } else if(expression instanceof FL_Function) {
-                                FL_Function function = (FL_Function) expression;
-                                FL_FunctionCall newFunctionCall = new FL_FunctionCall();
-                                newFunctionCall.setInitFunction(function);
-
-                                return newFunctionCall;
-                        } else
-                        if(expression instanceof FL_FunctionCall) {
-                                printEVAL();
-                                FL_FunctionCall call = (FL_FunctionCall) expression;
-
-                                if(!(call.getInitFunction() instanceof FL_Function)) {
-                                        // It's a function name, which needs to be resolved
-                                        FL_Var functionName = (FL_Var) call.getInitFunction();
-                                        Object function = scope.get(functionName.getName());
-
-                                        if(function == null) {
-                                                throw new Exception("Function \u005c"" + functionName.getName() + "\u005c" has not been declared!");
-                                        } else {
-                                                if(function instanceof FL_FunctionCall) {
-                                                        printEVAL("Adding " + functionName + " to FunctionCall's scope");
-                                                        call.getLocalScope().put(functionName.getName(), function);
-//						  	printEVAL("Merging other scopes");
-//						  	call.getLocalScope().putAll(scope);
-//						  	printEVAL("Resultant scope: ", call.getLocalScope());
-                                                        call.setInitFunction(((FL_FunctionCall) function).getInitFunction());
-                                                } else {
-                                                        printEVAL("Reading from closure... ", function.getClass().getName());
-                                                }
-                                        }
-                                }
-
-                                if(call.getArguments().isEmpty()) {
-//				  	System.out.println("Evaluating because arguments are empty...");
-                                        return evaluate(scope, call.getInitFunction());
-                                }
-
-
-                                if(call.getInitFunction() instanceof FL_Function) {
-                                        printEVAL("About to evaluate the following: ");
-                                        printEVAL(call.getInitFunction());
-
-
-                                        return secd(call, scope);
-
-                                } else {
-                                        printEVAL("Avoiding the SECD machine, because of type ", call.getInitFunction().getClass().getName());
-                                        if(call.getInitFunction() instanceof Evaluatable) {
-                                                return evaluate(scope, call.getInitFunction());
-                                        } else {
-                                                return call.getInitFunction();
-                                        }
-                                }
-
-                        } else if(expression instanceof FL_Guards) {
-                                FL_Guards guards = (FL_Guards) expression;
-                                for(Object guardExpr : guards.getStatements().keySet()) {
-                                        Object result = evaluate(scope, guardExpr);
-                                        if(result instanceof Boolean) {
-                                                boolean resultBool = (boolean) result;
-                                                if(!resultBool) {
-                                                        continue;
-                                                } else {
-                                                        return evaluate(scope, guards.getStatements().get(guardExpr));
-                                                }
-                                        } else {
-                                                throw new Exception(result + " is not a valid Boolean object in guard expression!");
-                                        }
-                                }
-                                return evaluate(scope, guards.getFinalStatement());
-                        } else if(expression instanceof FL_Match) {
-                                FL_Match match = (FL_Match) expression;
-
-                                Object matchOn = evaluate(scope, match.getMatchOn());
-                                Object statement = match.getFinalStatement();
-
-                                for(Object matchExpr : match.getStatements().keySet()) {
-                                        Object result = evaluate(scope, matchExpr);
-
-                                        if(result instanceof Pattern && matchOn instanceof FL_String) {
-                                                Pattern pattern = (Pattern) result;
-                                                if(pattern.matcher(((FL_String) matchOn).stringValue()).matches()) {
-                                                        statement = match.getStatements().get(matchExpr);
-                                                        break;
-                                                }
-                                        } else if(matchOn.equals(result)) {
-                                                statement = match.getStatements().get(matchExpr);
-                                                break;
-                                        }
-                                }
-                                if(statement instanceof Evaluatable) {
-                                        Evaluatable e = (Evaluatable) statement;
-                                        e.getLocalScope().putAll(scope);
-                                        return evaluate(scope, e);
-                                }
-                                return evaluate(scope, statement);
-                        } else if(expression instanceof FL_Var) {
-                                FL_Var flVar = (FL_Var) expression;
-                                Object var = scope.get(flVar.getName());
-                                while(var instanceof FL_Var) {
-                                        var = scope.get(((FL_Var) var).getName());
-                                }
-                                if(var == null) {
-                                        throw new Exception("Could not find function \u005c"" + flVar.getName() + "\u005c" in the program!");
-                                }
-                                if(var instanceof FL_Function) {
-                                        printEVAL("\u005c"" + flVar.getName() + "\u005c" evaluates to a lambda, therefore not resolving");
-                                        return var;
-                                } else {
-                                        printEVAL("Resolving: " + flVar.getName() + " => ", var);
-                                        return evaluate(scope, var);
-                                }
-                        } else if(expression instanceof FL_OpExpr) {
-                                return evaluateOpExpr(scope, (FL_OpExpr) expression);
-                        } else if(expression instanceof FL_List) {
-                                FL_List list = (FL_List) expression;
-                                ListIterator<Object> iterator = list.listIterator(0);
-                                while(iterator.hasNext()) {
-                                        Object expr = iterator.next();
-                                        iterator.set(evaluate(scope, expr));
-                                }
-                                return list;
-                        } else if(expression instanceof FL_Set) {
-                                return expression;
-                        } else if(expression instanceof FL_IncludedSet) {
-                                FL_IncludedSet incSet = (FL_IncludedSet) expression;
-                                scope.putAll(incSet.getFLSet());
-                                return evaluate(scope, incSet.getExpression());
-                        } else if(expression instanceof FL_String) {
-                                return expression;
-                        }
-                        throw new Exception("Not implemented yet, could not evaluate: " + expression);
-                } else {
-                  return expression;
-                }
         }
 
 /** Main endpoint */
@@ -950,12 +145,15 @@ public class ForteLang implements ForteLangConstants {
         }
 
     Object result = null;
-    if(expression instanceof FL_IncludedSet) {
-        FL_IncludedSet flIS = (FL_IncludedSet) expression;
-        result = evaluate(new Scope(flIS.getFLSet()), flIS.getExpression());
-    } else {
-                result = evaluate(new Scope(), expression);
-    }
+
+        result = Evaluator.evaluate(new Closure(new Scope(), expression));
+
+//    if(expression instanceof FL_IncludedSet) {
+//    	FL_IncludedSet flIS = (FL_IncludedSet) expression;
+//    	result = evaluate(new Scope(flIS.getFLSet()), flIS.getExpression());
+//    } else {
+//		result = evaluate(new Scope(), expression);
+//    }
 
     {if (true) return result;}
     throw new Error("Missing return statement in function");
@@ -1093,7 +291,6 @@ public class ForteLang implements ForteLangConstants {
                   set.put(attrName.image, attrValue);
     }
     jj_consume_token(CLOSECBRACKET);
-          //	  set.checkPurity(setDeclaration);
           {if (true) return set;}
     throw new Error("Missing return statement in function");
   }
@@ -1218,7 +415,7 @@ public class ForteLang implements ForteLangConstants {
                                                  Object result; Token vName;
     if (jj_2_2(3)) {
       result = opExpression(false);
-                                      {if (true) return result;}
+                                       {if (true) return result;}
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case OPENBRACKET:
@@ -1540,8 +737,203 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
+  private boolean jj_3R_48() {
+    if (jj_scan_token(PRINT)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_55() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(35)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(36)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(37)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(38)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(39)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(40)) return true;
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_31() {
+    if (jj_scan_token(SELECT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_36() {
+    if (jj_scan_token(OPENSBRACKET)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_43()) {
+    jj_scanpos = xsp;
+    if (jj_3R_44()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_30() {
+    if (jj_scan_token(CONTAINS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_29() {
+    if (jj_scan_token(CONCAT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_28() {
+    if (jj_scan_token(COMPARATOR_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_27() {
+    if (jj_scan_token(SET_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_26() {
+    if (jj_scan_token(OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_33() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_scan_token(VAR_NAME)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_54()) jj_scanpos = xsp;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_10() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_25()) {
+    jj_scanpos = xsp;
+    if (jj_3R_26()) {
+    jj_scanpos = xsp;
+    if (jj_3R_27()) {
+    jj_scanpos = xsp;
+    if (jj_3R_28()) {
+    jj_scanpos = xsp;
+    if (jj_3R_29()) {
+    jj_scanpos = xsp;
+    if (jj_3R_30()) {
+    jj_scanpos = xsp;
+    if (jj_3R_31()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_25() {
+    if (jj_scan_token(BOOLEAN_OP)) return true;
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_32() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_41()) jj_scanpos = xsp;
+    if (jj_scan_token(FUNCTION_ARROW)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_6()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(42)) return true;
+    }
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_7()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_33()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_3R_10()) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_13() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_3R_7()) return true;
+    if (jj_scan_token(CLOSEBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3_9() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_7() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_4()) {
+    jj_scanpos = xsp;
+    if (jj_3R_13()) return true;
+    }
+    xsp = jj_scanpos;
+    if (jj_3_5()) jj_scanpos = xsp;
+    return false;
+  }
+
   private boolean jj_3R_24() {
     if (jj_3R_40()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_42() {
+    if (jj_scan_token(VAR_NAME)) return true;
+    if (jj_scan_token(EQUALS)) return true;
     return false;
   }
 
@@ -1582,12 +974,6 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_42() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    if (jj_scan_token(EQUALS)) return true;
-    return false;
-  }
-
   private boolean jj_3R_18() {
     if (jj_3R_37()) return true;
     return false;
@@ -1605,6 +991,17 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_15() {
     if (jj_3R_11()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_34() {
+    if (jj_scan_token(OPENCBRACKET)) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_42()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(CLOSECBRACKET)) return true;
     return false;
   }
 
@@ -1658,20 +1055,15 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_34() {
-    if (jj_scan_token(OPENCBRACKET)) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_42()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(CLOSECBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3_8() {
     if (jj_scan_token(GUARD)) return true;
     if (jj_3R_6()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    if (jj_scan_token(INCLUDE)) return true;
+    if (jj_3R_34()) return true;
     return false;
   }
 
@@ -1681,9 +1073,8 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
-  private boolean jj_3R_35() {
-    if (jj_scan_token(INCLUDE)) return true;
-    if (jj_3R_34()) return true;
+  private boolean jj_3R_54() {
+    if (jj_scan_token(COLON)) return true;
     return false;
   }
 
@@ -1699,11 +1090,6 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3_2() {
     if (jj_3R_7()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_54() {
-    if (jj_scan_token(COLON)) return true;
     return false;
   }
 
@@ -1738,6 +1124,12 @@ public class ForteLang implements ForteLangConstants {
     return false;
   }
 
+  private boolean jj_3R_41() {
+    if (jj_scan_token(COLON)) return true;
+    if (jj_3R_55()) return true;
+    return false;
+  }
+
   private boolean jj_3_1() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_6()) return true;
@@ -1747,12 +1139,6 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3R_53() {
     if (jj_scan_token(INPUTBOX)) return true;
     if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_41() {
-    if (jj_scan_token(COLON)) return true;
-    if (jj_3R_55()) return true;
     return false;
   }
 
@@ -1824,195 +1210,6 @@ public class ForteLang implements ForteLangConstants {
     }
     }
     }
-    return false;
-  }
-
-  private boolean jj_3R_48() {
-    if (jj_scan_token(PRINT)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3_7() {
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_36() {
-    if (jj_scan_token(OPENSBRACKET)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_43()) {
-    jj_scanpos = xsp;
-    if (jj_3R_44()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_55() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(35)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(36)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(37)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(38)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(39)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(40)) return true;
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_31() {
-    if (jj_scan_token(SELECT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_30() {
-    if (jj_scan_token(CONTAINS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_29() {
-    if (jj_scan_token(CONCAT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_33() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_scan_token(VAR_NAME)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_54()) jj_scanpos = xsp;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_28() {
-    if (jj_scan_token(COMPARATOR_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_27() {
-    if (jj_scan_token(SET_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_26() {
-    if (jj_scan_token(OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_10() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_25()) {
-    jj_scanpos = xsp;
-    if (jj_3R_26()) {
-    jj_scanpos = xsp;
-    if (jj_3R_27()) {
-    jj_scanpos = xsp;
-    if (jj_3R_28()) {
-    jj_scanpos = xsp;
-    if (jj_3R_29()) {
-    jj_scanpos = xsp;
-    if (jj_3R_30()) {
-    jj_scanpos = xsp;
-    if (jj_3R_31()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_25() {
-    if (jj_scan_token(BOOLEAN_OP)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_32() {
-    if (jj_scan_token(VAR_NAME)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_41()) jj_scanpos = xsp;
-    if (jj_scan_token(FUNCTION_ARROW)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_8() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_6()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(42)) return true;
-    }
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_7()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_33()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_5() {
-    if (jj_3R_10()) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_13() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_3R_7()) return true;
-    if (jj_scan_token(CLOSEBRACKET)) return true;
-    return false;
-  }
-
-  private boolean jj_3_9() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_6()) return true;
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_7() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_4()) {
-    jj_scanpos = xsp;
-    if (jj_3R_13()) return true;
-    }
-    xsp = jj_scanpos;
-    if (jj_3_5()) jj_scanpos = xsp;
     return false;
   }
 

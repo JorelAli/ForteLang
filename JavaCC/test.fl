@@ -43,7 +43,11 @@ include {
 
     x = 2;
 
-} in a 2 ## (x -> x) x
+} in [1, 2, 3, false, (x -> x)]
+
+##|> | 2 == 2 ->> 2 | ->> 4 
+
+## (x -> x) x
 
 ##replaceWithOnes [0, 0, 0]
 

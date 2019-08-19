@@ -138,7 +138,7 @@ public class SECD {
 						controlItem = e;
 					  	
 						//controlItem = evaluate(globalScope, controlItem);
-						controlItem = evaluate(new Scope(environment), controlItem);
+						controlItem = Evaluator.evaluate(new Closure(new Scope(environment), controlItem));
 						Print.SECD("Evaluated control item as: ", controlItem);
 					}
 					//Otherwise, don't. Push the control item on the stack
@@ -169,9 +169,9 @@ public class SECD {
 		Object result = stack.pop();
 		if(result instanceof Evaluatable) {
 			Evaluatable e = (Evaluatable) result;
-			return ForteLang.evaluate(newEnv, e);
+			return Evaluator.evaluate(new Closure(newEnv, e));
 		}
-		return Evaluator.evaluate(newEnv, stack.pop());
+		return Evaluator.evaluate(new Closure(newEnv, stack.pop()));
 	}
 
 }

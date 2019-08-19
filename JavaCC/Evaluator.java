@@ -1,9 +1,14 @@
 import java.util.LinkedList;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 public class Evaluator {
 	
 	public static Object evaluate(Closure closure) throws Exception {
+		
+		if(!(closure.getExpression() instanceof Evaluatable)) {
+			return closure.getExpression();
+		}
 				
 		if(closure.getExpression() instanceof FL_Builtin) {
 			
@@ -12,7 +17,8 @@ public class Evaluator {
 		} else if(closure.getExpression() instanceof FL_FunctionCall) {
 			
 		} else if(closure.getExpression() instanceof FL_Guards) {
-			
+			FL_Guards guards = (FL_Guards) closure.getExpression();
+			return evaluateGuards(guards, closure.getScope());
 		} else if(closure.getExpression() instanceof FL_IncludedSet) {
 			//Construct a new closure containing all of the stuff from the 
 			//current closure's scope and the stuff in the included set
@@ -26,23 +32,65 @@ public class Evaluator {
 			return evaluate(newClosure);
 			
 		} else if(closure.getExpression() instanceof FL_List) {
-			
+			return closure.getExpression(); //TODO: Actually need to keep the closure though
 		} else if(closure.getExpression() instanceof FL_Match) {
-			
+			FL_Match match = (FL_Match) closure.getExpression();
+			return evaluateMatch(match, closure.getScope());
 		} else if(closure.getExpression() instanceof FL_OpExpr) {
 			
 		} else if(closure.getExpression() instanceof FL_Set) {
-			//No processing needed
-			
+			return closure.getExpression(); //TODO: Actually need to keep the closure though
 		} else if(closure.getExpression() instanceof FL_String) {
-			
+			return closure.getExpression();
 		} else if(closure.getExpression() instanceof FL_TypedParam) {
 			
 		} else if(closure.getExpression() instanceof FL_Var) {
 			
 		}
 		
+		System.out.println(closure.getExpression() + " (" + closure.getExpression().getClass().getSimpleName() + ")");
+		
 		return null;
+	}
+	
+	private static Object evaluateGuards(FL_Guards guards, Scope closureScope) throws Exception {
+		Object statement = guards.getFinalStatement();
+		for(Object guardExpr : guards.getStatements().keySet()) {
+			Object predicate = evaluate(new Closure(closureScope, guardExpr));
+			if(predicate instanceof Boolean) {
+				if((boolean) predicate) {
+					statement = guards.getStatements().get(guardExpr);
+					break;
+				}
+			} else {
+				throw new Exception(predicate + " is not a valid Boolean object in guard expression!");
+			}
+		}
+		return evaluate(new Closure(closureScope, statement));
+	}
+	
+	private static Object evaluateMatch(FL_Match match, Scope closureScope) throws Exception {
+		//Thing we're matching, e.g. `x` in `match x`
+		Object matchOn = evaluate(new Closure(closureScope, match.getMatchOn()));
+		Object statement = match.getFinalStatement();
+
+		for(Object matchExpr : match.getStatements().keySet()) {
+			// | result ->> statement
+			Object result = evaluate(new Closure(closureScope, matchExpr));
+
+			if(result instanceof Pattern && matchOn instanceof FL_String) {
+				Pattern pattern = (Pattern) result;
+				String matchOnString = ((FL_String) matchOn).stringValue();
+				if(pattern.matcher(matchOnString).matches()) {
+					statement = match.getStatements().get(matchExpr);
+					break;
+				}
+			} else if(matchOn.equals(result)) {
+				statement = match.getStatements().get(matchExpr);
+				break;
+			}
+		}
+		return evaluate(new Closure(closureScope, statement));
 	}
 	
 	/**
@@ -258,10 +306,10 @@ public class Evaluator {
 //	  	  return expression;
 //	  	}
 //	}
-	class LeftBracket { public String toString () { return "("; }}
-	class RightBracket { public String toString () { return ")"; }}
+	static class LeftBracket { public String toString () { return "("; }}
+	static class RightBracket { public String toString () { return ")"; }}
 
-	class OpFlattener {
+	static class OpFlattener {
 		private final FL_OpExpr expr;
 
 		public OpFlattener(FL_OpExpr expr) {
@@ -295,7 +343,7 @@ public class Evaluator {
 		}
 	}
 
-	class Op {
+	static class Op {
 		private Token token;
 	  
 		public Op(Object token) {
@@ -395,7 +443,7 @@ public class Evaluator {
 				Object firstExpr = evalStack.pop();
 
 				Print.OPEX("Applying the " + operator.image + " operator");
-				Object result = new OperatorParser(operator).apply(firstExpr, secondExpr);
+				Object result = null; //TODO: new OperatorParser(operator).apply(firstExpr, secondExpr);
 				evalStack.push(result);
 			}
 		}

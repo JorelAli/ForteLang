@@ -87,46 +87,46 @@ public class OperatorParser {
 	}
 
 	public Object applySelect(Object o1, Object o2) throws Exception {
-
-		Print.EVAL("EvalOpExpr left part", o1);
-		o1 = evaluate(scope, o1);
-
-		if (o1 instanceof FL_Set) {
-			FL_Set set = (FL_Set) o1;
-			if (o2 instanceof FL_String) {
-				Object result = set.get(((FL_String) o2).stringValue());
-				if (result == null) {
-					throw new Exception("Cannot find element \"" + o2 + "\" in set containing " + set.keySet());
-				} else {
-					return result;
-				}
-			} else if (o2 instanceof FL_FunctionCall) {
-				FL_FunctionCall func = (FL_FunctionCall) o2;
-				if (func.getInitFunction() instanceof FL_Var) {
-					FL_Var var = (FL_Var) func.getInitFunction();
-					Object result = set.get(var.getName());
-					if (result == null) {
-						throw new Exception(
-								"Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
-					} else {
-						return result;
-					}
-				} else {
-					if (func.getInitFunction() instanceof Evaluatable) {
-						return applySelect(o1, Evaluator.evaluate(scope, func));
-					} else {
-						throw new Exception(
-								"Cannot select from a set using a " + func.getInitFunction().getClass().getName());
-					}
-				}
-			} else if (o2 instanceof Evaluatable) {
-				return applySelect(o1, Evaluator.evaluate(scope, o2));
-			} else {
-				throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
-			}
-		} else {
-			throw new Exception("Cannot select from an object that's not a set");
-		}
+		return null;
+//		Print.EVAL("EvalOpExpr left part", o1);
+//		o1 = evaluate(scope, o1);
+//
+//		if (o1 instanceof FL_Set) {
+//			FL_Set set = (FL_Set) o1;
+//			if (o2 instanceof FL_String) {
+//				Object result = set.get(((FL_String) o2).stringValue());
+//				if (result == null) {
+//					throw new Exception("Cannot find element \"" + o2 + "\" in set containing " + set.keySet());
+//				} else {
+//					return result;
+//				}
+//			} else if (o2 instanceof FL_FunctionCall) {
+//				FL_FunctionCall func = (FL_FunctionCall) o2;
+//				if (func.getInitFunction() instanceof FL_Var) {
+//					FL_Var var = (FL_Var) func.getInitFunction();
+//					Object result = set.get(var.getName());
+//					if (result == null) {
+//						throw new Exception(
+//								"Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
+//					} else {
+//						return result;
+//					}
+//				} else {
+//					if (func.getInitFunction() instanceof Evaluatable) {
+//						return applySelect(o1, Evaluator.evaluate(new Closure(scope, func)));
+//					} else {
+//						throw new Exception(
+//								"Cannot select from a set using a " + func.getInitFunction().getClass().getName());
+//					}
+//				}
+//			} else if (o2 instanceof Evaluatable) {
+//				return applySelect(o1, Evaluator.evaluate(new Closure(scope, o2)));
+//			} else {
+//				throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
+//			}
+//		} else {
+//			throw new Exception("Cannot select from an object that's not a set");
+//		}
 	}
 
 	public Object applyContains(Object o1, Object o2) throws Exception {
@@ -161,29 +161,29 @@ public class OperatorParser {
 	}
 
 	public boolean applyComparator(Object o1, Object o2) throws Exception {
-		switch (op) {
-		case ">":
-			return ((BigDecimal) o1).compareTo((BigDecimal) o2) > 0;
-		case "<":
-			return ((BigDecimal) o1).compareTo((BigDecimal) o2) < 0;
-		case "<=":
-			return ((BigDecimal) o1).compareTo((BigDecimal) o2) <= 0;
-		case ">=":
-			return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
-		case "==":
-			System.out.println("Comparing " + o1 + " to " + o2);
-			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
-				Evaluatable e1 = (Evaluatable) o1;
-				return e1.equalsWithScope(o2, scope);
-			}
-			return o1.equals(o2);
-		case "!=":
-			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
-				Evaluatable e1 = (Evaluatable) o1;
-				return !e1.equalsWithScope(o2, scope);
-			}
-			return !o1.equals(o2);
-		}
+//		switch (op) {
+//		case ">":
+//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) > 0;
+//		case "<":
+//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) < 0;
+//		case "<=":
+//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) <= 0;
+//		case ">=":
+//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
+//		case "==":
+//			System.out.println("Comparing " + o1 + " to " + o2);
+//			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
+//				Evaluatable e1 = (Evaluatable) o1;
+//				return e1.equalsWithScope(o2, scope);
+//			}
+//			return o1.equals(o2);
+//		case "!=":
+//			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
+//				Evaluatable e1 = (Evaluatable) o1;
+//				return !e1.equalsWithScope(o2, scope);
+//			}
+//			return !o1.equals(o2);
+//		}
 		throw new Exception("Invalid operator (expected comparator operator");
 	}
 

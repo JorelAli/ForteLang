@@ -1,5 +1,5 @@
 include {
-    ##| Returns the number 2
+    #[##| Returns the number 2
     two = 2;
 
     ##| Checks whether an input String is a number
@@ -30,11 +30,12 @@ include {
     someInnerFunc = f:func -> f;
 
     add = x -> y -> x + y;
-
+    ]#
+    
     factorial = i:num -> match i
         | 1 ->> 1
         | ->> i * (factorial (i - 1));
-
+    #[
     replaceWithOnes = l:list -> match l
         | [] ->> []
         | ->> [1] ++ replaceWithOnes (tail l);
@@ -46,8 +47,8 @@ include {
     something = include {
         test = 2;
     } in 5;
-
-} in something + 5
+    ]#
+} in factorial 5
 
 #[include { x = 5;
 } in [x + x] ++ []]#

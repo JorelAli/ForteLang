@@ -15,7 +15,11 @@ public class Evaluator {
 		if(closure.getExpression() instanceof FL_Builtin) {
 			
 		} else if(closure.getExpression() instanceof FL_Function) {
-			
+		  	FL_Function function = (FL_Function) closure.getExpression();
+		  	FL_FunctionCall newFunctionCall = new FL_FunctionCall();
+		  	newFunctionCall.setInitFunction(function);
+		  	return newFunctionCall;
+//			return new Closure(new Scope(closure.getScope()), newFunctionCall);
 		} else if(closure.getExpression() instanceof FL_FunctionCall) {
 			Print.EVAL(closure.getScope());
 			return new SECD(closure).runSECD();
@@ -51,7 +55,7 @@ public class Evaluator {
 		} else if(closure.getExpression() instanceof FL_String) {
 			return closure.getExpression();
 		} else if(closure.getExpression() instanceof FL_TypedParam) {
-			
+			throw new Exception("Wat? You can't evaluate a TypedParam");
 		} else if(closure.getExpression() instanceof FL_Var) {
 			//Resolves an FL_Var into whatever it is defined as in the current closure.
 			//Since FL_TypedParam exists, FL_Var is therefore ALWAYS going to be a

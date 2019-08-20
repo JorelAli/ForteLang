@@ -40,7 +40,7 @@ public class SECD {
 		
 		//Initialize stack, environment, control & dump
 	  	Stack<Object> stack        = new Stack<Object>();
-	  	Scope environment          = new Scope();
+	  	Scope environment          = closureScope;//new Scope();
 	  	LinkedList<Object> control = new LinkedList<Object>();
 	  	Stack<Dump> dump           = new Stack<Dump>();
 
@@ -78,7 +78,8 @@ public class SECD {
 					Object value = stack.pop();
 
 					Object potentialFunction = stack.pop();
-					
+					Print.SECD("PotFunc: " + potentialFunction);
+
 					FL_Function lambda = null;
 					if(potentialFunction instanceof FL_Function) {
 						lambda = (FL_Function) potentialFunction;

@@ -40,7 +40,7 @@ public class SECD {
 		
 		//Initialize stack, environment, control & dump
 	  	Stack<Object> stack        = new Stack<Object>();
-	  	Scope environment          = closureScope;//new Scope();
+	  	Scope environment          = closureScope;
 	  	LinkedList<Object> control = new LinkedList<Object>();
 	  	Stack<Dump> dump           = new Stack<Dump>();
 
@@ -131,7 +131,6 @@ public class SECD {
 				  	
 					//If it's a FL_Var, evaluate it
 					if(controlItem instanceof Evaluatable && !(controlItem instanceof FL_Function)) {
-					  	//TODO: Check here - this might not be properly evaluating the inputs
 					  	Print.SECD("control item to evaluate: ", controlItem);
 
 						Evaluatable e = (Evaluatable) controlItem;

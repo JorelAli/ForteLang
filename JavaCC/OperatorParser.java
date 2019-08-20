@@ -132,7 +132,7 @@ public class OperatorParser {
 	public Object applyContains(Object o1, Object o2) throws Exception {
 		if (o1 instanceof FL_List) {
 			FL_List l1 = (FL_List) o1;
-			return l1.contains(o2); // TODO: Fix this
+			return l1.contains(o2); 
 		} else if (o1 instanceof FL_String) {
 			FL_String s1 = (FL_String) o1;
 			if (o2 instanceof FL_String) {

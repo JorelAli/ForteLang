@@ -23,7 +23,7 @@ public class FL_FunctionCall implements Evaluatable {
 	@Override
 	public String toString() {
 		if(initFunction instanceof FL_Var) {
-			return ((FL_Var) initFunction).getName();
+			return ((FL_Var) initFunction).getName() + " and " + arguments.size() + " argument" + (arguments.size() == 1 ? "" : "s") + ")";
 		} else if(initFunction instanceof FL_Function) {
 			FL_Function func = (FL_Function) initFunction;
 			if(arguments.size() == 0) {

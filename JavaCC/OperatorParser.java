@@ -162,29 +162,29 @@ public class OperatorParser {
 	}
 
 	public boolean applyComparator(Object o1, Object o2) throws Exception {
-//		switch (op) {
-//		case ">":
-//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) > 0;
-//		case "<":
-//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) < 0;
-//		case "<=":
-//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) <= 0;
-//		case ">=":
-//			return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
-//		case "==":
+		switch (op) {
+		case ">":
+			return ((BigDecimal) o1).compareTo((BigDecimal) o2) > 0;
+		case "<":
+			return ((BigDecimal) o1).compareTo((BigDecimal) o2) < 0;
+		case "<=":
+			return ((BigDecimal) o1).compareTo((BigDecimal) o2) <= 0;
+		case ">=":
+			return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
+		case "==":
 //			System.out.println("Comparing " + o1 + " to " + o2);
 //			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
 //				Evaluatable e1 = (Evaluatable) o1;
 //				return e1.equalsWithScope(o2, scope);
 //			}
-//			return o1.equals(o2);
-//		case "!=":
+			return o1.equals(o2);
+		case "!=":
 //			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
 //				Evaluatable e1 = (Evaluatable) o1;
 //				return !e1.equalsWithScope(o2, scope);
 //			}
-//			return !o1.equals(o2);
-//		}
+			return !o1.equals(o2);
+		}
 		throw new Exception("Invalid operator (expected comparator operator");
 	}
 

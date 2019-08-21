@@ -207,9 +207,9 @@ public class Evaluator {
 			} else {
 				elements.add(expr.getLeftExpr());
 			}
-
+			
 			elements.add(expr.getOperator());
-
+			
 			if(expr.getRightExpr() instanceof FL_OpExpr) {
 				elements.addAll(new OpFlattener((FL_OpExpr) expr.getRightExpr()).flatten());
 			} else {

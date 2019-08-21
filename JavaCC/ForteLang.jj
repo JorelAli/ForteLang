@@ -231,7 +231,7 @@ SKIP : { "\n" | "\r" | " " | "\t" }
 Object input() throws Exception : { Object expression = null; Token eof; } {
 	try { 
 		expression = enclosedExpression()
-	} catch(ParseException e) { Exceptions.EMPTY_PROGRAM(location(e.currentToken)); }
+	} catch(ParseException e) { /*Exceptions.EMPTY_PROGRAM(location(e.currentToken));*/ }
 	<EOF>
 	
 	{
@@ -240,6 +240,8 @@ Object input() throws Exception : { Object expression = null; Token eof; } {
 			System.out.println("=== Parsing complete ===");
 			System.out.println();
 		}
+
+		System.out.println("Program to evaluate: " + expression);
 	
 	    Object result = null;
 	
@@ -365,7 +367,8 @@ FL_List list() throws Exception : { FL_List list; Object nextItem; } {
 		nextItem = enclosedExpression()
 		{ list.add(nextItem); }
 		
-		(LOOKAHEAD(2) <COMMA>
+		(
+		    <COMMA>
 			nextItem = enclosedExpression()
 			{ list.add(nextItem); }
 		)*
@@ -380,15 +383,17 @@ BigDecimal number() throws Exception : { Token value; } {
 }
 
 /** Expressions */
-Object enclosedExpression() throws Exception : { Object result; Token vName;  } {
+Object enclosedExpression() throws Exception : { Object result;  } {
 	LOOKAHEAD(3)
-	result = opExpression(false) { return result; }
-	| (
-	  <OPENBRACKET>
-	  result = opExpression(true) 
-	  <CLOSEBRACKET>
-	   { return result; }
-	)
+	  result = opExpression(false)           { return result; }
+	| result = bracketedEnclosedExpression() { return result; }
+}
+
+Object bracketedEnclosedExpression() throws Exception : { Object result;  } {
+	<OPENBRACKET>
+	result = opExpression(true) 
+	<CLOSEBRACKET>
+	{ return result; }
 }
 
 Object expression() throws Exception : { Object result; Token token; } {
@@ -413,7 +418,9 @@ Object opExpression(boolean bracketed) throws Exception : {
   Token operator = null;
 } {
   
-  	( LOOKAHEAD(3)  	  leftExpr = expression()
+  	(
+  	  LOOKAHEAD(3)
+  	  leftExpr = expression()
   	  | <OPENBRACKET> leftExpr = opExpression(true) <CLOSEBRACKET>
   	)
 	(
@@ -421,6 +428,14 @@ Object opExpression(boolean bracketed) throws Exception : {
 	  operator = anyOperator()
 	  rightExpr = enclosedExpression()
 	)?
+
+//	(
+//	  	LOOKAHEAD(3)
+//		leftExpr = expression()
+//		| <OPENBRACKET> leftExpr = opExpression(true) <CLOSEBRACKET>
+//	)
+//	operator = anyOperator()
+//	rightExpr = enclosedExpression()
 	
 	{
 		if(operator != null) {
@@ -449,8 +464,12 @@ FL_FunctionCall functionCall() throws Exception : { FL_FunctionCall result; Obje
 		}
   	}
 	(
-	  LOOKAHEAD(2)
-	  param = enclosedExpression()
+	  	LOOKAHEAD(2) 
+	  	(
+		  LOOKAHEAD(3)
+		  param = bracketedEnclosedExpression()
+		  | param = expression()
+		)
 	  { result.getArguments().add(param); }
 	)*
 	{ return result; }
@@ -467,9 +486,9 @@ Object builtinFunctions() throws Exception : { Object param; Token stringToken; 
 }
 
 FL_Guards guards() throws Exception : {
-  FL_Guards guards = new FL_Guards();
-  Object predicate;
-  Object expression;
+	FL_Guards guards = new FL_Guards();
+	Object predicate;
+	Object expression;
 } {
   	<GUARD_START>
 	(
@@ -490,12 +509,12 @@ FL_Guards guards() throws Exception : {
 }
 
 FL_Match match() throws Exception : {
-  FL_Match match;
-  Object statement;
+	FL_Match match;
+	Object statement;
   
-  Object predicate;
-  Object expression;
-  Object finalExpression;
+	Object predicate;
+	Object expression;
+	Object finalExpression;
 } {
 	<MATCH>
 	statement = enclosedExpression()

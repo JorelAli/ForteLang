@@ -57,7 +57,14 @@ include {
         | [] ->> []
         | ->> [f (head l)] ++ map f (tail l);
 
-} in (map (x -> x * 10) [1, 2, 3, 4, 5, 6]) ? (10 + 0)
+    five = a:list -> 5;
+
+} in five [5] > 2 
+
+##head ((map (x -> x * 10) [1, 2, 3, 4, 5, 6])) > 2
+
+
+##(map (x -> x * 10) [1, 2, 3, 4, 5, 6]) ? (10 + 0) == true
 
 
 ##genList (x -> x) 10

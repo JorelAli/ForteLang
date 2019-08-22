@@ -99,37 +99,7 @@ public class SECD {
 						lambda = (FL_Function) lambdaCall.getInitFunction();
 					} else if(potentialFunction instanceof FL_Builtin) {
 						FL_Builtin builtin = (FL_Builtin) potentialFunction;
-						switch(builtin.getType()) {
-							case HEAD:
-								if(!(value instanceof LinkedList)) {
-									throw new Exception("head function requires a list as a parameter");
-								} else {
-								  	LinkedList<?> list = ((LinkedList<?>) value);
-								  	if(list.isEmpty()) {
-										throw new Exception("List is empty, cannot retrieve the head of the list");
-								  	}
-								  	builtinResult = Evaluator.evaluate(new Closure(closureScope, list.getFirst()));
-								} 
-								break;
-							case TAIL:
-								if(!(value instanceof LinkedList)) {
-									throw new Exception("tail function requires a list as a parameter, not a " + value.getClass().getName());
-								} else {
-								  	LinkedList list = ((LinkedList) value);
-								  	if(list.isEmpty()) {
-										throw new Exception("List is empty, cannot retrieve the tail of the list");
-								  	}
-								  	Evaluatable result = null;
-								  	if(value instanceof FL_List) {
-								  	  	result = new FL_List(list.subList(1, list.size()));
-								  	} else if(value instanceof FL_String) {
-										result = new FL_String(list.subList(1, list.size()));
-								  	}
-								  	builtinResult =  result;
-								  	
-								}
-								break;
-						}
+						builtinResult = Evaluator.evaluateBuiltin(new FL_Builtin(builtin.getType(), value), closureScope);
 					} else {
 						Object a = Evaluator.evaluate(new Closure(closureScope, potentialFunction));
 						Print.SECD("Evaluated invalid PotFunc to " + a);

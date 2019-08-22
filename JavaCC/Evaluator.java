@@ -126,6 +126,7 @@ public class Evaluator {
 		return evaluate(new Closure(closureScope, statement));
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static Object evaluateBuiltin(FL_Builtin builtin, Scope closureScope) throws Exception {
 		
 //		return builtin.getParameter();
@@ -160,7 +161,8 @@ public class Evaluator {
 				if(!(builtinParam instanceof LinkedList)) {
 					throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());
 				} else {
-				  	LinkedList list = ((LinkedList) builtinParam);
+				  	@SuppressWarnings("rawtypes")
+					LinkedList list = ((LinkedList) builtinParam);
 				  	if(list.isEmpty()) {
 						throw new Exception("List is empty, cannot retrieve the tail of the list");
 				  	}

@@ -72,10 +72,9 @@ public class Evaluator {
 			FL_Var flVar = (FL_Var) closure.getExpression();
 			Object result = closure.getScope().get(flVar.getName());
 			if(result == null) {
-				if(flVar.getName().equals("head")) {
-					return new FL_Builtin(FL_Builtin.Builtin.HEAD, null);
-				} else if(flVar.getName().equals("tail")) {
-					return new FL_Builtin(FL_Builtin.Builtin.TAIL, null);
+				FL_Builtin potentialBuiltin = FL_Builtin.fromString(flVar.getName());
+				if(potentialBuiltin != null) {
+					return potentialBuiltin;
 				}
 				Exceptions.FUNCTION_NOT_DEFINED(flVar.getName());
 			}

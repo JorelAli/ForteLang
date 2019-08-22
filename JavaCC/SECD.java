@@ -49,8 +49,6 @@ public class SECD {
 		for(Object object : functionCall.getArguments()) {
 		  	if(object instanceof FL_FunctionCall) {
 		  		FL_FunctionCall fc = (FL_FunctionCall) object;
-		  		//TODO: Make sure that this preserves brackets!!!
-		  		//return ((x -> x ++ x) [1]) ++ [123]
 		  	  	Print.SECD("Flattening SECD control");
 		  	  	
 		  	  	Print.SECD("Adding to control: ", fc.getInitFunction());

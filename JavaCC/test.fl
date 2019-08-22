@@ -49,11 +49,11 @@ include {
     } in 5;
     ]#
 
-    genList = f -> n -> match n
-        | 0 ->> [f 0]
-        | ->> [f n] ++ genList f (n - 1);
+    genList = f:func -> n:num -> match n
+        | 0 ->> []
+        | ->> genList f (n - 1) ++ [f n];
 
-    map = f -> l -> match l
+    map = f:func -> l:list -> match l
         | [] ->> []
         | ->> [f (head l)] ++ map f (tail l);
 
@@ -61,9 +61,13 @@ include {
 
     return = a:list -> a ++ [2];
 
-    add = x -> y -> x + y;
+    add = x:num -> y:num -> x + y;
 
-} in map (x -> x * x) [5]  ##map (x -> (3 * x)) [1] ##head [1, 2, 3] ##map (x -> (3 * x)) [1]
+    mySet = { innerSet = { add = 2; }; };
+
+} in mySet.innerSet."add" + 4 ##1 == 1## (genList (x -> x + 1) 10)
+
+##{} /+ {a=2;}##add ##map (x -> x * x) [5]  ##map (x -> (3 * x)) [1] ##head [1, 2, 3] ##map (x -> (3 * x)) [1]
 
 ##add 2 3 ##map (x -> x) [1]
 

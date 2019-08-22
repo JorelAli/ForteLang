@@ -43,30 +43,14 @@ public class OperatorParser {
 
 	public Object apply(Closure expr1, Closure expr2) throws Exception {
 
-		Object o1 = Evaluator.evaluate(expr1);
-		Object o2 = Evaluator.evaluate(expr2);
-
+		Object o1 = null;
+		Object o2 = null;
+		
 		if (operatorKind != Operator.SELECT) {
-			// Print.EVAL("Current scope in OpExpr: ", scope);
-			// if (o1 instanceof Evaluatable) {
-			// Evaluatable e = (Evaluatable) o1;
-			// Print.EVAL("EvalOpExpr left part", o1);
-			// o1 = Evaluator.evaluate(scope, e);
-			//
-			//// o1 = evaluate(scope, o1);
-			// }
-			//
-			// if (o2 instanceof Evaluatable) {
-			//// Print.EVAL("EvalOpExpr right part", o2);
-			//// o2 = evaluate(scope, o2);
-			//
-			// Evaluatable e = (Evaluatable) o2;
-			// Print.EVAL("EvalOpExpr right part", o2);
-			// o2 = Evaluator.evaluate(scope, e);
-			// }
-
+			o1 = Evaluator.evaluate(expr1);
+			o2 = Evaluator.evaluate(expr2);
 		}
-
+		
 		switch (operatorKind) {
 			case BOOLEAN:
 				return applyBoolean((boolean) o1, (boolean) o2);
@@ -81,26 +65,44 @@ public class OperatorParser {
 			case CONTAINS:
 				return applyContains(o1, o2);
 			case SELECT:
-				return applySelect(o1, o2);
+				return applySelect(expr1, expr2);
 		}
 		throw new Exception("Failed to apply any operators");
 	}
 
-	public Object applySelect(Object o1, Object o2) throws Exception {
-		return null;
-//		Print.EVAL("EvalOpExpr left part", o1);
-//		o1 = evaluate(scope, o1);
-//
-//		if (o1 instanceof FL_Set) {
-//			FL_Set set = (FL_Set) o1;
-//			if (o2 instanceof FL_String) {
-//				Object result = set.get(((FL_String) o2).stringValue());
-//				if (result == null) {
-//					throw new Exception("Cannot find element \"" + o2 + "\" in set containing " + set.keySet());
-//				} else {
-//					return result;
-//				}
-//			} else if (o2 instanceof FL_FunctionCall) {
+	public Object applySelect(Closure expr1, Closure expr2) throws Exception {
+		Object o1 = Evaluator.evaluate(expr1);
+		if (o1 instanceof FL_Set) {
+			FL_Set set = (FL_Set) o1;
+			
+			//If it's a String, e.g. { a = 2; }."a"
+			if (expr2.getExpression() instanceof FL_String) {
+				FL_String flString = (FL_String) expr2.getExpression();
+				Object result = set.get(flString.stringValue());
+				if (result == null) {
+					throw new Exception("Cannot find element \"" + flString + "\" in set containing " + set.keySet());
+				} else {
+					return result;
+				}
+				
+			//If it's a function call, e.g. { a = 2; }.a
+			} else if (expr2.getExpression() instanceof FL_FunctionCall) {
+				FL_FunctionCall func = (FL_FunctionCall) expr2.getExpression();
+				
+				if(func.hasBrackets()) {
+					return applySelect(expr1, new Closure(expr2.getScope(), Evaluator.evaluate(expr2)));
+				}
+				
+				if (func.getInitFunction() instanceof FL_Var) {
+					FL_Var var = (FL_Var) func.getInitFunction();
+					Object result = set.get(var.getName());
+					if (result == null) {
+						throw new Exception("Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
+					} else {
+						return result;
+					}
+				}
+			}
 //				FL_FunctionCall func = (FL_FunctionCall) o2;
 //				if (func.getInitFunction() instanceof FL_Var) {
 //					FL_Var var = (FL_Var) func.getInitFunction();
@@ -124,9 +126,10 @@ public class OperatorParser {
 //			} else {
 //				throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
 //			}
-//		} else {
-//			throw new Exception("Cannot select from an object that's not a set");
-//		}
+		} else {
+			throw new Exception("Cannot select from an object that's not a set");
+		}
+		return null;
 	}
 
 	public Object applyContains(Object o1, Object o2) throws Exception {

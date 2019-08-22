@@ -35,4 +35,13 @@ public class FL_Builtin implements Evaluatable {
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
 	}
+	
+	public static FL_Builtin fromString(String str) {
+		switch(str) {
+			case "head": return new FL_Builtin(FL_Builtin.Builtin.HEAD, null);
+			case "tail": return new FL_Builtin(FL_Builtin.Builtin.TAIL, null);
+			
+		}
+		return null;
+	}
 }

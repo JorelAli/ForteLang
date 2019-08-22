@@ -1,17 +1,21 @@
 
 public class Print {
 
-	public static void SECD()                   { print("SECD"); }
-	public static void SECD(Object o)           { print("SECD", o); }
-	public static void SECD(String s, Object o) { print("SECD", s, o); }
+	private final static boolean SECD = true;
+	private final static boolean EVAL = false;
+	private final static boolean OPEX = false;
+	
+	public static void SECD()                   { if(SECD) print("SECD"); }
+	public static void SECD(Object o)           { if(SECD) print("SECD", o); }
+	public static void SECD(String s, Object o) { if(SECD) print("SECD", s, o); }
 
-	public static void EVAL()                   { print("EVAL"); }
-	public static void EVAL(Object o)           { print("EVAL", o); }
-	public static void EVAL(String s, Object o) { print("EVAL", s, o); }
+	public static void EVAL()                   { if(EVAL) print("EVAL"); }
+	public static void EVAL(Object o)           { if(EVAL) print("EVAL", o); }
+	public static void EVAL(String s, Object o) { if(EVAL) print("EVAL", s, o); }
 
-	public static void OPEX()                   { print("OPEX"); }
-	public static void OPEX(Object o)           { print("OPEX", o); }
-	public static void OPEX(String s, Object o) { print("OPEX", s, o); }
+	public static void OPEX()                   { if(OPEX) print("OPEX"); }
+	public static void OPEX(Object o)           { if(OPEX) print("OPEX", o); }
+	public static void OPEX(String s, Object o) { if(OPEX) print("OPEX", s, o); }
 	
 	private static void print(String title)           { print(title, "", ""); }
 	private static void print(String title, Object o) { print(title, "", o); }

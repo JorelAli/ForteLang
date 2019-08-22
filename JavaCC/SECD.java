@@ -48,15 +48,23 @@ public class SECD {
 		control.add(functionCall.getInitFunction());
 		for(Object object : functionCall.getArguments()) {
 		  	if(object instanceof FL_FunctionCall) {
+		  		FL_FunctionCall fc = (FL_FunctionCall) object;
 		  		//TODO: Make sure that this preserves brackets!!!
 		  		//return ((x -> x ++ x) [1]) ++ [123]
-		  	  	Print.SECD("FLATTEN");
-		  	  	control.add(((FL_FunctionCall) object).getInitFunction());
-				for(Object o1 : ((FL_FunctionCall) object).getArguments()) {
-					control.add(new ApplyObj());
-				  
-					control.add(o1);
-				}
+		  	  	Print.SECD("Flattening SECD control");
+		  	  	
+		  	  	Print.SECD("Adding to control: ", fc.getInitFunction());
+			  	
+			  	if(fc.hasBrackets()) {
+			  		control.add(Evaluator.evaluate(new Closure(closureScope, fc)));
+			  		Print.SECD("FINISHED EVALUATING FC.BRACKETS");
+			  	} else {
+				  	control.add(fc.getInitFunction());
+					for(Object o1 : fc.getArguments()) {
+						control.add(new ApplyObj());
+						control.add(o1);
+					}
+			  	}
 		  	} else { 
 				control.add(object);
 			}

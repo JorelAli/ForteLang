@@ -3,9 +3,11 @@ import java.util.LinkedList;
 public class FL_FunctionCall implements Evaluatable {
 	private Object initFunction;
 	private final LinkedList<Object> arguments;
+	private boolean hasBrackets;
 
 	public FL_FunctionCall() {
 		arguments = new LinkedList<Object>();
+		hasBrackets = false;
 	}
 
 	public LinkedList<Object> getArguments() {
@@ -18,6 +20,14 @@ public class FL_FunctionCall implements Evaluatable {
 
 	public Object getInitFunction() {
 		return this.initFunction;
+	}
+	
+	public void addBrackets() {
+		this.hasBrackets = true;
+	}
+	
+	public boolean hasBrackets() {
+		return this.hasBrackets;
 	}
 
 	@Override

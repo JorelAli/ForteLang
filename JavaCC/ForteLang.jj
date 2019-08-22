@@ -396,9 +396,9 @@ Object bracketedEnclosedExpression() throws Exception : { Object result;  } {
 	{ return result; }
 }
 
-Object expression() throws Exception : { Object result; Token token; } {
+Object expression(boolean bracketed) throws Exception : { Object result; Token token; } {
   	LOOKAHEAD(3)
-  	result = functionCall() { return result; }
+  	result = functionCall(bracketed) { return result; }
     | result = set() { return result; }
 	| result = lambda() { return result; }
 	| result = includedSet() { return result; }
@@ -420,7 +420,7 @@ Object opExpression(boolean bracketed) throws Exception : {
   
   	(
   	  LOOKAHEAD(3)
-  	  leftExpr = expression()
+  	  leftExpr = expression(bracketed)
   	  | <OPENBRACKET> leftExpr = opExpression(true) <CLOSEBRACKET>
   	)
 	(
@@ -428,14 +428,6 @@ Object opExpression(boolean bracketed) throws Exception : {
 	  operator = anyOperator()
 	  rightExpr = enclosedExpression()
 	)?
-
-//	(
-//	  	LOOKAHEAD(3)
-//		leftExpr = expression()
-//		| <OPENBRACKET> leftExpr = opExpression(true) <CLOSEBRACKET>
-//	)
-//	operator = anyOperator()
-//	rightExpr = enclosedExpression()
 	
 	{
 		if(operator != null) {
@@ -446,7 +438,7 @@ Object opExpression(boolean bracketed) throws Exception : {
 	}
 }
 
-FL_FunctionCall functionCall() throws Exception : { FL_FunctionCall result; Object param; Token varName; Object lambda; } {
+FL_FunctionCall functionCall(boolean bracketed) throws Exception : { FL_FunctionCall result; Object param; Token varName; Object lambda; } {
   	{
 		varName = null;
 		lambda = null;
@@ -457,6 +449,9 @@ FL_FunctionCall functionCall() throws Exception : { FL_FunctionCall result; Obje
   	)
   	{
   	   	result = new FL_FunctionCall();
+  	   	if(bracketed) {
+			result.addBrackets();
+  	   	}
   	   	if(varName != null) { 
 			result.setInitFunction(new FL_Var(varName.image));
 		} else {
@@ -468,10 +463,37 @@ FL_FunctionCall functionCall() throws Exception : { FL_FunctionCall result; Obje
 	  	(
 		  LOOKAHEAD(3)
 		  param = bracketedEnclosedExpression()
-		  | param = expression()
+		|  param = expression(bracketed)
+		  //| param = fcParam() //expression(bracketed)
 		)
 	  { result.getArguments().add(param); }
 	)*
+	{ return result; }
+}
+
+Object fcParam() throws Exception : { Object result; Token token; } {
+  LOOKAHEAD(3)
+ 	(
+	   <OPENBRACKET>
+		(		    LOOKAHEAD(3)
+				result = functionCall(true)
+				| result = lambda()
+				| result = includedSet()
+		)
+		<CLOSEBRACKET>
+	)
+	|
+	(
+	  result = set()
+		|  result = functionCall(false)
+		| result = guards()
+		| result = match()
+		| result = list()
+		| result = number()
+		| token = <STRING> { return new FL_String(parseString(token)); }
+		| token = <REGEX_STRING> { return Pattern.compile(parseString(token)); }
+		| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
+		| result = builtinFunctions() 	) 
 	{ return result; }
 }
 

@@ -169,8 +169,8 @@ TOKEN : { < PRINT : "@print" > }
 TOKEN : { < INPUT : "@input" > }
 TOKEN : { < INPUTBOX : "@inputbox" > }
 
-TOKEN : { < HEAD : "head" > }
-TOKEN : { < TAIL : "tail" > }
+//TOKEN : { < HEAD : "head" > }
+//TOKEN : { < TAIL : "tail" > }
 
 //Brackets
 TOKEN : { < OPENBRACKET : "(" > }
@@ -479,8 +479,8 @@ Object builtinFunctions() throws Exception : { Object param; Token stringToken; 
 	<IMPORT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
     | <PRINT> param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
 	| <EXEC>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
-	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
-	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
+//	| <HEAD>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.HEAD, param); }
+//	| <TAIL>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.TAIL, param); }
 	| <INPUT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUT, param); }
 	| <INPUTBOX>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, param); }
 }

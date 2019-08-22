@@ -18,7 +18,7 @@ public class Evaluator {
 		}
 				
 		if(closure.getExpression() instanceof FL_Builtin) {
-			return evaluateBuiltin((FL_Builtin) closure.getExpression(), closure.getScope());
+//			return evaluateBuiltin((FL_Builtin) closure.getExpression(), closure.getScope());
 		} else if(closure.getExpression() instanceof FL_Function) {
 		  	FL_Function function = (FL_Function) closure.getExpression();
 		  	FL_FunctionCall newFunctionCall = new FL_FunctionCall();
@@ -72,6 +72,11 @@ public class Evaluator {
 			FL_Var flVar = (FL_Var) closure.getExpression();
 			Object result = closure.getScope().get(flVar.getName());
 			if(result == null) {
+				if(flVar.getName().equals("head")) {
+					return new FL_Builtin(FL_Builtin.Builtin.HEAD, null);
+				} else if(flVar.getName().equals("tail")) {
+					return new FL_Builtin(FL_Builtin.Builtin.TAIL, null);
+				}
 				Exceptions.FUNCTION_NOT_DEFINED(flVar.getName());
 			}
 			
@@ -121,7 +126,7 @@ public class Evaluator {
 		return evaluate(new Closure(closureScope, statement));
 	}
 	
-	private static Object evaluateBuiltin(FL_Builtin builtin, Scope closureScope) throws Exception {
+	public static Object evaluateBuiltin(FL_Builtin builtin, Scope closureScope) throws Exception {
 		
 //		return builtin.getParameter();
 		Print.EVAL("About to process builtin");

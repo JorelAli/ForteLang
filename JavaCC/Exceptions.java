@@ -29,7 +29,7 @@ public class Exceptions {
 	
 	//When a program is empty
 	public static void FUNCTION_NOT_DEFINED(String functionName) {
-		evalError("Function " + functionName + " was called, but has not been defined");
+		evalError("Function \"" + functionName + "\" was called, but has not been defined");
 		System.exit(0);
 	}
 }

@@ -49,57 +49,53 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int INPUTBOX = 20;
   /** RegularExpression Id. */
-  int HEAD = 21;
+  int OPENBRACKET = 21;
   /** RegularExpression Id. */
-  int TAIL = 22;
+  int CLOSEBRACKET = 22;
   /** RegularExpression Id. */
-  int OPENBRACKET = 23;
+  int OPENSBRACKET = 23;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 24;
+  int CLOSESBRACKET = 24;
   /** RegularExpression Id. */
-  int OPENSBRACKET = 25;
+  int COMMA = 25;
   /** RegularExpression Id. */
-  int CLOSESBRACKET = 26;
+  int CAPS = 26;
   /** RegularExpression Id. */
-  int COMMA = 27;
+  int ENUM_OPEN = 27;
   /** RegularExpression Id. */
-  int CAPS = 28;
+  int ENUM_CLOSE = 28;
   /** RegularExpression Id. */
-  int ENUM_OPEN = 29;
+  int EQUALS = 29;
   /** RegularExpression Id. */
-  int ENUM_CLOSE = 30;
+  int SEMICOLON = 30;
   /** RegularExpression Id. */
-  int EQUALS = 31;
+  int OPENCBRACKET = 31;
   /** RegularExpression Id. */
-  int SEMICOLON = 32;
+  int CLOSECBRACKET = 32;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 33;
+  int NUM = 33;
   /** RegularExpression Id. */
-  int CLOSECBRACKET = 34;
+  int LST = 34;
   /** RegularExpression Id. */
-  int NUM = 35;
+  int SET = 35;
   /** RegularExpression Id. */
-  int LST = 36;
+  int FUN = 36;
   /** RegularExpression Id. */
-  int SET = 37;
+  int BOO = 37;
   /** RegularExpression Id. */
-  int FUN = 38;
+  int STR = 38;
   /** RegularExpression Id. */
-  int BOO = 39;
+  int COLON = 39;
   /** RegularExpression Id. */
-  int STR = 40;
+  int VAR_NAME = 40;
   /** RegularExpression Id. */
-  int COLON = 41;
+  int FUNCTION_ARROW = 41;
   /** RegularExpression Id. */
-  int VAR_NAME = 42;
+  int GUARD_START = 42;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 43;
+  int GUARD = 43;
   /** RegularExpression Id. */
-  int GUARD_START = 44;
-  /** RegularExpression Id. */
-  int GUARD = 45;
-  /** RegularExpression Id. */
-  int GUARD_ARROW = 46;
+  int GUARD_ARROW = 44;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -129,8 +125,6 @@ public interface ForteLangConstants {
     "\"@print\"",
     "\"@input\"",
     "\"@inputbox\"",
-    "\"head\"",
-    "\"tail\"",
     "\"(\"",
     "\")\"",
     "\"[\"",
@@ -155,11 +149,11 @@ public interface ForteLangConstants {
     "\"|>\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 47>",
-    "<token of kind 48>",
+    "<token of kind 45>",
+    "<token of kind 46>",
     "\"#[\"",
     "\"#[\"",
-    "<token of kind 51>",
+    "<token of kind 49>",
     "\"]#\"",
     "\"\\n\"",
     "\"\\r\"",

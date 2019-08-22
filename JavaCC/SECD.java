@@ -81,30 +81,67 @@ public class SECD {
 					Print.SECD("PotFunc: " + potentialFunction);
 
 					FL_Function lambda = null;
+					Object builtinResult = null;
 					if(potentialFunction instanceof FL_Function) {
 						lambda = (FL_Function) potentialFunction;
 					} else if(potentialFunction instanceof FL_FunctionCall) {
 						FL_FunctionCall lambdaCall = (FL_FunctionCall) potentialFunction;
 						lambda = (FL_Function) lambdaCall.getInitFunction();
+					} else if(potentialFunction instanceof FL_Builtin) {
+						FL_Builtin builtin = (FL_Builtin) potentialFunction;
+						switch(builtin.getType()) {
+							case HEAD:
+								if(!(value instanceof LinkedList)) {
+									throw new Exception("head function requires a list as a parameter");
+								} else {
+								  	LinkedList<?> list = ((LinkedList<?>) value);
+								  	if(list.isEmpty()) {
+										throw new Exception("List is empty, cannot retrieve the head of the list");
+								  	}
+								  	builtinResult = Evaluator.evaluate(new Closure(closureScope, list.getFirst()));
+								} 
+							case TAIL:
+								if(!(value instanceof LinkedList)) {
+									throw new Exception("tail function requires a list as a parameter, not a " + value.getClass().getName());
+								} else {
+								  	LinkedList list = ((LinkedList) value);
+								  	if(list.isEmpty()) {
+										throw new Exception("List is empty, cannot retrieve the tail of the list");
+								  	}
+								  	Evaluatable result = null;
+								  	if(value instanceof FL_List) {
+								  	  	result = new FL_List(list.subList(1, list.size()));
+								  	} else if(value instanceof FL_String) {
+										result = new FL_String(list.subList(1, list.size()));
+								  	}
+								  	builtinResult =  result;
+								  	
+								}
+						}
 					}
 
 					Print.SECD("Value: ", value);
 					Print.SECD("Lambda: ", lambda);
 					Print.SECD("Current environment: ", environment);
 					
-	
-					//Bind it properly in the current environment
-					//Type check
-					Type type = lambda.getParameter().getType();
-					if(!Type.isType(value, type)) {
-						throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName()); 
+					Object result = null;
+					if(builtinResult == null) {
+						//Bind it properly in the current environment
+						//Type check
+						Type type = lambda.getParameter().getType();
+						if(!Type.isType(value, type)) {
+							throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName()); 
+						}
+
+						Print.SECD("Binding " + value + " to " + lambda.getParameter().getName());
+						environment.put(lambda.getParameter().getName(), value);
+						 result = lambda.getExpression();
+
+//						Print.SECD("Added complete. Result: " + result.getClass().getName(), result);
+					} else {
+						result = builtinResult;
 					}
-
-					Print.SECD("Binding " + value + " to " + lambda.getParameter().getName());
-					environment.put(lambda.getParameter().getName(), value);
-					Object result = lambda.getExpression();
-
-//					Print.SECD("Added complete. Result: " + result.getClass().getName(), result);
+					
 	
 					//If the result is an abstraction, dump it
 					if(result instanceof FL_FunctionCall) {

@@ -48,6 +48,8 @@ public class SECD {
 		control.add(functionCall.getInitFunction());
 		for(Object object : functionCall.getArguments()) {
 		  	if(object instanceof FL_FunctionCall) {
+		  		//TODO: Make sure that this preserves brackets!!!
+		  		//return ((x -> x ++ x) [1]) ++ [123]
 		  	  	Print.SECD("FLATTEN");
 		  	  	control.add(((FL_FunctionCall) object).getInitFunction());
 				for(Object o1 : ((FL_FunctionCall) object).getArguments()) {

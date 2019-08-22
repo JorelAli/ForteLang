@@ -61,7 +61,7 @@ include {
 
     return = a:list -> a ++ [2];
 
-} in return ((x -> x ++ x) [1]) ++ [123]
+} in ##return ((x -> x ++ x) [1]) ++ [123]
 
 ##map (x -> x * x) [5] 
 

@@ -78,7 +78,7 @@ public class SECD {
 					Object value = stack.pop();
 
 					Object potentialFunction = stack.pop();
-					Print.SECD("PotFunc: " + potentialFunction);
+					Print.SECD("PotFunc: " + potentialFunction + " (" + potentialFunction.getClass().getName() + ")");
 
 					FL_Function lambda = null;
 					Object builtinResult = null;
@@ -118,6 +118,9 @@ public class SECD {
 								  	
 								}
 						}
+					} else {
+						Object a = Evaluator.evaluate(new Closure(closureScope, potentialFunction));
+						Print.SECD("Evaluated invalid PotFunc to " + a);
 					}
 
 					Print.SECD("Value: ", value);

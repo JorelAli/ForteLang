@@ -163,7 +163,7 @@ TOKEN : { < IN : "in" > }
 TOKEN : { < MATCH : "match" > }
 
 //Built-in functions
-TOKEN : { < IMPORT : "@import" > }
+//TOKEN : { < IMPORT : "@import" > }
 TOKEN : { < EXEC : "@exec" > }
 TOKEN : { < PRINT : "@print" > }
 TOKEN : { < INPUT : "@input" > }
@@ -471,8 +471,9 @@ FL_FunctionCall functionCall(boolean bracketed) throws Exception : { FL_Function
 }
 
 Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
-	<IMPORT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
-    | <PRINT> param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
+//	<IMPORT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
+//    |
+    <PRINT> param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
 	| <EXEC>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
 	| <INPUT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUT, param); }
 	| <INPUTBOX>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, param); }

@@ -35,7 +35,6 @@ public class SECD {
 	}
 	
 	public Object runSECD() throws Exception {
-		System.out.println();
 		Print.SECD("Starting SECD machine");
 		
 		//Initialize stack, environment, control & dump

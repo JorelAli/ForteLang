@@ -40,8 +40,10 @@ public class FL_Builtin implements Evaluatable {
 		switch(str) {
 			case "head": return new FL_Builtin(FL_Builtin.Builtin.HEAD, null);
 			case "tail": return new FL_Builtin(FL_Builtin.Builtin.TAIL, null);
+			case "@import": return new FL_Builtin(FL_Builtin.Builtin.IMPORT, null);
 			
 		}
+		Print.EVAL("Failed to parse Builtin from \"" + str + "\"");
 		return null;
 	}
 }

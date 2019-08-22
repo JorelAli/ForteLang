@@ -1,0 +1,9 @@
+{
+    genList = f:func -> n:num -> match n
+        | 0 ->> []
+        | ->> genList f (n - 1) ++ [f n];
+
+    map = f:func -> l:list -> match l
+        | [] ->> []
+        | ->> [f (head l)] ++ map f (tail l);
+}

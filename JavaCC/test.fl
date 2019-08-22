@@ -53,19 +53,53 @@ include {
         | 0 ->> []
         | ->> genList f (n - 1) ++ [f n];
 
-    map = f:func -> l:list -> match l
-        | [] ->> []
-        | ->> [f (head l)] ++ map f (tail l);
+    ## map = f:func -> l:list -> match l
+    ##     | [] ->> []
+    ##     | ->> [f (head l)] ++ map f (tail l);
 
     five = a:list -> 5;
 
     return = a:list -> a ++ [2];
 
-    add = x:num -> y:num -> x + y;
+    add = x -> y -> x + y;
 
     mySet = { innerSet = { add = 2; }; };
 
-} in mySet.innerSet."add" + 4 ##1 == 1## (genList (x -> x + 1) 10)
+    ##blah = @import "./std.fl";
+
+    std = @import "./std.fl";
+    map = std.map;
+
+    foldl = f -> acc -> l -> match l
+        | [] ->> acc
+        | ->> include {
+            x = head l;
+            xs = tail l;
+        } in foldl f (f x acc) xs;
+        
+        ##foldl (f (f acc (head l)) (tail l));
+
+    factorial = i:num -> match i
+        | 1 ->> 1
+        | ->> i * (factorial (i - 1));
+
+    biFunc = f -> f 2 3;
+
+    genericFactorial = baseCase -> baseExpr -> i -> match i
+        | baseCase ->> baseExpr
+        | ->> i * (factorial (i - 1));
+
+    fold = f -> acc -> l -> match l
+        | [] ->> acc
+        | ->> fold f (f acc (head l)) (tail l);
+
+} in fold (x -> y -> x + y) 0 [1, 2, 3, 4, 5, 6] 
+
+##genericFactorial 1 1 30 ##foldl add 0 [1]
+
+##map (x -> x) [1, 2, 3] 
+
+##map (x -> x) [1, 2,3] ##mySet.innerSet."add" + 4 ##1 == 1## (genList (x -> x + 1) 10)
 
 ##{} /+ {a=2;}##add ##map (x -> x * x) [5]  ##map (x -> (3 * x)) [1] ##head [1, 2, 3] ##map (x -> (3 * x)) [1]
 

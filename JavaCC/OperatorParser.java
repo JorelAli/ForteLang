@@ -99,6 +99,11 @@ public class OperatorParser {
 					if (result == null) {
 						throw new Exception("Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
 					} else {
+						
+						if(func.getArguments().isEmpty()) {
+							return result;
+						}
+						
 						return result;
 					}
 				}

@@ -18,7 +18,7 @@ public class Evaluator {
 		}
 				
 		if(closure.getExpression() instanceof FL_Builtin) {
-//			return evaluateBuiltin((FL_Builtin) closure.getExpression(), closure.getScope());
+			return evaluateBuiltin((FL_Builtin) closure.getExpression(), closure.getScope());
 		} else if(closure.getExpression() instanceof FL_Function) {
 		  	FL_Function function = (FL_Function) closure.getExpression();
 		  	FL_FunctionCall newFunctionCall = new FL_FunctionCall();
@@ -272,7 +272,6 @@ public class Evaluator {
 	
 
 	public static Object evaluateOpExpr(Scope scope, FL_OpExpr flOpExpr) throws Exception {
-	  	System.out.println();
 		Print.OPEX("About to evaluate OpExpr");
 	  	Print.OPEX("Current scope: ", scope);		
 		Print.OPEX(flOpExpr);

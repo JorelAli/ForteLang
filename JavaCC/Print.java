@@ -2,7 +2,7 @@
 public class Print {
 
 	private final static boolean SECD = true;
-	private final static boolean EVAL = true;
+	private final static boolean EVAL = false;
 	private final static boolean OPEX = true;
 	
 	public static void SECD()                   { if(SECD) print("SECD"); }

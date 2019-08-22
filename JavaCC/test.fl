@@ -61,7 +61,11 @@ include {
 
     return = a:list -> a ++ [2];
 
-} in map (x -> x) [1]
+    add = x -> y -> x + y;
+
+} in map (x -> x * x) [5]  ##map (x -> (3 * x)) [1] ##head [1, 2, 3] ##map (x -> (3 * x)) [1]
+
+##add 2 3 ##map (x -> x) [1]
 
 ##return ((x -> x ++ x) [1]) ++ [123]
 

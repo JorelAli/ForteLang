@@ -110,6 +110,7 @@ public class SECD {
 								  	}
 								  	builtinResult = Evaluator.evaluate(new Closure(closureScope, list.getFirst()));
 								} 
+								break;
 							case TAIL:
 								if(!(value instanceof LinkedList)) {
 									throw new Exception("tail function requires a list as a parameter, not a " + value.getClass().getName());
@@ -127,6 +128,7 @@ public class SECD {
 								  	builtinResult =  result;
 								  	
 								}
+								break;
 						}
 					} else {
 						Object a = Evaluator.evaluate(new Closure(closureScope, potentialFunction));
@@ -135,7 +137,7 @@ public class SECD {
 
 					Print.SECD("Value: ", value);
 					Print.SECD("Lambda: ", lambda);
-					Print.SECD("Current environment: ", environment);
+//					Print.SECD("Current environment: ", environment);
 					
 					Object result = null;
 					if(builtinResult == null) {
@@ -194,7 +196,7 @@ public class SECD {
 					}
 					//Otherwise, don't. Push the control item on the stack
 					stack.push(controlItem);
-					Print.SECD("Added control item to stack.");
+//					Print.SECD("Added control item to stack.");
 				}
 			}
 
@@ -210,13 +212,14 @@ public class SECD {
 			  	control = restoredDump.control;
 			  	environment.putAll(restoredDump.environment);
 			  	Print.SECD("Dump restored");
+			  	Print.SECD("Control after dump: ", control);
 			}
 
 		} while(!control.isEmpty() || !dump.isEmpty());
 
 		Scope newEnv = new Scope(environment);
 		Print.SECD("SECD ended with ", stack.peek().getClass().getSimpleName());
-		Print.SECD("SECD scope was ", newEnv);
+//		Print.SECD("SECD scope was ", newEnv);
 		Object result = stack.pop();
 		return Evaluator.evaluate(new Closure(newEnv, result));
 	}

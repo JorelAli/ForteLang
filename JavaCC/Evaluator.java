@@ -170,8 +170,10 @@ public class Evaluator {
 				  	  	result = new FL_List(list.subList(1, list.size()));
 				  	} else if(builtinParam instanceof FL_String) {
 						result = new FL_String(list.subList(1, list.size()));
-				  	}
-				  	return result;
+				  	} else {
+					  	throw new Exception("Cannot perform \"tail\" on something that is a " + builtinParam.getClass().getName());
+					}
+					return result;
 				  	
 				}
 			case INPUT:
@@ -293,7 +295,7 @@ public class Evaluator {
 
 		//Flatten the elements of OpExpr into a linked list for evaluation
 		LinkedList<Object> elements = new OpFlattener(flOpExpr).flatten();
-		Print.OPEX("\t\tFlattened: ", elements);
+		Print.OPEX("    Flattened: ", elements);
 		
 		Print.OPEX("Phase 2: Shunting-yard");
 
@@ -329,7 +331,7 @@ public class Evaluator {
 			output.add(stack.pop());
 		}
 		
-		Print.OPEX("\t\tFinished Shunting Yard: ", output);
+		Print.OPEX("    Finished Shunting Yard: ", output);
 		Print.OPEX("Phase 3: Evaluation");
 
 		Stack<Object> evalStack = new Stack<Object>();
@@ -340,7 +342,7 @@ public class Evaluator {
 				Object secondExpr = evalStack.pop();
 				Object firstExpr = evalStack.pop();
 
-				Print.OPEX("Applying the " + operator.image + " operator");
+				Print.OPEX("    Applying the " + operator.image + " operator");
 				
 				if(!(firstExpr instanceof Closure)) {
 					firstExpr = new Closure(scope, firstExpr);
@@ -356,7 +358,7 @@ public class Evaluator {
 		}
 
 		Object result = evalStack.pop();
-		Print.OPEX("\t\tFinished evaluation: ", result);
+		Print.OPEX("    Finished evaluation: ", result);
 
 		if(result instanceof Evaluatable) {
 //			return evaluate(scope, result);

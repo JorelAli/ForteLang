@@ -95,7 +95,35 @@ include {
 
     infinite = x -> infinite x;
 
-} in length "hi"##std.assert false##std.elemAt [1, 2, 3, 4, 5] 22
+    foldList = f:func -> l:list -> acc:num -> match l 
+        | [] ->> []
+        | ->> foldList f (tail l) (f acc (head l));
+
+    sum = z -> include {
+        sum' = l -> acc -> match l
+            | [] ->> acc
+            | ->> sum' (tail l) (acc + head l); 
+    } in sum' z 0;
+
+    sum'' = l -> match l
+        | [] ->> 0
+        | ->> sum'' (tail l) + head l;
+
+    sum''' = l -> acc -> match l
+            | [] ->> acc
+            | ->> sum''' (tail l) (acc + head l); 
+
+} in sum''' [1, 2, 3] 0
+
+##std.map (x -> 2 * x) [1, 2, 3]
+
+##sum'' [1, 2, 3]
+
+## foldList (x -> y -> x + y) [1, 2, 3] 0 
+
+##std.length ["hi"] ##std.filter (x -> x > 2) [1, 2, 3, 4, 5] 
+
+ ##length "hi"##std.assert false##std.elemAt [1, 2, 3, 4, 5] 22
 
 ##std.assert false ##std.sort [5, 2, 7, 1]
 

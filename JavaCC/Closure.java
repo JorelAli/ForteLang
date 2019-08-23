@@ -4,7 +4,7 @@ public class Closure {
     private Object expression;
 
     public Closure(Scope scope, Object expression) {
-        this.scope = scope;
+        this.scope = scope.copy();
         this.expression = expression;
     }
 
@@ -13,7 +13,7 @@ public class Closure {
     }
 
     public Scope getScope() {
-        return this.scope;
+        return this.scope.copy();
     }
 
     public Object getExpression() {

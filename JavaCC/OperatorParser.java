@@ -104,7 +104,9 @@ public class OperatorParser {
 							return result;
 						} else {
 							func.setInitFunction(result);
-							return Evaluator.evaluate(new Closure(expr2.getScope(), func));
+							Scope newScope = new Scope(set);
+							newScope.putAll(expr2.getScope());
+							return Evaluator.evaluate(new Closure(newScope, func));
 						}
 						
 //						return result;

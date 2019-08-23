@@ -49,9 +49,9 @@ include {
     } in 5;
     ]#
 
-    genList = f:func -> n:num -> match n
-        | 0 ->> []
-        | ->> genList f (n - 1) ++ [f n];
+    ## genList = f:func -> n:num -> match n
+    ##     | 0 ->> []
+    ##     | ->> genList f (n - 1) ++ [f n];
 
     ## map = f:func -> l:list -> match l
     ##     | [] ->> []
@@ -68,7 +68,7 @@ include {
     ##blah = @import "./std.fl";
 
     std = @import "./std.fl";
-    map = std.map;
+    ## map = std.map;
 
     foldl = f -> acc -> l -> match l
         | [] ->> acc
@@ -93,9 +93,9 @@ include {
         | [] ->> acc
         | ->> fold f (f acc (head l)) (tail l);
 
+} in std.all [true, false]
 
-
-} in std.map (x -> 2 * x) [123]
+##.all [true, false]
 
 ##fold (x -> y -> x + y) 0 [1, 2, 3, 4, 5, 6] 
 

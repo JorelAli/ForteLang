@@ -6,4 +6,10 @@
     map = f:func -> l:list -> match l
         | [] ->> []
         | ->> [f (head l)] ++ map f (tail l);
+
+    all = l -> match l
+        | [] ->> true
+        | ->> |>
+            | head l == false ->> false
+            | ->> all (tail l);
 }

@@ -7,9 +7,20 @@
         | [] ->> []
         | ->> [f (head l)] ++ map f (tail l);
 
-    all = l -> match l
+    all = l:list -> match l
         | [] ->> true
         | ->> |>
-            | head l == false ->> false
-            | ->> all (tail l);
+            | head l ->> all (tail l)
+            | ->> false;
+
+    any = l:list -> match l 
+        | [] ->> false
+        | ->> |>
+            | head l ->> true
+            | ->> any (tail l);
+
+    elemAt = l:list -> n:num -> match n 
+        | 0 ->> head l
+        | ->> elemAt (tail l) (n - 1);
+
 }

@@ -188,6 +188,19 @@ public class Evaluator {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				String inputBox = JOptionPane.showInputDialog(null, ((FL_String) builtinParam).stringValue(), "ForteLang @inputbox", -1);
 				return (inputBox == null ? "" : inputBox);
+			case ABORT:
+				System.out.println("Program aborted with " + builtinParam);
+				System.exit(0);
+				break;
+//			case LENGTH:
+//				if(!(builtinParam instanceof LinkedList)) {
+//					throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());
+//				} else {
+//					return new BigDecimal(((LinkedList<?>) builtinParam).size());
+//				}
+			
+		default:
+			break;
 		}
 		return null;
 	}

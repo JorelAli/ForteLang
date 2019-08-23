@@ -27,7 +27,7 @@ public class ForteLang implements ForteLangConstants {
         static Scanner globalScanner = null;
         public static int innerComments = 0;
 
-        final static boolean GENERATE_DOCS = false;
+        final static boolean GENERATE_DOCS = true;
         static LinkedHashMap<String, String> docs = new LinkedHashMap<String, String>();
 
         static Scanner getGlobalScanner() {
@@ -146,13 +146,17 @@ public class ForteLang implements ForteLangConstants {
                         System.out.println();
                         System.out.println("=== Parsing complete ===");
                         System.out.println();
+                        System.out.println("Program to evaluate: " + expression);
                 }
-
-                System.out.println("Program to evaluate: " + expression);
 
             Object result = null;
 
-                result = Evaluator.evaluate(new Closure(new Scope(), expression));
+                try {
+                        result = Evaluator.evaluate(new Closure(new Scope(), expression));
+                } catch(StackOverflowError e) {
+                        System.out.println("Infinite recursion encountered");
+                        System.exit(0);
+                }
 
             {if (true) return result;}
     throw new Error("Missing return statement in function");

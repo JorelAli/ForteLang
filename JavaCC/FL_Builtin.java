@@ -7,7 +7,9 @@ public class FL_Builtin implements Evaluatable {
 		HEAD, 
 		TAIL, 
 		INPUT, 
-		INPUTBOX 
+		INPUTBOX,
+		ABORT, 
+		LENGTH
 	}
 
 	private final Object param;
@@ -40,7 +42,9 @@ public class FL_Builtin implements Evaluatable {
 		switch(str) {
 			case "head": return new FL_Builtin(FL_Builtin.Builtin.HEAD, null);
 			case "tail": return new FL_Builtin(FL_Builtin.Builtin.TAIL, null);
+//			case "length": return new FL_Builtin(FL_Builtin.Builtin.LENGTH, null);
 			case "@import": return new FL_Builtin(FL_Builtin.Builtin.IMPORT, null);
+			case "@abort": return new FL_Builtin(FL_Builtin.Builtin.ABORT, null);
 			
 		}
 		Print.EVAL("Failed to parse Builtin from \"" + str + "\"");

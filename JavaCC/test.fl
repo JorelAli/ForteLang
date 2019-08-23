@@ -93,7 +93,17 @@ include {
         | [] ->> acc
         | ->> fold f (f acc (head l)) (tail l);
 
-} in std.length ["hi"]
+    infinite = x -> infinite x;
+
+} in length "hi"##std.assert false##std.elemAt [1, 2, 3, 4, 5] 22
+
+##std.assert false ##std.sort [5, 2, 7, 1]
+
+##std.genList (x -> x * x) 5
+
+##std.matchRegex "hello" '.+'
+
+##std.length ["hi"]
 
 ##std.filter (x -> x > 2) [1, 2, 3, 4, 5] 
 

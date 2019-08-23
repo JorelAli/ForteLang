@@ -102,9 +102,12 @@ public class OperatorParser {
 						
 						if(func.getArguments().isEmpty()) {
 							return result;
+						} else {
+							func.setInitFunction(result);
+							return Evaluator.evaluate(new Closure(expr2.getScope(), func));
 						}
 						
-						return result;
+//						return result;
 					}
 				}
 			}

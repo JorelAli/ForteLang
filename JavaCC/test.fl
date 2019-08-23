@@ -93,7 +93,9 @@ include {
         | [] ->> acc
         | ->> fold f (f acc (head l)) (tail l);
 
-} in std.filter (x -> x > 2) [1, 2, 3, 4, 5] 
+} in std.length ["hi"]
+
+##std.filter (x -> x > 2) [1, 2, 3, 4, 5] 
 
 ##std.elemAt [1, 2, 3, 4, 5] 2
 

@@ -28,5 +28,10 @@
         | ->> (|>
             | f (head l) ->> [head l]
             | ->> []) ++ filter f (tail l);
+    
+    length = l -> match l
+        | "" ->> 0
+        | [] ->> 0
+        | ->> 1 + length (tail l);
 
 }

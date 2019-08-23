@@ -6,6 +6,7 @@ PARSER_BEGIN(ForteLang)
 
 import java.util.LinkedList;
 import java.util.LinkedHashMap;
+import java.util.TreeMap;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Stack;
@@ -17,6 +18,8 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.ByteArrayInputStream;
+
+import java.nio.file.Files;
 
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -33,7 +36,10 @@ public class ForteLang {
 	public static int innerComments = 0;
 	
 	final static boolean GENERATE_DOCS = true;
-	static LinkedHashMap<String, String> docs = new LinkedHashMap<String, String>();
+	final static boolean PRINT_DOCS = false;
+	final static boolean TO_MARKDOWN_FILE = true;
+	final static String MARKDOWN_FILE = "docs.md";
+	static TreeMap<String, String> docs = new TreeMap<String, String>();
 
 	static Scanner getGlobalScanner() {
 		if(globalScanner == null) {
@@ -55,7 +61,7 @@ public class ForteLang {
 	}
 
 	/** Main method */
-	public static void main(String[] args) throws ParseException, FileNotFoundException {
+	public static void main(String[] args) throws Exception {
 	  	boolean replMode = false;
 	  	for(String str : args) {
 			if(str.equals("-repl")) {
@@ -113,11 +119,31 @@ public class ForteLang {
 				System.out.println("==> " + prettifyOutput(result));
 
 				if(GENERATE_DOCS) {
-					System.out.println();
-					System.out.println("=== Generated documentation ===");
-					for(String key : docs.keySet()) {
-						System.out.println(key);
-						System.out.println("  " + docs.get(key).replace("\n", "\n  "));
+					if(PRINT_DOCS) {
+						System.out.println();
+						System.out.println("=== Generated documentation ===");
+						for(String key : docs.keySet()) {
+							System.out.println("### `" + key + "`");
+							for(String str : docs.get(key).split("\n")) {
+								System.out.println(str.trim());
+							}
+							System.out.println();
+						}
+					}
+					if(TO_MARKDOWN_FILE) {
+						LinkedList<String> generatedDocumentation = new LinkedList<String>();
+
+						for(String key : docs.keySet()) {
+							generatedDocumentation.add("### `" + key + "`");
+							for(String str : docs.get(key).split("\n")) {
+								generatedDocumentation.add(str.trim());
+							}
+							generatedDocumentation.add("");
+						}
+
+						File md = new File(MARKDOWN_FILE);
+						file.createNewFile();
+						Files.write(md.toPath(), generatedDocumentation);
 					}
 				}
 				
@@ -266,7 +292,8 @@ Token anyOperator() throws Exception : { Token op; } {
 }
 
 Type anyType() throws Exception : { Token type; } {
-	(	    type = <NUM>
+	(
+	    type = <NUM>
 	  | type = <LST>
 	  | type = <SET>
 	  | type = <FUN>
@@ -342,7 +369,8 @@ FL_Set set() throws Exception : { FL_Set set; Token setDeclaration; Token attrNa
 FL_Function lambda() throws Exception : { Token paramName; Object innerExpression; Type type; } {
   	{ type = Type.ANY; }
 	(
-		(			paramName = <VAR_NAME>(<COLON> type = anyType())?
+		(
+			paramName = <VAR_NAME>(<COLON> type = anyType())?
 			<FUNCTION_ARROW>
 			innerExpression = enclosedExpression()
 		)
@@ -365,7 +393,8 @@ FL_List list() throws Exception : { FL_List list; Object nextItem; } {
   	//Open bracket
   	<OPENSBRACKET> (
   	  
-		//Empty list		<CLOSESBRACKET> { return list; }
+		//Empty list
+		<CLOSESBRACKET> { return list; }
 		|
 		//Non-empty list
 		nextItem = enclosedExpression()
@@ -449,7 +478,8 @@ FL_FunctionCall functionCall(boolean bracketed) throws Exception : { FL_Function
   	}
   	(
   	  LOOKAHEAD(2)
-  	  lambda = lambda()  	  | varName = <VAR_NAME> 
+  	  lambda = lambda()
+  	  | varName = <VAR_NAME> 
   	)
   	{
   	   	result = new FL_FunctionCall();

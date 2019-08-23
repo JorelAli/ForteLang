@@ -1,16 +1,27 @@
 #[ The Standard Library ]#
 {
+    ##| ```
     ##| genList :: (num -> b) -> num -> [b]
+    ##| ```
     ##| Generates a list of size `num`, starting at 0
     ##| For example, `genList (x -> x * x) 5` produces `[0, 1, 4, 9, 16]`
     genList = f:func -> n:num -> match n
         | 0 ->> []
         | ->> genList f (n - 1) ++ [f n];
 
+    ##| ```
+    ##| map :: (a -> b) -> [a] -> [b]
+    ##| ```
+    ##| Maps each element from the input list using the function provided
+    ##| For example, `map (x -> x * x) [1, 2, 3]` produces `[1, 4, 9]`
     map = f:func -> l:list -> match l
         | [] ->> []
         | ->> [f (head l)] ++ map f (tail l);
 
+    ##| ```
+    ##| all :: [bool] -> bool
+    ##| ```
+    ##| Checks whether each element in the list evaluates to `true`
     all = l:list -> match l
         | [] ->> true
         | ->> |>

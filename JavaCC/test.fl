@@ -111,11 +111,11 @@ include {
 
     sum''' = l -> acc -> match l
             | [] ->> acc
-            | ->> sum''' (tail l) (acc + head l); 
+            | ->> sum''' (tail l) (head l + acc); 
 
-} in sum''' [1, 2, 3] 0
+} in ##sum''' [1, 2, 3] 0
 
-##std.map (x -> 2 * x) [1, 2, 3]
+std.map (x -> x * x) [1, 2, 3]
 
 ##sum'' [1, 2, 3]
 

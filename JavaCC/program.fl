@@ -1,0 +1,10 @@
+include {
+    std = @import "std.fl";
+} in 
+
+{
+    name = "Jorel";
+    age = 21;
+} /+ {
+    favIceCream = "vanilla";
+}.name

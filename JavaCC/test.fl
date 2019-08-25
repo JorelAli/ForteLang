@@ -1,5 +1,5 @@
 include {
-    ##| Returns the number 2
+    #[##| Returns the number 2
     two = 2;
 
     ##| Checks whether an input String is a number
@@ -29,19 +29,152 @@ include {
 
     someInnerFunc = f:func -> f;
 
-    ## add = x -> y -> x + y;
+    add = x -> y -> x + y;
+    ]#
 
-    factorial = i:num -> match i
+    #[ factorial = i:num -> match i
         | 1 ->> 1
-        | ->> i * (factorial (i - 1));
-
+        | ->> i * (factorial (i - 1)); ]#
+    #[
     replaceWithOnes = l:list -> match l
         | [] ->> []
         | ->> [1] ++ replaceWithOnes (tail l);
 
     a = (x -> x);
 
-} in replaceWithOnes [0, 0, 0]
+    x = 2;
+
+    something = include {
+        test = 2;
+    } in 5;
+    ]#
+
+    ## genList = f:func -> n:num -> match n
+    ##     | 0 ->> []
+    ##     | ->> genList f (n - 1) ++ [f n];
+
+    ## map = f:func -> l:list -> match l
+    ##     | [] ->> []
+    ##     | ->> [f (head l)] ++ map f (tail l);
+
+    five = a:list -> 5;
+
+    return = a:list -> a ++ [2];
+
+    add = x -> y -> x + y;
+
+    mySet = { innerSet = { add = 2; }; };
+
+    ##blah = @import "./std.fl";
+
+    std = @import "./std.fl";
+    ## map = std.map;
+
+    foldl = f -> acc -> l -> match l
+        | [] ->> acc
+        | ->> include {
+            x = head l;
+            xs = tail l;
+        } in foldl f (f x acc) xs;
+        
+        ##foldl (f (f acc (head l)) (tail l));
+
+    factorial = i:num -> match i
+        | 1 ->> 1
+        | ->> i * (factorial (i - 1));
+
+    biFunc = f -> f 2 3;
+
+    genericFactorial = baseCase -> baseExpr -> i -> match i
+        | baseCase ->> baseExpr
+        | ->> i * (factorial (i - 1));
+
+    fold = f -> acc -> l -> match l
+        | [] ->> acc
+        | ->> fold f (f acc (head l)) (tail l);
+
+    infinite = x -> infinite x;
+
+    foldList = f:func -> l:list -> acc:num -> match l 
+        | [] ->> []
+        | ->> foldList f (tail l) (f acc (head l));
+
+    sum = z -> include {
+        sum' = l -> acc -> match l
+            | [] ->> acc
+            | ->> sum' (tail l) (acc + head l); 
+    } in sum' z 0;
+
+    sum'' = l -> match l
+        | [] ->> 0
+        | ->> sum'' (tail l) + head l;
+
+    sum''' = l -> acc -> match l
+            | [] ->> acc
+            | ->> sum''' (tail l) (head l + acc); 
+
+} in ##sum''' [1, 2, 3] 0
+
+std.map (x -> x * x) [1, 2, 3]
+
+##sum'' [1, 2, 3]
+
+## foldList (x -> y -> x + y) [1, 2, 3] 0 
+
+##std.length ["hi"] ##std.filter (x -> x > 2) [1, 2, 3, 4, 5] 
+
+ ##length "hi"##std.assert false##std.elemAt [1, 2, 3, 4, 5] 22
+
+##std.assert false ##std.sort [5, 2, 7, 1]
+
+##std.genList (x -> x * x) 5
+
+##std.matchRegex "hello" '.+'
+
+##std.length ["hi"]
+
+##std.filter (x -> x > 2) [1, 2, 3, 4, 5] 
+
+##std.elemAt [1, 2, 3, 4, 5] 2
+
+##.all [true, false]
+
+##fold (x -> y -> x + y) 0 [1, 2, 3, 4, 5, 6] 
+
+##genericFactorial 1 1 30 ##foldl add 0 [1]
+
+##map (x -> x) [1, 2, 3] 
+
+##map (x -> x) [1, 2,3] ##mySet.innerSet."add" + 4 ##1 == 1## (genList (x -> x + 1) 10)
+
+##{} /+ {a=2;}##add ##map (x -> x * x) [5]  ##map (x -> (3 * x)) [1] ##head [1, 2, 3] ##map (x -> (3 * x)) [1]
+
+##add 2 3 ##map (x -> x) [1]
+
+##return ((x -> x ++ x) [1]) ++ [123]
+
+##map (x -> x * x) [5] 
+
+##head ((map (x -> x * 10) [1, 2, 3, 4, 5, 6])) > 2
+
+
+##(map (x -> x * 10) [1, 2, 3, 4, 5, 6]) ? (10 + 0) == true
+
+
+##genList (x -> x) 10
+
+
+##factorial 5
+
+#[include { x = 5;
+} in [x + x] ++ []]#
+##[1, 2, 3, false, (x -> x)]
+
+##|> | 2 == 2 ->> 2 | ->> 4 
+
+## (x -> x) x
+
+##replaceWithOnes [0, 0, 0]
 
  ##someInnerFunc (x -> x) 2
 

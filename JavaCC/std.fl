@@ -1,0 +1,61 @@
+#[ The Standard Library ]#
+{
+    ##| ```
+    ##| genList :: (num -> b) -> num -> [b]
+    ##| ```
+    ##| Generates a list of size `num`, starting at 0
+    ##| For example, `genList (x -> x * x) 5` produces `[0, 1, 4, 9, 16]`
+    genList = f:func -> n:num -> match n
+        | 0 ->> []
+        | ->> genList f (n - 1) ++ [f n];
+
+    ##| ```
+    ##| map :: (a -> b) -> [a] -> [b]
+    ##| ```
+    ##| Maps each element from the input list using the function provided
+    ##| For example, `map (x -> x * x) [1, 2, 3]` produces `[1, 4, 9]`
+    map = f:func -> l:list -> match l
+        | [] ->> []
+        | ->> [f (head l)] ++ map f (tail l);
+
+    ##| ```
+    ##| all :: [bool] -> bool
+    ##| ```
+    ##| Checks whether each element in the list evaluates to `true`
+    all = l:list -> match l
+        | [] ->> true
+        | ->> |>
+            | head l ->> all (tail l)
+            | ->> false;
+
+    any = l:list -> match l 
+        | [] ->> false
+        | ->> |>
+            | head l ->> true
+            | ->> any (tail l);
+
+    elemAt = l:list -> n:num -> |>
+        | assertWithErr (length l >= n) "Index provided is larger than the size of the list"
+            ->> match n 
+                | 0 ->> head l
+                | ->> elemAt (tail l) (n - 1)
+        | ->> 0;
+
+    filter = f:func -> l:list -> match l
+        | [] ->> []
+        | ->> (|>
+            | f (head l) ->> [head l]
+            | ->> []) ++ filter f (tail l);
+    
+    length = l -> match l
+        | "" ->> 0
+        | [] ->> 0
+        | ->> 1 + length (tail l);
+
+    assertWithErr = s -> err -> match s
+        | true ->> true
+        | ->> @abort err;
+
+    assert = s -> assertWithErr s "Assertion failed";
+
+}

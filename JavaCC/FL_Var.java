@@ -21,9 +21,4 @@ public class FL_Var implements Evaluatable {
 		}
 		return false;
 	}
-
-	@Override
-	public Scope getLocalScope() {
-		return new Scope();
-	}
 }

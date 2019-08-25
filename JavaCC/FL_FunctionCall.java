@@ -3,11 +3,11 @@ import java.util.LinkedList;
 public class FL_FunctionCall implements Evaluatable {
 	private Object initFunction;
 	private final LinkedList<Object> arguments;
-	private Scope scope;
+	private boolean hasBrackets;
 
 	public FL_FunctionCall() {
 		arguments = new LinkedList<Object>();
-		this.scope = new Scope();
+		hasBrackets = false;
 	}
 
 	public LinkedList<Object> getArguments() {
@@ -21,11 +21,19 @@ public class FL_FunctionCall implements Evaluatable {
 	public Object getInitFunction() {
 		return this.initFunction;
 	}
+	
+	public void addBrackets() {
+		this.hasBrackets = true;
+	}
+	
+	public boolean hasBrackets() {
+		return this.hasBrackets;
+	}
 
 	@Override
 	public String toString() {
 		if(initFunction instanceof FL_Var) {
-			return ((FL_Var) initFunction).getName();
+			return ((FL_Var) initFunction).getName() + " (and " + arguments.size() + " argument" + (arguments.size() == 1 ? "" : "s") + ")";
 		} else if(initFunction instanceof FL_Function) {
 			FL_Function func = (FL_Function) initFunction;
 			if(arguments.size() == 0) {
@@ -40,10 +48,5 @@ public class FL_FunctionCall implements Evaluatable {
 	@Override
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
-	}
-
-	@Override
-	public Scope getLocalScope() {
-		return scope;
 	}
 }

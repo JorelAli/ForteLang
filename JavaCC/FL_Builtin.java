@@ -7,17 +7,17 @@ public class FL_Builtin implements Evaluatable {
 		HEAD, 
 		TAIL, 
 		INPUT, 
-		INPUTBOX 
+		INPUTBOX,
+		ABORT, 
+		LENGTH
 	}
 
 	private final Object param;
 	private final Builtin type;
-	private Scope scope;
 
 	public FL_Builtin(Builtin type, Object param) {
 		this.type = type;
 		this.param = param;
-		this.scope = new Scope();
 	}
 
 	public Object getParameter() {
@@ -37,9 +37,17 @@ public class FL_Builtin implements Evaluatable {
     public boolean equalsWithScope(Object o, Scope scope) { 
 		return false;
 	}
-
-	@Override
-	public Scope getLocalScope() {
-		return this.scope;
+	
+	public static FL_Builtin fromString(String str) {
+		switch(str) {
+			case "head": return new FL_Builtin(FL_Builtin.Builtin.HEAD, null);
+			case "tail": return new FL_Builtin(FL_Builtin.Builtin.TAIL, null);
+//			case "length": return new FL_Builtin(FL_Builtin.Builtin.LENGTH, null);
+			case "@import": return new FL_Builtin(FL_Builtin.Builtin.IMPORT, null);
+			case "@abort": return new FL_Builtin(FL_Builtin.Builtin.ABORT, null);
+			
+		}
+		Print.EVAL("Failed to parse Builtin from \"" + str + "\"");
+		return null;
 	}
 }

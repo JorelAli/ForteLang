@@ -2,9 +2,14 @@ include {
     std = @import "std.fl";
 } in 
 
-{
-    name = "Jorel";
-    age = 21;
-} /+ {
-    favIceCream = "vanilla";
-}.name
+head (std.map (a:num -> b:num -> a + b) [1, 2, 3]) 45
+
+## {
+##     name = "Jorel";
+##     age = 21;
+##     dob = "25/08/1998";
+## } /+ {
+##     favIceCream = "vanilla";
+## } /+ {
+
+## }

@@ -10,7 +10,7 @@ public class Repl {
 	}
 	
 	public void start() {
-		System.out.println("Welcome to the ForteLang repl (v0.0.1). Type :help for help.");
+		System.out.println("Welcome to the ForteLang repl (v0.0.2). Type :help for help.");
 		System.out.println();
 		Scanner scanner = ForteLang.getGlobalScanner();
 		repl: while(true) {
@@ -24,6 +24,7 @@ public class Repl {
 					System.out.println("The following commands are available:");
 					System.out.println();
 					System.out.println("  :q\tExit ForteLang repl");
+					System.out.println("  :e\tDisplay current declared variables");
 					System.out.println();
 					continue repl;
 				case ":q":
@@ -44,12 +45,9 @@ public class Repl {
 					Object result = evaluate(input);
 					System.out.println("=> " + ForteLang.prettifyOutput(result) + "\n");
 				}
-			} catch(Error e) {
+			} catch(Throwable t) {
 				System.out.println("=>> Error, invalid input \"" + input + "\"");
-				System.out.println(e.getMessage() + "\n");
-			} catch(Exception e) {
-				System.out.println("=>> Error, invalid input \"" + input + "\"");
-				System.out.println(e.getMessage() + "\n");
+				System.out.println(t.getMessage() + "\n");
 			}
 		}
 	}

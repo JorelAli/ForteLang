@@ -91,7 +91,7 @@ public class ForteLang {
 			impureMode = true;
 		}
 	  	
-	  	if(args.length - arguments.size() < 1) {
+	  	if(args.length - arguments.size() < 1 || !replMode) {
 	  	  	System.out.println("Usage: java ForteLang <File>");
 	  	  	System.out.println("Flags:");
 	  	  	System.out.println("  -repl  - Start the ForteLang repl");

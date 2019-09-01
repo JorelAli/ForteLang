@@ -1,6 +1,7 @@
 include {
     ## std = importstd;##@import "std.fl";
 } in 
-
+## std.a
+1/10000000000000 
 ## @print "hi" ##@exec "mkdir hi"
 ## std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 

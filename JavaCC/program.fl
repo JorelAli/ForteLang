@@ -1,12 +1,5 @@
 include {
     std = @import "std.fl";
-    map = f:func -> l:list -> match l
-        | [] ->> []
-        | ->> [f (head l)] ++ map f (tail l);
-
-    foldl = f:func -> acc -> l:list -> match l
-        | [] ->> acc
-        | ->> foldl f (f (head l) acc) (tail l);
 } in 
 
-foldl (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 
+std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 

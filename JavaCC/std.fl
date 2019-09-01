@@ -52,6 +52,10 @@
         | [] ->> 0
         | ->> 1 + length (tail l);
 
+    foldl' = f:func -> acc -> l:list -> match l
+        | [] ->> acc
+        | ->> foldl' f (f (head l) acc) (tail l);
+
     assertWithErr = s -> err -> match s
         | true ->> true
         | ->> @abort err;

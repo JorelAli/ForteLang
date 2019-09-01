@@ -1,9 +1,9 @@
 
 public class Print {
 
-	private final static boolean SECD = true;
-	private final static boolean EVAL = true;
-	private final static boolean OPEX = true;
+	public static boolean SECD = true;
+	public static boolean EVAL = true;
+	public static boolean OPEX = true;
 	
 	public static void SECD()                   { if(SECD) print("SECD"); }
 	public static void SECD(Object o)           { if(SECD) print("SECD", o); }

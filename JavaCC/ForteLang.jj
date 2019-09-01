@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Stack;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.HashSet;
 
 import java.util.regex.Pattern;
 
@@ -63,14 +65,33 @@ public class ForteLang {
 	/** Main method */
 	public static void main(String[] args) throws Exception {
 	  	boolean replMode = false;
+	  	Set<String> arguments = new HashSet<String>();
 	  	for(String str : args) {
-			if(str.equals("-repl")) {
-				replMode = true;
-			}
+		    if(str.startsWith("-")) {
+				arguments.add(str.substring(1, str.length()));
+		    }
 	  	}
+
+		if(arguments.contains("repl")) {
+			replMode = true;
+		}
+		if(arguments.contains("debug")) {
+		    LOGGING_ENABLE = true;
+			Print.SECD = true;
+			Print.EVAL = true;
+			Print.OPEX = true;
+		} else {
+		    LOGGING_ENABLE = false;
+			Print.SECD = false;
+			Print.EVAL = false;
+			Print.OPEX = false;
+		}
 	  	
-	  	if(args.length < 1) {
+	  	if(args.length - arguments.size() < 1) {
 	  	  	System.out.println("Usage: java ForteLang <File>");
+	  	  	System.out.println("Flags:");
+	  	  	System.out.println("  -repl  - Start the ForteLang repl");
+	  	  	System.out.println("  -debug - Output all evaluation debug messages");
 			return;
 	  	}
 
@@ -114,14 +135,14 @@ public class ForteLang {
 			  	/* Run the parser */
 	
 				Object result = new ForteLang(new FileInputStream(file)).input();
-				System.out.println();
-				System.out.println("=== Evaluation complete ===");
-				System.out.println("==> " + prettifyOutput(result));
+//				System.out.println();
+//				System.out.println("=== Evaluation complete ===");
+//				System.out.println("==> " + prettifyOutput(result));
+				System.out.println(prettifyOutput(result));
 
 				if(result instanceof Closure) {
 					Closure c = (Closure) result;
-					System.out.println(c.getExpression());
-					
+					System.out.println("Closure of: " + c.getExpression());
 				}
 
 				if(GENERATE_DOCS) {
@@ -213,10 +234,10 @@ TOKEN : { < OPENSBRACKET : "[" > }
 TOKEN : { < CLOSESBRACKET : "]" > }
 TOKEN : { < COMMA : "," > }
 
-//Enums
-TOKEN : { < CAPS : (["A"-"Z", "_"])+ > }
-TOKEN : { < ENUM_OPEN : " {|" > }
-TOKEN : { < ENUM_CLOSE : "|}" > }
+////Enums
+//TOKEN : { < CAPS : (["A"-"Z", "_"])+ > }
+//TOKEN : { < ENUM_OPEN : " {|" > }
+//TOKEN : { < ENUM_CLOSE : "|}" > }
 
 //Sets
 TOKEN : { < EQUALS : "=" > }
@@ -234,7 +255,7 @@ TOKEN : { < STR : "str" > }
 TOKEN : { < COLON : ":" > }
 
 //Functions
-TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@"] (["A"-"Z", "a"-"z", "0"-"9", "'"])* > }
+TOKEN : { < VAR_NAME : ["A"-"Z", "a"-"z", "@", "_"] (["A"-"Z", "a"-"z", "0"-"9", "_"])* (["\'"])* > }
 TOKEN : { < FUNCTION_ARROW : "->" > }
 TOKEN : { < GUARD_START : "|>" > }
 TOKEN : { < GUARD : "|" > }

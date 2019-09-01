@@ -2,4 +2,5 @@ include {
     std = @import "std.fl";
 } in 
 
-std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 
+@exec "mkdir hi"
+##std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 

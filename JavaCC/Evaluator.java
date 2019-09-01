@@ -145,6 +145,11 @@ public class Evaluator {
 				System.out.println(((FL_String) builtinParam).stringValue());
 				return builtinParam;
 			case EXEC:
+				if(builtinParam instanceof FL_String) {
+					Runtime.getRuntime().exec(((FL_String) builtinParam).stringValue());
+				} else {
+					throw new Exception("Needed a String, but got a " + builtinParam.getClass().getName());
+				}
 				break;
 			case HEAD:
 				if(!(builtinParam instanceof LinkedList)) {

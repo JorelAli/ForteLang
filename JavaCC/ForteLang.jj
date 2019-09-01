@@ -101,37 +101,7 @@ public class ForteLang {
 
 	  	if(replMode) {
 			LOGGING_ENABLE = false;
-			System.out.println("Welcome to the ForteLang repl (v0.0.1). Type :help for help.");
-			System.out.println();
-			Scanner scanner = getGlobalScanner();
-			repl: while(true) {
-			  	System.out.print("fl-repl> ");
-				String input = null;
-				try { 
-					input = scanner.nextLine();
-				} catch(Exception e) { scanner.close(); }
-				switch(input) {
-					case ":help":
-						System.out.println("The following commands are available:");
-						System.out.println();
-						System.out.println("  :q\tExit ForteLang repl");
-						System.out.println();
-						continue repl;
-					case ":q":
-						break repl;
-				}
-				
-				try { 
-					Object result = new ForteLang(new ByteArrayInputStream(input.getBytes())).input();
-					System.out.println("=> " + prettifyOutput(result) + "\n");
-				} catch(Error e) {
-					System.out.println("=>> Error, invalid input \"" + input + "\"");
-					System.out.println(e.getMessage() + "\n");
-				} catch(Exception e) {
-					System.out.println("=>> Error, invalid input \"" + input + "\"");
-					System.out.println(e.getMessage() + "\n");
-				}
-			}
+			Repl.init();
 	  	} else {
 			File file = new File(args[0]);
 		  	fileName = file.getName();
@@ -218,13 +188,6 @@ TOKEN : { < REGEX_STRING : "'" ("\\" ~[] | ~["'", "\\"])* "'" >}
 TOKEN : { < INCLUDE : "include" > }
 TOKEN : { < IN : "in" > }
 TOKEN : { < MATCH : "match" > }
-
-//Built-in functions
-//TOKEN : { < INPUT : "@input" > }
-TOKEN : { < INPUTBOX : "@inputbox" > }
-
-//TOKEN : { < HEAD : "head" > }
-//TOKEN : { < TAIL : "tail" > }
 
 //Brackets
 TOKEN : { < OPENBRACKET : "(" > }
@@ -470,7 +433,6 @@ Object expression(boolean bracketed) throws Exception : { Object result; Token t
 	| token = <STRING> { return new FL_String(parseString(token)); }
 	| token = <REGEX_STRING> { return Pattern.compile(parseString(token)); }
 	| token = <BOOLEAN> { return Boolean.parseBoolean(token.image); }
-	| result = builtinFunctions() { return result; }
 }
 
 Object opExpression(boolean bracketed) throws Exception : {
@@ -530,11 +492,6 @@ FL_FunctionCall functionCall(boolean bracketed) throws Exception : { FL_Function
 	  { result.getArguments().add(param); }
 	)*
 	{ return result; }
-}
-
-Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
-	<INPUT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUT, param); }
-	| <INPUTBOX>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, param); }
 }
 
 FL_Guards guards() throws Exception : {

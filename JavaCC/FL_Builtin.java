@@ -52,6 +52,7 @@ public class FL_Builtin implements Evaluatable {
 			case "@abort": return new FL_Builtin(FL_Builtin.Builtin.ABORT, null);
 			case "@print": return new FL_Builtin(FL_Builtin.Builtin.PRINT, null);			
 			case "@input": return new FL_Builtin(FL_Builtin.Builtin.INPUT, null);
+			case "@inputbox": return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, null);
 
 		}
 		Print.EVAL("Failed to parse Builtin from \"" + str + "\"");

@@ -86,7 +86,7 @@ public class ForteLang implements ForteLangConstants {
                         impureMode = true;
                 }
 
-                if(args.length - arguments.size() < 1 || !replMode) {
+                if(args.length - arguments.size() < 1 && !replMode) {
                         System.out.println("Usage: java ForteLang <File>");
                         System.out.println("Flags:");
                         System.out.println("  -repl  - Start the ForteLang repl");
@@ -96,14 +96,14 @@ public class ForteLang implements ForteLangConstants {
 
                 if(replMode) {
                         LOGGING_ENABLE = false;
-                        Repl.init();
+                        new Repl().start();
                 } else {
                         File file = new File(args[0]);
                         fileName = file.getName();
                         try {
                                 /* Run the parser */
 
-                                Object result = new ForteLang(new FileInputStream(file)).input();
+                                Object result = new ForteLang(new FileInputStream(file)).input(new Scope());
 //				System.out.println();
 //				System.out.println("=== Evaluation complete ===");
 //				System.out.println("==> " + prettifyOutput(result));
@@ -161,8 +161,8 @@ public class ForteLang implements ForteLangConstants {
         }
 
 /** Main endpoint */
-  final public Object input() throws ParseException, Exception {
-                                    Object expression = null; Token eof;
+  final public Object input(Scope initScope) throws ParseException, Exception {
+                                                   Object expression = null; Token eof;
     try {
       expression = enclosedExpression();
     } catch (ParseException e) {
@@ -179,7 +179,7 @@ public class ForteLang implements ForteLangConstants {
             Object result = null;
 
                 try {
-                        result = Evaluator.evaluate(new Closure(new Scope(), expression));
+                        result = Evaluator.evaluate(new Closure(initScope, expression));
                 } catch(StackOverflowError e) {
                         System.out.println("Infinite recursion encountered");
                         System.exit(0);

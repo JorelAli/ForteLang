@@ -140,7 +140,7 @@ public class Evaluator {
 		switch(builtin.getType()) {
 			case IMPORT:
 				File file = new File(((FL_String) builtinParam).stringValue());
-				return new ForteLang(new FileInputStream(file)).input();
+				return new ForteLang(new FileInputStream(file)).input(new Scope());
 			case PRINT:
 				System.out.println(((FL_String) builtinParam).stringValue());
 				return builtinParam;
@@ -201,7 +201,7 @@ public class Evaluator {
 				break;
 			case STD:
 				File file1 = new File("./std.fl");
-				return new ForteLang(new FileInputStream(file1)).input();
+				return new ForteLang(new FileInputStream(file1)).input(new Scope());
 //			case LENGTH:
 //				if(!(builtinParam instanceof LinkedList)) {
 //					throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());

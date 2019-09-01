@@ -3,7 +3,13 @@ import java.util.Scanner;
 
 public class Repl {
 
-	public static void init() {
+	Scope environment;
+	
+	public Repl() {
+		environment = new Scope();
+	}
+	
+	public void start() {
 		System.out.println("Welcome to the ForteLang repl (v0.0.1). Type :help for help.");
 		System.out.println();
 		Scanner scanner = ForteLang.getGlobalScanner();
@@ -22,11 +28,22 @@ public class Repl {
 					continue repl;
 				case ":q":
 					break repl;
+				case ":e":
+					System.out.println(environment);
+					continue repl;
 			}
-			
 			try { 
-				Object result = new ForteLang(new ByteArrayInputStream(input.getBytes())).input();
-				System.out.println("=> " + ForteLang.prettifyOutput(result) + "\n");
+				
+				if(input.matches("[A-Za-z0-9_']+.*=[^=]*")) {
+					String varName = input.split("=")[0].trim();
+					Object result = evaluate(input.split("=")[1]);
+					
+					environment.put(varName, result);
+					System.out.println("Added " + ForteLang.prettifyOutput(result) + " to environment");
+				} else {
+					Object result = evaluate(input);
+					System.out.println("=> " + ForteLang.prettifyOutput(result) + "\n");
+				}
 			} catch(Error e) {
 				System.out.println("=>> Error, invalid input \"" + input + "\"");
 				System.out.println(e.getMessage() + "\n");
@@ -35,6 +52,11 @@ public class Repl {
 				System.out.println(e.getMessage() + "\n");
 			}
 		}
+	}
+	
+	private Object evaluate(String input) throws ParseException, Exception {
+		ForteLang forteLang = new ForteLang(new ByteArrayInputStream(input.getBytes()));
+		return forteLang.input(environment);
 	}
 	
 }

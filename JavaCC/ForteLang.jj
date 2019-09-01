@@ -91,7 +91,7 @@ public class ForteLang {
 			impureMode = true;
 		}
 	  	
-	  	if(args.length - arguments.size() < 1 || !replMode) {
+	  	if(args.length - arguments.size() < 1 && !replMode) {
 	  	  	System.out.println("Usage: java ForteLang <File>");
 	  	  	System.out.println("Flags:");
 	  	  	System.out.println("  -repl  - Start the ForteLang repl");
@@ -101,14 +101,14 @@ public class ForteLang {
 
 	  	if(replMode) {
 			LOGGING_ENABLE = false;
-			Repl.init();
+			new Repl().start();
 	  	} else {
 			File file = new File(args[0]);
 		  	fileName = file.getName();
 			try {
 			  	/* Run the parser */
 	
-				Object result = new ForteLang(new FileInputStream(file)).input();
+				Object result = new ForteLang(new FileInputStream(file)).input(new Scope());
 //				System.out.println();
 //				System.out.println("=== Evaluation complete ===");
 //				System.out.println("==> " + prettifyOutput(result));
@@ -245,7 +245,7 @@ SKIP : { "#[" : BlockComment }
 SKIP : { "\n" | "\r" | " " | "\t" }
 
 /** Main endpoint */
-Object input() throws Exception : { Object expression = null; Token eof; } {
+Object input(Scope initScope) throws Exception : { Object expression = null; Token eof; } {
 	try { 
 		expression = enclosedExpression()
 	} catch(ParseException e) { /*Exceptions.EMPTY_PROGRAM(location(e.currentToken));*/ }
@@ -261,8 +261,8 @@ Object input() throws Exception : { Object expression = null; Token eof; } {
 
 	    Object result = null;
 
-		try { 
-			result = Evaluator.evaluate(new Closure(new Scope(), expression));
+		try {
+			result = Evaluator.evaluate(new Closure(initScope, expression));
 		} catch(StackOverflowError e) {
 			System.out.println("Infinite recursion encountered");
 			System.exit(0);

@@ -113,6 +113,12 @@ public class ForteLang implements ForteLangConstants {
                                 System.out.println("=== Evaluation complete ===");
                                 System.out.println("==> " + prettifyOutput(result));
 
+                                if(result instanceof Closure) {
+                                        Closure c = (Closure) result;
+                                        System.out.println(c.getExpression());
+
+                                }
+
                                 if(GENERATE_DOCS) {
                                         if(PRINT_DOCS) {
                                                 System.out.println();
@@ -789,35 +795,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_34()) {
-    jj_scanpos = xsp;
-    if (jj_3R_35()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_9() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_14() {
-    if (jj_scan_token(OPENBRACKET)) return true;
-    if (jj_3R_6()) return true;
-    if (jj_scan_token(CLOSEBRACKET)) return true;
-    return false;
-  }
-
   private boolean jj_3_3() {
     if (jj_3R_8()) return true;
     return false;
@@ -1255,6 +1232,35 @@ public class ForteLang implements ForteLangConstants {
       xsp = jj_scanpos;
       if (jj_3_6()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_34()) {
+    jj_scanpos = xsp;
+    if (jj_3R_35()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_9() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_14() {
+    if (jj_scan_token(OPENBRACKET)) return true;
+    if (jj_3R_6()) return true;
+    if (jj_scan_token(CLOSEBRACKET)) return true;
     return false;
   }
 

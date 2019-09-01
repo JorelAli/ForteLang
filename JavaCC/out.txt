@@ -1,121 +1,41 @@
 
 === Parsing complete ===
 
-[EVAL] Evaluating  FL_IncludedSet[set={hello=FL_OpExpr[{hello=hello} . FL_FunctionCall@4554617c], hello'=true, world=FL_OpExpr[{world=hello} /+ {world=world!}]}, expr=FL_OpExpr[{hello=FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]} . FL_FunctionCall@14ae5a5]]
-[EVAL] Evaluating  FL_OpExpr[{hello=FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]} . FL_FunctionCall@14ae5a5]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[{hello=FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]} . FL_FunctionCall@14ae5a5]
-[EVAL] OpExpr to eval: {hello=FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]} . FL_FunctionCall@14ae5a5
-[EVAL] EvalOpExpr left part {hello=FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]}
-[EVAL] Evaluating  {hello=FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]}
-[EVAL] OpExpr eval result:  FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]
-[EVAL] Evaluating  FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]]
-[EVAL] OpExpr to eval: FL_FunctionCall@74a14482 ++ FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]
-[EVAL] EvalOpExpr left part FL_FunctionCall@74a14482
-[EVAL] Evaluating  FL_FunctionCall@74a14482
-[EVAL] 
-[EVAL] Reading from closure...  FL_OpExpr
-[EVAL] Evaluating  Var[hello]
-[EVAL] Resolving: hello =>  FL_OpExpr[{hello=hello} . FL_FunctionCall@4554617c]
-[EVAL] Evaluating  FL_OpExpr[{hello=hello} . FL_FunctionCall@4554617c]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[{hello=hello} . FL_FunctionCall@4554617c]
-[EVAL] OpExpr to eval: {hello=hello} . FL_FunctionCall@4554617c
-[EVAL] EvalOpExpr left part {hello=hello}
-[EVAL] Evaluating  {hello=hello}
-[EVAL] Evaluating  FL_FunctionCall@4554617c
-[EVAL] 
-[EVAL] About to evaluate the following: 
-[EVAL] FL_Function(hello) -> (FL_OpExpr[FL_FunctionCall@7f31245a ++ hello])
-[EVAL] 
-[EVAL] Starting SECD machine
-[EVAL] 
-[SECD] Initial control:  [FL_Function(hello) -> (FL_OpExpr[FL_FunctionCall@7f31245a ++ hello]), Guard{ | Guard{ | FL_FunctionCall@4aa298b7 ->> FL_FunctionCall@6d6f6e28 | ->> FL_FunctionCall@135fbaa4 } ->>  | ->> hello }, ap]
-[EVAL] Evaluating  Guard{ | Guard{ | FL_FunctionCall@4aa298b7 ->> FL_FunctionCall@6d6f6e28 | ->> FL_FunctionCall@135fbaa4 } ->>  | ->> hello }
-[EVAL] Evaluating  Guard{ | FL_FunctionCall@4aa298b7 ->> FL_FunctionCall@6d6f6e28 | ->> FL_FunctionCall@135fbaa4 }
-[EVAL] Evaluating  FL_FunctionCall@4aa298b7
-[EVAL] 
-[EVAL] Reading from closure...  java.lang.Boolean
-[EVAL] Evaluating  Var[hello']
-[EVAL] Resolving: hello' =>  true
-[EVAL] Evaluating  FL_FunctionCall@6d6f6e28
-[EVAL] 
-[EVAL] Reading from closure...  java.lang.Boolean
-[EVAL] Evaluating  Var[hello']
-[EVAL] Resolving: hello' =>  true
+Program to evaluate: FL_IncludedSet[set={std=@import (and 1 argument), map=(f:function ->)}, expr=map (and 2 arguments)]
+[EVAL] Starting evaluation of Closure@15db9742(FL_IncludedSet), with scope {}
+[EVAL] Starting evaluation of Closure@6d06d69c(FL_FunctionCall), with scope {map=(f:function ->), std=@import (and 1 argument)}
+[EVAL] {map=(f:function ->), std=@import (and 1 argument)}
+[SECD] Starting SECD machine
+[SECD] Flattening SECD control
+[SECD] Adding to control:  a:any ->
+[EVAL] Starting evaluation of Closure@7852e922(FL_FunctionCall), with scope {map=(f:function ->), std=@import (and 1 argument)}
+[EVAL] {map=(f:function ->), std=@import (and 1 argument)}
+[SECD] Starting SECD machine
+[SECD] Initial control:  [a:any ->]
+[SECD] Popped:  a:any ->
+[SECD] SECD ended with  FL_Function
+[SECD] SECD scope was  {map=(f:function ->), std=@import (and 1 argument)}
+[EVAL] Starting evaluation of Closure@4e25154f(FL_Function), with scope {map=(f:function ->), std=@import (and 1 argument)}
+[SECD] FINISHED EVALUATING FC.BRACKETS
+[SECD] Initial control:  [Var[map], Closure@70dea4e, ap, [1], ap]
+[SECD] Popped:  Var[map]
+[SECD] control item to evaluate:  Var[map]
+[EVAL] Starting evaluation of Closure@5c647e05(FL_Var), with scope {map=(f:function ->), std=@import (and 1 argument)}
+[EVAL] Starting evaluation of Closure@33909752(FL_FunctionCall), with scope {map=(f:function ->), std=@import (and 1 argument)}
+[EVAL] {map=(f:function ->), std=@import (and 1 argument)}
+[SECD] Starting SECD machine
+[SECD] Initial control:  [f:function ->]
+[SECD] Popped:  f:function ->
+[SECD] SECD ended with  FL_Function
+[SECD] SECD scope was  {map=(f:function ->), std=@import (and 1 argument)}
+[EVAL] Starting evaluation of Closure@55f96302(FL_Function), with scope {map=(f:function ->), std=@import (and 1 argument)}
+[SECD] Evaluated control item as:  Closure@3d4eac69
+[SECD] Popped:  Closure@70dea4e
+[SECD] Popped:  ap
 [SECD] 
-[SECD] Applying...
-[SECD] Added complete. Result:  FL_OpExpr[FL_FunctionCall@7f31245a ++ hello]
-[SECD] SECD ended with FL_OpExpr[FL_FunctionCall@7f31245a ++ hello]
-[EVAL] Evaluating  FL_OpExpr[FL_FunctionCall@7f31245a ++ hello]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[FL_FunctionCall@7f31245a ++ hello]
-[EVAL] OpExpr to eval: FL_FunctionCall@7f31245a ++ hello
-[EVAL] EvalOpExpr left part FL_FunctionCall@7f31245a
-[EVAL] Evaluating  FL_FunctionCall@7f31245a
-[EVAL] 
-[EVAL] Reading from closure...  java.lang.String
-[EVAL] Evaluating  Var[hello]
-[EVAL] Resolving: hello =>  
-[EVAL] OpExpr eval result:  hello
-[EVAL] EvalOpExpr left part {hello=hello}
-[EVAL] Evaluating  {hello=hello}
-[EVAL] OpExpr eval result:  hello
-[EVAL] EvalOpExpr right part FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]
-[EVAL] Evaluating  FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]]
-[EVAL] OpExpr to eval: ,  ++ FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]
-[EVAL] EvalOpExpr right part FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]
-[EVAL] Evaluating  FL_Match[stmts={\w[o|r]+ld!=Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }}, finalStmt=hello]
-[EVAL] Evaluating  Guard{ | FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!] ->> world! | ->> hello }
-[EVAL] Evaluating  FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!]
-[EVAL] OpExpr to eval: FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6] == world!
-[EVAL] EvalOpExpr left part FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6]
-[EVAL] Evaluating  FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6]
-[EVAL] OpExpr to eval: FL_FunctionCall@1540e19d . FL_FunctionCall@677327b6
-[EVAL] EvalOpExpr left part FL_FunctionCall@1540e19d
-[EVAL] Evaluating  FL_FunctionCall@1540e19d
-[EVAL] 
-[EVAL] Reading from closure...  FL_OpExpr
-[EVAL] Evaluating  Var[world]
-[EVAL] Resolving: world =>  FL_OpExpr[{world=hello} /+ {world=world!}]
-[EVAL] Evaluating  FL_OpExpr[{world=hello} /+ {world=world!}]
-[EVAL] 
-
-About to evaluate OpExpr:
-[EVAL] FL_OpExpr[{world=hello} /+ {world=world!}]
-[EVAL] OpExpr to eval: {world=hello} /+ {world=world!}
-[EVAL] EvalOpExpr left part {world=hello}
-[EVAL] Evaluating  {world=hello}
-[EVAL] EvalOpExpr right part {world=world!}
-[EVAL] Evaluating  {world=world!}
-[EVAL] OpExpr eval result:  {world=world!}
-[EVAL] Evaluating  {world=world!}
-[EVAL] OpExpr eval result:  world!
-[EVAL] OpExpr eval result:  true
-[EVAL] OpExpr eval result:  , world!
-[EVAL] OpExpr eval result:  hello, world!
-
-=== Evaluation complete ===
-==> "hello, world!"
+[SECD] Applying... 
+[SECD] PotFunc: Closure@3d4eac69 (Closure)
+[EVAL] Starting evaluation of Closure@42a57993(Closure), with scope {map=(f:function ->), std=@import (and 1 argument)}
+[SECD] Evaluated invalid PotFunc to Closure@3d4eac69
+[SECD] Value:  Closure@70dea4e
+[SECD] Lambda:  null

@@ -23,8 +23,8 @@ public class Evaluator {
 		  	FL_Function function = (FL_Function) closure.getExpression();
 		  	FL_FunctionCall newFunctionCall = new FL_FunctionCall();
 		  	newFunctionCall.setInitFunction(function);
-		  	return newFunctionCall;
-//			return new Closure(new Scope(closure.getScope()), newFunctionCall);
+//		  	return newFunctionCall;
+			return new Closure(new Scope(closure.getScope()), newFunctionCall);
 		} else if(closure.getExpression() instanceof FL_FunctionCall) {
 			Print.EVAL(closure.getScope());
 			return new SECD(closure).runSECD();

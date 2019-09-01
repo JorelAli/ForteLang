@@ -113,6 +113,10 @@ include {
             | [] ->> acc
             | ->> sum''' (tail l) (head l + acc); 
 
+    max = x:num -> y:num -> |>
+        | x > y ->> x
+        | ->> y;
+
 } in ##sum''' [1, 2, 3] 0
 
 std.map (x -> x * x) [1, 2, 3]

@@ -118,6 +118,12 @@ public class ForteLang {
 				System.out.println("=== Evaluation complete ===");
 				System.out.println("==> " + prettifyOutput(result));
 
+				if(result instanceof Closure) {
+					Closure c = (Closure) result;
+					System.out.println(c.getExpression());
+					
+				}
+
 				if(GENERATE_DOCS) {
 					if(PRINT_DOCS) {
 						System.out.println();

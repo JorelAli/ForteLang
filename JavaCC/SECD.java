@@ -86,6 +86,18 @@ public class SECD {
 
 					Object potentialFunction = stack.pop();
 					Print.SECD("PotFunc: " + potentialFunction + " (" + potentialFunction.getClass().getName() + ")");
+					
+					if(value instanceof Closure) {
+						Closure closure = (Closure) value;
+						environment.putAll(closure.getScope());
+						value = closure.getExpression();
+					}
+					
+					if(potentialFunction instanceof Closure) {
+						Closure closure = (Closure) potentialFunction;
+						environment.putAll(closure.getScope());
+						potentialFunction = closure.getExpression();
+					}
 
 					FL_Function lambda = null;
 					Object builtinResult = null;
@@ -115,7 +127,7 @@ public class SECD {
 							throw new Exception("Invalid type. Expected " + type + ", but got " + value.getClass().getSimpleName()); 
 						}
 
-						Print.SECD("Binding " + value + " to " + lambda.getParameter().getName());
+						Print.SECD("| Binding " + value + " to " + lambda.getParameter().getName());
 						environment.put(lambda.getParameter().getName(), value);
 						 result = lambda.getExpression();
 
@@ -186,7 +198,7 @@ public class SECD {
 
 		Scope newEnv = new Scope(environment);
 		Print.SECD("SECD ended with ", stack.peek().getClass().getSimpleName());
-//		Print.SECD("SECD scope was ", newEnv);
+		Print.SECD("SECD scope was ", newEnv);
 		Object result = stack.pop();
 		return Evaluator.evaluate(new Closure(newEnv, result));
 	}

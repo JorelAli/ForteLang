@@ -1,9 +1,13 @@
 include {
     std = @import "std.fl";
+    map = f:func -> l:list -> match l
+        | [] ->> []
+        | ->> [f (head l)] ++ map f (tail l);
 } in 
 
 head (std.map (a:num -> b:num -> a + b) [1, 2, 3]) 45
-
+## head (map (a -> b -> a + b) [1, 2, 3])
+## head (map (a -> b -> a + b) [1]) 2
 ## {
 ##     name = "Jorel";
 ##     age = 21;

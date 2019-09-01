@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Stack;
@@ -127,16 +128,15 @@ public class Evaluator {
 	
 	@SuppressWarnings("unchecked")
 	public static Object evaluateBuiltin(FL_Builtin builtin, Scope closureScope) throws Exception {
-		
-//		return builtin.getParameter();
 		Print.EVAL("About to process builtin");
-		Print.EVAL(builtin.getParameter().getClass().getName());
-//		Print.EVAL(scope);
-		Print.EVAL(builtin.getParameter());
-		Print.EVAL("Builtin scope: ", closureScope);
-//		System.exit(0);
+		Object builtinParam = null;
+		if(builtin.getParameter() != null) {
+			Print.EVAL(builtin.getParameter().getClass().getName());
+			Print.EVAL(builtin.getParameter());
+			Print.EVAL("Builtin scope: ", closureScope);
+			builtinParam = evaluate(new Closure(closureScope, builtin.getParameter()));
+		}
 		
-		Object builtinParam = evaluate(new Closure(closureScope, builtin.getParameter()));
 		switch(builtin.getType()) {
 			case IMPORT:
 				File file = new File(((FL_String) builtinParam).stringValue());
@@ -146,11 +146,11 @@ public class Evaluator {
 				return builtinParam;
 			case EXEC:
 				if(builtinParam instanceof FL_String) {
-					Runtime.getRuntime().exec(((FL_String) builtinParam).stringValue());
+					int result = Runtime.getRuntime().exec(((FL_String) builtinParam).stringValue()).waitFor();
+					return new BigDecimal(result);
 				} else {
 					throw new Exception("Needed a String, but got a " + builtinParam.getClass().getName());
 				}
-				break;
 			case HEAD:
 				if(!(builtinParam instanceof LinkedList)) {
 					throw new Exception("head function requires a list as a parameter");
@@ -199,6 +199,9 @@ public class Evaluator {
 				System.out.println("Program aborted with " + builtinParam);
 				System.exit(0);
 				break;
+			case STD:
+				File file1 = new File("./std.fl");
+				return new ForteLang(new FileInputStream(file1)).input();
 //			case LENGTH:
 //				if(!(builtinParam instanceof LinkedList)) {
 //					throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());

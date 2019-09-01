@@ -9,7 +9,8 @@ public class FL_Builtin implements Evaluatable {
 		INPUT, 
 		INPUTBOX,
 		ABORT, 
-		LENGTH
+		LENGTH,
+		STD;
 	}
 
 	private final Object param;
@@ -38,14 +39,20 @@ public class FL_Builtin implements Evaluatable {
 		return false;
 	}
 	
-	public static FL_Builtin fromString(String str) {
+	public static FL_Builtin fromString(String str) throws Exception {
+		if(!ForteLang.impureMode && str.startsWith("@")) {
+			throw new Exception("Tried to execute impure function \"" + str + "\". Use -impure flag to allow impure code");
+		}
 		switch(str) {
 			case "head": return new FL_Builtin(FL_Builtin.Builtin.HEAD, null);
 			case "tail": return new FL_Builtin(FL_Builtin.Builtin.TAIL, null);
-//			case "length": return new FL_Builtin(FL_Builtin.Builtin.LENGTH, null);
+			case "std": return new FL_Builtin(FL_Builtin.Builtin.STD, null);
+			case "@exec": return new FL_Builtin(FL_Builtin.Builtin.EXEC, null);
 			case "@import": return new FL_Builtin(FL_Builtin.Builtin.IMPORT, null);
 			case "@abort": return new FL_Builtin(FL_Builtin.Builtin.ABORT, null);
-			
+			case "@print": return new FL_Builtin(FL_Builtin.Builtin.PRINT, null);			
+			case "@input": return new FL_Builtin(FL_Builtin.Builtin.INPUT, null);
+
 		}
 		Print.EVAL("Failed to parse Builtin from \"" + str + "\"");
 		return null;

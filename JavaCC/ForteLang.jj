@@ -33,6 +33,7 @@ public class ForteLang {
 	
 	/** Static fields */
 	static String fileName;
+	static boolean impureMode = false;
 	static boolean LOGGING_ENABLE = true;
 	static Scanner globalScanner = null;
 	public static int innerComments = 0;
@@ -85,6 +86,9 @@ public class ForteLang {
 			Print.SECD = false;
 			Print.EVAL = false;
 			Print.OPEX = false;
+		}
+		if(arguments.contains("impure")) {
+			impureMode = true;
 		}
 	  	
 	  	if(args.length - arguments.size() < 1) {
@@ -216,10 +220,7 @@ TOKEN : { < IN : "in" > }
 TOKEN : { < MATCH : "match" > }
 
 //Built-in functions
-//TOKEN : { < IMPORT : "@import" > }
-TOKEN : { < EXEC : "@exec" > }
-TOKEN : { < PRINT : "@print" > }
-TOKEN : { < INPUT : "@input" > }
+//TOKEN : { < INPUT : "@input" > }
 TOKEN : { < INPUTBOX : "@inputbox" > }
 
 //TOKEN : { < HEAD : "head" > }
@@ -532,11 +533,7 @@ FL_FunctionCall functionCall(boolean bracketed) throws Exception : { FL_Function
 }
 
 Object builtinFunctions() throws Exception : { Object param; Token stringToken; } {
-//	<IMPORT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.IMPORT, param); }
-//    |
-    <PRINT> param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.PRINT, param); }
-	| <EXEC>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.EXEC, param); }
-	| <INPUT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUT, param); }
+	<INPUT>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUT, param); }
 	| <INPUTBOX>  param = enclosedExpression() { return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, param); }
 }
 

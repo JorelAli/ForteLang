@@ -1,6 +1,6 @@
 include {
-    std = @import "std.fl";
+    ## std = importstd;##@import "std.fl";
 } in 
 
-@exec "mkdir hi"
-##std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 
+## @print "hi" ##@exec "mkdir hi"
+## std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 

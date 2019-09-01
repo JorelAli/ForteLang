@@ -39,55 +39,51 @@ public interface ForteLangConstants {
   /** RegularExpression Id. */
   int MATCH = 15;
   /** RegularExpression Id. */
-  int EXEC = 16;
+  int INPUT = 16;
   /** RegularExpression Id. */
-  int PRINT = 17;
+  int INPUTBOX = 17;
   /** RegularExpression Id. */
-  int INPUT = 18;
+  int OPENBRACKET = 18;
   /** RegularExpression Id. */
-  int INPUTBOX = 19;
+  int CLOSEBRACKET = 19;
   /** RegularExpression Id. */
-  int OPENBRACKET = 20;
+  int OPENSBRACKET = 20;
   /** RegularExpression Id. */
-  int CLOSEBRACKET = 21;
+  int CLOSESBRACKET = 21;
   /** RegularExpression Id. */
-  int OPENSBRACKET = 22;
+  int COMMA = 22;
   /** RegularExpression Id. */
-  int CLOSESBRACKET = 23;
+  int EQUALS = 23;
   /** RegularExpression Id. */
-  int COMMA = 24;
+  int SEMICOLON = 24;
   /** RegularExpression Id. */
-  int EQUALS = 25;
+  int OPENCBRACKET = 25;
   /** RegularExpression Id. */
-  int SEMICOLON = 26;
+  int CLOSECBRACKET = 26;
   /** RegularExpression Id. */
-  int OPENCBRACKET = 27;
+  int NUM = 27;
   /** RegularExpression Id. */
-  int CLOSECBRACKET = 28;
+  int LST = 28;
   /** RegularExpression Id. */
-  int NUM = 29;
+  int SET = 29;
   /** RegularExpression Id. */
-  int LST = 30;
+  int FUN = 30;
   /** RegularExpression Id. */
-  int SET = 31;
+  int BOO = 31;
   /** RegularExpression Id. */
-  int FUN = 32;
+  int STR = 32;
   /** RegularExpression Id. */
-  int BOO = 33;
+  int COLON = 33;
   /** RegularExpression Id. */
-  int STR = 34;
+  int VAR_NAME = 34;
   /** RegularExpression Id. */
-  int COLON = 35;
+  int FUNCTION_ARROW = 35;
   /** RegularExpression Id. */
-  int VAR_NAME = 36;
+  int GUARD_START = 36;
   /** RegularExpression Id. */
-  int FUNCTION_ARROW = 37;
+  int GUARD = 37;
   /** RegularExpression Id. */
-  int GUARD_START = 38;
-  /** RegularExpression Id. */
-  int GUARD = 39;
-  /** RegularExpression Id. */
-  int GUARD_ARROW = 40;
+  int GUARD_ARROW = 38;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -112,8 +108,6 @@ public interface ForteLangConstants {
     "\"include\"",
     "\"in\"",
     "\"match\"",
-    "\"@exec\"",
-    "\"@print\"",
     "\"@input\"",
     "\"@inputbox\"",
     "\"(\"",
@@ -137,11 +131,11 @@ public interface ForteLangConstants {
     "\"|>\"",
     "\"|\"",
     "\"->>\"",
-    "<token of kind 41>",
-    "<token of kind 42>",
+    "<token of kind 39>",
+    "<token of kind 40>",
     "\"#[\"",
     "\"#[\"",
-    "<token of kind 45>",
+    "<token of kind 43>",
     "\"]#\"",
     "\"\\n\"",
     "\"\\r\"",

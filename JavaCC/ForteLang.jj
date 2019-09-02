@@ -98,8 +98,10 @@ public class ForteLang {
 	  	if(args.length - arguments.size() < 1 && !replMode) {
 	  	  	System.out.println("Usage: java ForteLang <File>");
 	  	  	System.out.println("Flags:");
-	  	  	System.out.println("  -repl  - Start the ForteLang repl");
-	  	  	System.out.println("  -debug - Output all evaluation debug messages");
+	  	  	System.out.println("  -repl   - Start the ForteLang repl");
+	  	  	System.out.println("  -debug  - Output all evaluation debug messages");
+	  	  	System.out.println("  -impure - Evaluate using impure functions (e.g. @import or @print)");
+	  	  	System.out.println("  -silent - Do not output evaluation result to the console");
 			return;
 	  	}
 

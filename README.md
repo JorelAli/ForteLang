@@ -15,7 +15,7 @@ ForteLang was designed for use of the [Fira Code font](https://github.com/tonsky
 
 ## Usage
 
-To evaluate a ForteLang program, run `java ForteLang <file>`
+To evaluate a ForteLang program, run `java -jar ForteLang.jar <program>`
 
 ## Syntax
 

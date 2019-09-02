@@ -112,7 +112,7 @@ public class ForteLang implements ForteLangConstants {
                                 if(!silent) {
                                         if(result instanceof Closure) {
                                                 Closure c = (Closure) result;
-                                                System.out.println("Closure of: " + c.getExpression());
+                                                System.out.println("Closure of: " + c.getExpression() + ", with scope " + c.getScope());
                                         } else {
                                                 System.out.println(prettifyOutput(result));
                                         }
@@ -192,6 +192,11 @@ public class ForteLang implements ForteLangConstants {
                 } catch(StackOverflowError e) {
                         System.out.println("Infinite recursion encountered");
                         System.exit(0);
+                }
+
+                if(result instanceof Closure) {
+                        Closure closure = (Closure) result;
+                        result = Evaluator.evaluateFully(closure);
                 }
 
                 if(LOGGING_ENABLE) {
@@ -765,18 +770,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_6() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_3()) {
-    jj_scanpos = xsp;
-    if (jj_3R_14()) return true;
-    }
-    xsp = jj_scanpos;
-    if (jj_3_4()) jj_scanpos = xsp;
-    return false;
-  }
-
   private boolean jj_3R_24() {
     if (jj_scan_token(BOOLEAN)) return true;
     return false;
@@ -1183,6 +1176,18 @@ public class ForteLang implements ForteLangConstants {
   private boolean jj_3_9() {
     if (jj_scan_token(GUARD)) return true;
     if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_6() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_3()) {
+    jj_scanpos = xsp;
+    if (jj_3R_14()) return true;
+    }
+    xsp = jj_scanpos;
+    if (jj_3_4()) jj_scanpos = xsp;
     return false;
   }
 

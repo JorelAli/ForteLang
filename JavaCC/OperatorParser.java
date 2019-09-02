@@ -74,83 +74,72 @@ public class OperatorParser {
 
 	public Object applySelect(Closure expr1, Closure expr2) throws Exception {
 		Object o1 = Evaluator.evaluate(expr1);
+		
+		FL_Set set = null;
+		
 		if (o1 instanceof Closure) {
 			Closure o1C = (Closure) o1;
 			if(o1C.getExpression() instanceof FL_Set) {
-				FL_Set set = (FL_Set) o1C.getExpression();
-				
-				//If it's a String, e.g. { a = 2; }."a"
-				if (expr2.getExpression() instanceof FL_String) {
-					FL_String flString = (FL_String) expr2.getExpression();
-					Object result = set.get(flString.stringValue());
-					if (result == null) {
-						throw new Exception("Cannot find element \"" + flString + "\" in set containing " + set.keySet());
-					} else {
-						return result;
-					}
-					
-				//If it's a function call, e.g. { a = 2; }.a
-				} else if (expr2.getExpression() instanceof FL_FunctionCall) {
-					FL_FunctionCall func = (FL_FunctionCall) expr2.getExpression();
-					
-					if(func.hasBrackets()) {
-						return applySelect(expr1, new Closure(expr2.getScope(), Evaluator.evaluate(expr2)));
-					}
-					
-					if (func.getInitFunction() instanceof FL_Var) {
-						FL_Var var = (FL_Var) func.getInitFunction();
-						Object result = set.get(var.getName());
-						if (result == null) {
-							throw new Exception("Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
-						} else {
-							
-							if(func.getArguments().isEmpty()) {
-								return result;
-							} else {
-								func.setInitFunction(result);
-//								func.setInitFunction(new Closure(expr2.getScope(), result));
-								Scope newScope = new Scope(set);
-								newScope.putAll(expr2.getScope());
-								return Evaluator.evaluate(new Closure(newScope, func));
-							}
-							
-	//						return result;
-						}
-					}
-				}
-	//				FL_FunctionCall func = (FL_FunctionCall) o2;
-	//				if (func.getInitFunction() instanceof FL_Var) {
-	//					FL_Var var = (FL_Var) func.getInitFunction();
-	//					Object result = set.get(var.getName());
-	//					if (result == null) {
-	//						throw new Exception(
-	//								"Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
-	//					} else {
-	//						return result;
-	//					}
-	//				} else {
-	//					if (func.getInitFunction() instanceof Evaluatable) {
-	//						return applySelect(o1, Evaluator.evaluate(new Closure(scope, func)));
-	//					} else {
-	//						throw new Exception(
-	//								"Cannot select from a set using a " + func.getInitFunction().getClass().getName());
-	//					}
-	//				}
-	//			} else if (o2 instanceof Evaluatable) {
-	//				return applySelect(o1, Evaluator.evaluate(new Closure(scope, o2)));
-	//			} else {
-	//				throw new Exception("Cannot select from a set using a " + o2.getClass().getName());
-	//			}
-			} else {
-				throw new Exception("Cannot select from an object that's not a set");
+				set = (FL_Set) o1C.getExpression();
 			}
 		} else {
-			throw new Exception("FL_Set should be enclosed, something went wrong with evaluation");
+			if(o1 instanceof FL_Set) {
+				set = (FL_Set) o1;
+			}
 		}
+		
+		if(set == null) {
+			throw new Exception("Cannot select from an object that's not a set");
+		}
+			
+		//If it's a String, e.g. { a = 2; }."a"
+		if (expr2.getExpression() instanceof FL_String) {
+			FL_String flString = (FL_String) expr2.getExpression();
+			Object result = set.get(flString.stringValue());
+			if (result == null) {
+				throw new Exception("Cannot find element \"" + flString + "\" in set containing " + set.keySet());
+			} else {
+				return result;
+			}
+			
+		//If it's a function call, e.g. { a = 2; }.a
+		} else if (expr2.getExpression() instanceof FL_FunctionCall) {
+			FL_FunctionCall func = (FL_FunctionCall) expr2.getExpression();
+			
+			if(func.hasBrackets()) {
+				return applySelect(expr1, new Closure(expr2.getScope(), Evaluator.evaluate(expr2)));
+			}
+			
+			if (func.getInitFunction() instanceof FL_Var) {
+				FL_Var var = (FL_Var) func.getInitFunction();
+				Object result = set.get(var.getName());
+				if (result == null) {
+					throw new Exception("Cannot find element \"" + var.getName() + "\" in set containing " + set.keySet());
+				} else {
+					
+					if(func.getArguments().isEmpty()) {
+						return result;
+					} else {
+						func.setInitFunction(result);
+//								func.setInitFunction(new Closure(expr2.getScope(), result));
+						Scope newScope = new Scope(set);
+						newScope.putAll(expr2.getScope());
+						return Evaluator.evaluate(new Closure(newScope, func));
+					}
+					
+//						return result;
+				}
+			}
+		}
+			
 		return null;
 	}
 
 	public Object applyContains(Object o1, Object o2) throws Exception {
+		if(o1 instanceof Closure) {
+			Closure closure1 = (Closure) o1;
+			o1 = closure1.getExpression();
+		}
 		if (o1 instanceof FL_List) {
 			FL_List l1 = (FL_List) o1;
 			return l1.contains(o2); 

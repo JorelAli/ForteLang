@@ -381,4 +381,24 @@ public class Evaluator {
 		}
 		return result;
 	}
+	
+	public static Object evaluateFully(Closure closure) throws Exception {
+		Print.EVAL("Evaluating fully: " + closure);
+		if(closure.getExpression() instanceof FL_Set) {
+			FL_Set set = (FL_Set) closure.getExpression();
+			FL_Set iteratorCopy = new FL_Set(set);
+			
+			Scope evaluationScope = closure.getScope();
+			evaluationScope.putAll(set);
+			
+			for(String attr : iteratorCopy.keySet()) {
+				Object result = Evaluator.evaluate(new Closure(evaluationScope, iteratorCopy.get(attr)));
+				set.replace(attr, result);
+			}
+			return set;
+		}
+		Print.EVAL("Failed to evaluate fully");
+		return closure;
+		
+	}
 }

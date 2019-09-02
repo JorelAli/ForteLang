@@ -117,7 +117,7 @@ public class ForteLang {
 				if(!silent) {
 					if(result instanceof Closure) {
 						Closure c = (Closure) result;
-						System.out.println("Closure of: " + c.getExpression());
+						System.out.println("Closure of: " + c.getExpression() + ", with scope " + c.getScope());
 					} else {
 						System.out.println(prettifyOutput(result));
 					}
@@ -275,6 +275,11 @@ Object input(Scope initScope) throws Exception : { Object expression = null; Tok
 		} catch(StackOverflowError e) {
 			System.out.println("Infinite recursion encountered");
 			System.exit(0);
+		}
+
+		if(result instanceof Closure) {
+		  	Closure closure = (Closure) result;		  
+			result = Evaluator.evaluateFully(closure);
 		}
 
 		if(LOGGING_ENABLE) {

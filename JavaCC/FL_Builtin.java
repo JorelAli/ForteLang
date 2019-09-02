@@ -10,7 +10,8 @@ public class FL_Builtin implements Evaluatable {
 		INPUTBOX,
 		ABORT, 
 		LENGTH,
-		STD;
+		STD,
+		READ
 	}
 
 	private final Object param;
@@ -53,6 +54,7 @@ public class FL_Builtin implements Evaluatable {
 			case "@print": return new FL_Builtin(FL_Builtin.Builtin.PRINT, null);			
 			case "@input": return new FL_Builtin(FL_Builtin.Builtin.INPUT, null);
 			case "@inputbox": return new FL_Builtin(FL_Builtin.Builtin.INPUTBOX, null);
+			case "@read": return new FL_Builtin(FL_Builtin.Builtin.READ, null);
 
 		}
 		Print.EVAL("Failed to parse Builtin from \"" + str + "\"");

@@ -259,6 +259,10 @@ Object input(Scope initScope) throws Exception : { Object expression = null; Tok
 			System.out.println("Program to evaluate: " + expression);
 		}
 
+		if(expression == null) {
+			throw new Exception("Empty program found");
+		}
+
 	    Object result = null;
 
 		try {
@@ -266,6 +270,18 @@ Object input(Scope initScope) throws Exception : { Object expression = null; Tok
 		} catch(StackOverflowError e) {
 			System.out.println("Infinite recursion encountered");
 			System.exit(0);
+		}
+
+		if(LOGGING_ENABLE) {
+			System.out.println();
+		    System.out.println("== Evaluation complete ==");
+			if(result instanceof Closure) {
+			  	Closure closure = (Closure) result;
+			  	System.out.println(closure + "(" + closure.getExpression().getClass().getSimpleName() + "), with scope " + closure.getScope());
+			} else {
+				System.out.println(result);
+			}
+			System.out.println();
 		}
 		
 	    return result;

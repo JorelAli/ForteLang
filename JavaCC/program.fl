@@ -1,7 +1,19 @@
 include {
-    ## std = importstd;##@import "std.fl";
-} in 
-## std.a
-1/10000000000000 
-## @print "hi" ##@exec "mkdir hi"
-## std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] 
+    startsWith = expression:str -> string:str -> |>
+    | std.length expression > std.length string ->> false
+    | ->> match expression
+        | "" ->> true
+        | ->> |>
+            | head expression != head string ->> false
+            | ->> startsWith (tail expression) (tail string);
+
+    isLonger = expression:str -> string:str -> |>
+    | std.length expression > length string ->> false
+    | ->> true;
+
+    length = l -> match l
+        | "" ->> 0
+        | [] ->> 0
+        | ->> 1 + length (tail l);
+} in
+isLonger "he" "hollo"

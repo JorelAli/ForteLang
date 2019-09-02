@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Stack;
@@ -27,7 +28,6 @@ public class Evaluator {
 //		  	return newFunctionCall;
 			return new Closure(new Scope(closure.getScope()), newFunctionCall);
 		} else if(closure.getExpression() instanceof FL_FunctionCall) {
-			Print.EVAL(closure.getScope());
 			return new SECD(closure).runSECD();
 		} else if(closure.getExpression() instanceof FL_Guards) {
 			FL_Guards guards = (FL_Guards) closure.getExpression();
@@ -57,7 +57,7 @@ public class Evaluator {
 		} else if(closure.getExpression() instanceof FL_OpExpr) {
 			return evaluateOpExpr(closure.getScope(), (FL_OpExpr) closure.getExpression());
 		} else if(closure.getExpression() instanceof FL_Set) {
-			return closure.getExpression(); //TODO: Actually need to keep the closure though
+			return closure;//.getExpression(); //TODO: Actually need to keep the closure though
 		} else if(closure.getExpression() instanceof FL_String) {
 			return closure.getExpression();
 		} else if(closure.getExpression() instanceof FL_TypedParam) {
@@ -128,7 +128,7 @@ public class Evaluator {
 	
 	@SuppressWarnings("unchecked")
 	public static Object evaluateBuiltin(FL_Builtin builtin, Scope closureScope) throws Exception {
-		Print.EVAL("About to process builtin");
+		Print.EVAL("About to process builtin: " + builtin.getType());
 		Object builtinParam = null;
 		if(builtin.getParameter() != null) {
 			Print.EVAL(builtin.getParameter().getClass().getName());
@@ -139,8 +139,11 @@ public class Evaluator {
 		
 		switch(builtin.getType()) {
 			case IMPORT:
+				if(!(builtinParam instanceof FL_String)) {
+					throw new Exception("Expected a string for import file name");
+				}
 				File file = new File(((FL_String) builtinParam).stringValue());
-				return new ForteLang(new FileInputStream(file)).input(new Scope());
+				return new ForteLang(new FileInputStream(file)).input(closureScope);
 			case PRINT:
 				System.out.println(((FL_String) builtinParam).stringValue());
 				return builtinParam;
@@ -201,13 +204,13 @@ public class Evaluator {
 				break;
 			case STD:
 				File file1 = new File("./std.fl");
-				return new ForteLang(new FileInputStream(file1)).input(new Scope());
-//			case LENGTH:
-//				if(!(builtinParam instanceof LinkedList)) {
-//					throw new Exception("tail function requires a list as a parameter, not a " + builtinParam.getClass().getName());
-//				} else {
-//					return new BigDecimal(((LinkedList<?>) builtinParam).size());
-//				}
+				return new ForteLang(new FileInputStream(file1)).input(closureScope);
+			case READ:
+				if(!(builtinParam instanceof FL_String)) {
+					throw new Exception("Expected a string for file name");
+				}
+				File file2 = new File(((FL_String) builtinParam).stringValue());
+				return new FL_String(new String(Files.readAllBytes(file2.toPath())));
 			
 		default:
 			break;

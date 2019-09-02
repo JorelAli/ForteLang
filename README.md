@@ -13,6 +13,10 @@ ForteLang's name _(pronounced fort)_, despite being similar to Fortran, is based
 
 ForteLang was designed for use of the [Fira Code font](https://github.com/tonsky/FiraCode), with its elegant ligatures. I'd recommend using ForteLang with Fira Code to help with code readability.
 
+## Usage
+
+To evaluate a ForteLang program, run `java ForteLang <file>`
+
 ## Syntax
 
 The syntax for ForteLang is as follows:

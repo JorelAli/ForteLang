@@ -207,8 +207,7 @@ public class Evaluator {
 				System.exit(0);
 				break;
 			case STD:
-				File file1 = new File("./std.fl");
-				return new ForteLang(new FileInputStream(file1)).input(closureScope);
+				return new ForteLang(ForteLang.class.getResourceAsStream("std.fl")).input(closureScope);
 			case READ:
 				if(!(builtinParam instanceof FL_String)) {
 					throw new Exception("Expected a string for file name");

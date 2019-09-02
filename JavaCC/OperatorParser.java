@@ -167,7 +167,8 @@ public class OperatorParser {
 			l1.addAll(l2);
 			return l1;
 		} else {
-			throw new Exception("Cannot concatenate " + o1.getClass().getName() + " with " + o2.getClass().getName());
+			Exceptions.CANNOT_CONCAT(o1, o2);
+			return null;
 		}
 	}
 
@@ -182,11 +183,6 @@ public class OperatorParser {
 		case ">=":
 			return ((BigDecimal) o1).compareTo((BigDecimal) o2) >= 0;
 		case "==":
-//			System.out.println("Comparing " + o1 + " to " + o2);
-//			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
-//				Evaluatable e1 = (Evaluatable) o1;
-//				return e1.equalsWithScope(o2, scope);
-//			}
 			if(o1 instanceof Closure && o2 instanceof Closure) {
 				Closure c1 = (Closure) o1;
 				Closure c2 = (Closure) o2;
@@ -194,10 +190,11 @@ public class OperatorParser {
 			}
 			return o1.equals(o2);
 		case "!=":
-//			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {
-//				Evaluatable e1 = (Evaluatable) o1;
-//				return !e1.equalsWithScope(o2, scope);
-//			}
+			if(o1 instanceof Closure && o2 instanceof Closure) {
+				Closure c1 = (Closure) o1;
+				Closure c2 = (Closure) o2;
+				return c1.getExpression().equals(c2.getExpression());
+			}
 			return !o1.equals(o2);
 		}
 		throw new Exception("Invalid operator (expected comparator operator");
@@ -216,7 +213,11 @@ public class OperatorParser {
 		case "-":
 			return f1.subtract(f2);
 		case "/":
-			return f1.divide(f2, 128, RoundingMode.HALF_DOWN);
+			try {
+				return f1.divide(f2, 128, RoundingMode.HALF_DOWN);
+			} catch (ArithmeticException e) {
+				Exceptions.DIV_BY_ZERO(f1);
+			}
 		case "%":
 			return f1.remainder(f2);
 		}

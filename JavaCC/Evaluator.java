@@ -147,6 +147,9 @@ public class Evaluator {
 					throw new Exception("Expected a string for import file name");
 				}
 				File file = new File(((FL_String) builtinParam).stringValue());
+				if(!file.exists()) {
+					Exceptions.FILE_NOT_FOUND(file);
+				}
 				return new ForteLang(new FileInputStream(file)).input(closureScope);
 			case PRINT:
 				System.out.println(((FL_String) builtinParam).stringValue());
@@ -164,7 +167,7 @@ public class Evaluator {
 				} else {
 				  	LinkedList<?> list = ((LinkedList<?>) builtinParam);
 				  	if(list.isEmpty()) {
-						throw new Exception("List is empty, cannot retrieve the head of the list");
+				  		Exceptions.HEAD_ON_EMPTY_LIST();
 				  	}
 				  	if(builtinParam instanceof FL_String) {
 				  		return evaluate(new Closure(closureScope, new FL_String(String.valueOf(list.getFirst()))));
@@ -180,16 +183,14 @@ public class Evaluator {
 				  	@SuppressWarnings("rawtypes")
 					LinkedList list = ((LinkedList) builtinParam);
 				  	if(list.isEmpty()) {
-						throw new Exception("List is empty, cannot retrieve the tail of the list");
+				  		Exceptions.TAIL_ON_EMPTY_LIST();
 				  	}
 				  	Evaluatable result = null;
 				  	if(builtinParam instanceof FL_List) {
 				  	  	result = new FL_List(list.subList(1, list.size()));
 				  	} else if(builtinParam instanceof FL_String) {
 						result = new FL_String(list.subList(1, list.size()));
-				  	} else {
-					  	throw new Exception("Cannot perform \"tail\" on something that is a " + builtinParam.getClass().getName());
-					}
+				  	}
 					return result;
 				  	
 				}
@@ -218,6 +219,9 @@ public class Evaluator {
 					throw new Exception("Expected a string for file name");
 				}
 				File file2 = new File(((FL_String) builtinParam).stringValue());
+				if(!file2.exists()) {
+					Exceptions.FILE_NOT_FOUND(file2);
+				}
 				return new FL_String(new String(Files.readAllBytes(file2.toPath())));
 			
 		default:

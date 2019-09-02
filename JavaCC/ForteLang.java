@@ -34,7 +34,7 @@ public class ForteLang implements ForteLangConstants {
         static Scanner globalScanner = null;
         public static int innerComments = 0;
 
-        final static boolean GENERATE_DOCS = true;
+        final static boolean GENERATE_DOCS = false;
         final static boolean PRINT_DOCS = false;
         final static boolean TO_MARKDOWN_FILE = true;
         final static String MARKDOWN_FILE = "docs.md";

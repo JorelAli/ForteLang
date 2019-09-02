@@ -1,6 +1,17 @@
 # ForteLang
 
-ForteLang is a functionally pure dynamically typed programming language. It's based off of the Nix programming language, with inspirations from Haskell's guards and pattern matching capabilities.
+ForteLang is a functionally pure dynamically typed programming language. It's based off of the Nix programming language, with inspirations from Haskell's guards and pattern matching capabilities. You can read about its creation in my [blog post](https://www.jorelsblog.co.uk/Making-A-Programming-Language/).
+
+## Etymology
+
+ForteLang's name _(pronounced fort)_, despite being similar to Fortran, is based off of two things:
+
+- FL Studio, the music production suite. Microsoft's Visual Studio as a similar program, VS Code. Hence, ForteLang (FL), produces FL Code _(hence the file type, `.fl`)_.
+- The Japanese name for a character from one of my favourite childhood games is called Forte.
+
+## Recommended font
+
+ForteLang was designed for use of the [Fira Code font](https://github.com/tonsky/FiraCode), with its elegant ligatures. I'd recommend using ForteLang with Fira Code to help with code readability.
 
 ## Syntax
 
@@ -34,7 +45,7 @@ Function declaration is handled using the `include ... in` structure. Declaratio
 
 ```
 include {
-    add = x -> y -> x + y;
+    add = x -> y -> x + y; 
 } in add 2 4
 ```
 

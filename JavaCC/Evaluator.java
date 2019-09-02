@@ -194,14 +194,14 @@ public class Evaluator {
 				}
 				System.out.println("[@input] " + ((FL_String) builtinParam).stringValue());
 				System.out.print("@input> ");
-				return ForteLang.getGlobalScanner().nextLine();
+				return new FL_String(ForteLang.getGlobalScanner().nextLine());
 			case INPUTBOX:
 				if(!(builtinParam instanceof FL_String)) {
 					throw new Exception("Expected a string for inputbox");
 				}
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				String inputBox = JOptionPane.showInputDialog(null, ((FL_String) builtinParam).stringValue(), "ForteLang @inputbox", -1);
-				return (inputBox == null ? "" : inputBox);
+				return new FL_String(inputBox == null ? "" : inputBox);
 			case ABORT:
 				System.out.println("Program aborted with " + builtinParam);
 				System.exit(0);

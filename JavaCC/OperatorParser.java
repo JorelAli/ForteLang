@@ -187,6 +187,11 @@ public class OperatorParser {
 //				Evaluatable e1 = (Evaluatable) o1;
 //				return e1.equalsWithScope(o2, scope);
 //			}
+			if(o1 instanceof Closure && o2 instanceof Closure) {
+				Closure c1 = (Closure) o1;
+				Closure c2 = (Closure) o2;
+				return c1.getExpression().equals(c2.getExpression());
+			}
 			return o1.equals(o2);
 		case "!=":
 //			if (o1 instanceof Evaluatable || o2 instanceof Evaluatable) {

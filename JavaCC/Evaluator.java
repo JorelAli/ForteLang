@@ -60,7 +60,8 @@ public class Evaluator {
 		} else if(closure.getExpression() instanceof FL_OpExpr) {
 			return evaluateOpExpr(closure.getScope(), (FL_OpExpr) closure.getExpression());
 		} else if(closure.getExpression() instanceof FL_Set) {
-			return closure;//.getExpression(); //TODO: Actually need to keep the closure though
+			return Evaluator.evaluateFully(closure);
+//			return closure;//.getExpression(); //TODO: Actually need to keep the closure though
 		} else if(closure.getExpression() instanceof FL_String) {
 			return closure.getExpression();
 		} else if(closure.getExpression() instanceof FL_TypedParam) {

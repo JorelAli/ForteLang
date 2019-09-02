@@ -3,3 +3,5 @@ echo "=== Compiling with JavaCC ==="
 ./javacc-5.0/bin/javacc ./ForteLang.jj
 echo "=== Compiling with Javac ==="
 javac -Xlint:cast *.java
+echo "=== Running tests ==="
+java ForteLang tests.fl -impure -silent

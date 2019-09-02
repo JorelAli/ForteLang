@@ -1,0 +1,13 @@
+|>| std.all [
+
+    ## Tests std.foldl' on lists
+    std.foldl' (a -> b -> a + b) 0 [1, 2, 3] == 6,
+    std.foldl' (a -> b -> a * b) 1 [1, 2, 3, 4, 5] == 120,
+
+    ## Tests std.map function
+    std.map (a -> 2) [1, 2, 3] == [2, 2, 2],
+    head (std.map (a -> b -> a + b) [2]) 2 == 4
+
+] 
+->> @print "All tests passed!"
+|->> @print "Tests failed :("

@@ -47,16 +47,8 @@ public class OperatorParser {
 		Object o2 = null;
 		
 		if (operatorKind != Operator.SELECT) {
-			// Print.OPEX("    Evaluating expr1 in order to apply non-select operator");
-			// Print.OPEX("    Expr1: " + expr1.getExpression());
-			// Print.OPEX("    cExp1 before: " + expr1.getScope());
 			o1 = Evaluator.evaluate(expr1);
-			// Print.OPEX("    cExp1 after: " + expr1.getScope());
-			// Print.OPEX("    Evaluating expr2 in order to apply non-select operator");
-			// Print.OPEX("    Expr2: " + expr2.getExpression());
-			// Print.OPEX("    cExp2 before: " + expr2.getScope());
 			o2 = Evaluator.evaluate(expr2);
-			// Print.OPEX("    cExp2 after: " + expr2.getScope());
 		}
 
 		Print.OPEX("    Operation to evaluate: " + o1 + " " + op + " " + o2);
@@ -116,8 +108,9 @@ public class OperatorParser {
 								return result;
 							} else {
 								func.setInitFunction(result);
+//								func.setInitFunction(new Closure(expr2.getScope(), result));
 								Scope newScope = new Scope(set);
-								//newScope.putAll(expr2.getScope());
+								newScope.putAll(expr2.getScope());
 								return Evaluator.evaluate(new Closure(newScope, func));
 							}
 							

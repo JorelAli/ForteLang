@@ -13,6 +13,9 @@ import javax.swing.UIManager;
 public class Evaluator {
 		
 	public static Object evaluate(Closure closure) throws Exception {
+		if(closure == null || closure.getExpression() == null) {
+			throw new Exception("Tried to evaluate nothing");
+		}
 		Print.EVAL("Starting evaluation of " + closure + "(" + closure.getExpression().getClass().getSimpleName() + "), with scope " + closure.getScope());
 		
 		if(!(closure.getExpression() instanceof Evaluatable)) {
@@ -353,7 +356,7 @@ public class Evaluator {
 				Object secondExpr = evalStack.pop();
 				Object firstExpr = evalStack.pop();
 
-				Print.OPEX("    Applying the " + operator.image + " operator");
+				Print.OPEX("    Applying the " + operator.image + " operator, on " + firstExpr + " and " + secondExpr);
 				
 				if(!(firstExpr instanceof Closure)) {
 					firstExpr = new Closure(scope, firstExpr);

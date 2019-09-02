@@ -29,6 +29,7 @@ public class ForteLang implements ForteLangConstants {
         /** Static fields */
         static String fileName;
         static boolean impureMode = false;
+        static boolean silent = false;
         static boolean LOGGING_ENABLE = true;
         static Scanner globalScanner = null;
         public static int innerComments = 0;
@@ -85,6 +86,9 @@ public class ForteLang implements ForteLangConstants {
                 if(arguments.contains("impure")) {
                         impureMode = true;
                 }
+                if(arguments.contains("silent")) {
+                        silent = true;
+                }
 
                 if(args.length - arguments.size() < 1 && !replMode) {
                         System.out.println("Usage: java ForteLang <File>");
@@ -104,15 +108,16 @@ public class ForteLang implements ForteLangConstants {
                                 /* Run the parser */
 
                                 Object result = new ForteLang(new FileInputStream(file)).input(new Scope());
-//				System.out.println();
-//				System.out.println("=== Evaluation complete ===");
-//				System.out.println("==> " + prettifyOutput(result));
-                                System.out.println(prettifyOutput(result));
 
-                                if(result instanceof Closure) {
-                                        Closure c = (Closure) result;
-                                        System.out.println("Closure of: " + c.getExpression());
+                                if(!silent) {
+                                        if(result instanceof Closure) {
+                                                Closure c = (Closure) result;
+                                                System.out.println("Closure of: " + c.getExpression());
+                                        } else {
+                                                System.out.println(prettifyOutput(result));
+                                        }
                                 }
+
 
                                 if(GENERATE_DOCS) {
                                         if(PRINT_DOCS) {
@@ -760,17 +765,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3_3() {
-    if (jj_3R_8()) return true;
-    return false;
-  }
-
-  private boolean jj_3_9() {
-    if (jj_scan_token(GUARD)) return true;
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
   private boolean jj_3R_6() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1178,6 +1172,17 @@ public class ForteLang implements ForteLangConstants {
     if (jj_scan_token(OPENBRACKET)) return true;
     if (jj_3R_6()) return true;
     if (jj_scan_token(CLOSEBRACKET)) return true;
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_3R_8()) return true;
+    return false;
+  }
+
+  private boolean jj_3_9() {
+    if (jj_scan_token(GUARD)) return true;
+    if (jj_3R_10()) return true;
     return false;
   }
 

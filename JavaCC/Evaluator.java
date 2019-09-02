@@ -166,7 +166,12 @@ public class Evaluator {
 				  	if(list.isEmpty()) {
 						throw new Exception("List is empty, cannot retrieve the head of the list");
 				  	}
-				  	return evaluate(new Closure(closureScope, list.getFirst()));
+				  	if(builtinParam instanceof FL_String) {
+				  		return evaluate(new Closure(closureScope, new FL_String(String.valueOf(list.getFirst()))));
+				  	} else {
+				  		return evaluate(new Closure(closureScope, list.getFirst()));
+				  	}
+				  	
 				} 
 			case TAIL:
 				if(!(builtinParam instanceof LinkedList)) {

@@ -1,3 +1,10 @@
 include {
+    evaluate = input:str -> include {
+        firstChar = head input;   
+    } in match firstChar
+        | '[a-zA-Z]+' ->> "yes"
+        | ->> "no";
 
-} in @read (@input "Enter file name")
+
+
+} in evaluate (@read (@input "Enter file name"))

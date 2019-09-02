@@ -9,5 +9,5 @@
     head (std.map (a -> b -> a + b) [2]) 2 == 4
 
 ] 
-->> @print "All tests passed!"
+ ->> @print "All tests passed!"
 |->> @print "Tests failed :("

@@ -15,7 +15,17 @@ ForteLang was designed for use of the [Fira Code font](https://github.com/tonsky
 
 ## Usage
 
-To evaluate a ForteLang program, run `java -jar ForteLang.jar <program>`
+To evaluate a ForteLang program, run `java -jar ForteLang.jar <program.fl>`
+
+ForteLang provides various flags for execution, in particular:
+
+- `-repl` - Start the ForteLang REPL, instead of evaluating a program
+- `-impure` - Run evaluation with impure mode enabled. Functions beginning with `@` will be allowed to run
+- `-debug` - Evaluate with full debugging information
+- `-silent` - Evaluate, but doesn't output the result of the evaluation to the console. Useful for programs that use `@print` for example
+- `-maxprecision` - Evaluate as normal, but output all 128 decimal places of numbers with that many decimal places
+
+-----
 
 ## Syntax
 
@@ -88,6 +98,8 @@ To enter a double quote in a string, it must be escaped with a backslash:
 
 ForteLang doesn't have `if ... else` statements, instead it has guards, which begin with the `|>` operator. Each statement is composed of the guard symbol `|`, a predicate (boolean result) followed by the double arrow `->>` and a resulting expression.
 
+Guards require an "else" case, which is handled using `| ->>` and must be declared at the end of your guard statement.
+
 ```
 max = x -> y -> |>
 	| x > y ->> x
@@ -117,14 +129,20 @@ max = x -> y ->
 And block comments:
 
 ```
-### max :: int -> int -> int
+#[ max :: int -> int -> int
 This function determines which 
 of two parameters is the largest
-number ###
+number ]#
 
 max = x -> y -> 
 	| x > y ->> x
 	| ->> y;
+```
+
+Block comments can be nested, for example:
+
+```
+#[ This is a comment #[This is a comment within the comment]# ]#
 ```
 
 #### Matching (Basic pattern matching)
@@ -140,7 +158,7 @@ isTrue = x -> match x
 Pattern matching allows you to match any expression to any other expression, for example with lists:
 
 ```
-isEmpty = list -> match list
+isEmpty = l -> match l
 	| [] ->> true
 	| ->> false
 ```
@@ -157,8 +175,6 @@ isNumber = str -> match str
 
 Sets are where functions can be declared. Sets can be declared as pure, meaning that all elements within the sets perform pure operations, or impure, where one or more elements perform an impure operation. Sets are declared with curly brackets.
 
-Regular pure sets use regular syntax, as follows:
-
 ```
 mySet = {
     five = 5;
@@ -166,16 +182,6 @@ mySet = {
     mathLibrary = import "./math.fl";
 }
 ```
-
-Impure sets require the `impure` keyword:
-
-```
-myImpureSet = impure {
-    @impureOperation = @print "hello"
-}
-```
-
-Impure set attributes names (such as `@impureOperation` in the example above) must be preceded with the `@` symbol to indicate that the function is impure. A function is impure if it calls any impure operations.
 
 #### Set accessing
 
@@ -259,6 +265,61 @@ And the file `file2.fl`:
 
 This will evaluate to 15.
 
+> **Note:**
+>
+> In order to run a program with `@import`, the `-impure` flag must be enabled
+
+#### The standard library
+
+In ForteLang, the standard library is a reserved set that can be accessed using `std`. The following functions are available in the standard library:
+
+```
+std.genList
+std.map
+std.all
+std.any
+std.elemAt
+std.filter
+std.length
+std.foldl'
+std.assert
+std.assertWithErr
+```
+
+#### Built-in functions
+
+ForteLang, in addition to the standard library, has various built in functions:
+
+```
+head - Retrieve the first element of a list
+tail - Retrieve a subset of a list, not including the first element
+@exec - Execute a system-wide command, such as @exec "echo hello"
+@import - Import a .fl file
+@abort - End all execution with a message
+@print - Print the result of a string
+@input - Read input from the console
+@read - Read the contents of a file
+```
+
+#### Type annotations
+
+ForteLang includes basic type annotations to help understand the types of expressions and aid with evaluation with basic type checks. The following types are available in ForteLang:
+
+```
+num
+list
+set
+func
+bool
+str
+```
+
+To use them, append a colon followed by the type at the end of a variable declaration, for example:
+
+```
+add = x:num -> y:num -> x + y;
+```
+
 ## Match vs Guards
 
 Match and guards are both capable of performing the same task. Take the following example below which checks if a parameter `x` is empty (an empty list, set or String).
@@ -276,3 +337,8 @@ isEmpty' = x -> |>
 ```
 
 In the first example, it uses the `match` keyword, whereas the second example uses guards. In this case, the match expression is _much_ faster than the guard statement as it has to parse each `||` operator and perform the Boolean OR, whereas the match expression is like a jump table.
+
+## Number specifications
+
+Numbers in ForteLang can be of any size (large or small), but are limited to 128 decimal places of precision. To view the full number, use the `-maxprecision` flag
+

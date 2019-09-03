@@ -35,6 +35,7 @@ public class ForteLang {
 	static String fileName;
 	static boolean impureMode = false;
 	static boolean silent = false;
+	static boolean maxprecision = false;
 	static boolean LOGGING_ENABLE = true;
 	static Scanner globalScanner = null;
 	public static int innerComments = 0;
@@ -55,7 +56,8 @@ public class ForteLang {
 	static String prettifyOutput(Object result) {
 		if(result instanceof String) {
 			return "\"" + result + "\"";
-		} else if(result instanceof BigDecimal) {
+		} 
+		if(result instanceof BigDecimal && !maxprecision) {
 		  	BigDecimal d = (BigDecimal) result;
 			if(d.stripTrailingZeros().scale() > 0) {
 				result = d.doubleValue();
@@ -93,6 +95,9 @@ public class ForteLang {
 		}
 		if(arguments.contains("silent")) {
 			silent = true;
+		}
+		if(arguments.contains("maxprecision")) {
+			maxprecision = true;
 		}
 	  	
 	  	if(args.length - arguments.size() < 1 && !replMode) {

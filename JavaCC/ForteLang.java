@@ -30,6 +30,7 @@ public class ForteLang implements ForteLangConstants {
         static String fileName;
         static boolean impureMode = false;
         static boolean silent = false;
+        static boolean maxprecision = false;
         static boolean LOGGING_ENABLE = true;
         static Scanner globalScanner = null;
         public static int innerComments = 0;
@@ -50,7 +51,7 @@ public class ForteLang implements ForteLangConstants {
         static String prettifyOutput(Object result) {
                 if(result instanceof String) {
                         return "\u005c"" + result + "\u005c"";
-                } else if(result instanceof BigDecimal) {
+                } else if(result instanceof BigDecimal && !maxprecision) {
                         BigDecimal d = (BigDecimal) result;
                         if(d.stripTrailingZeros().scale() > 0) {
                                 result = d.doubleValue();
@@ -88,6 +89,9 @@ public class ForteLang implements ForteLangConstants {
                 }
                 if(arguments.contains("silent")) {
                         silent = true;
+                }
+                if(arguments.contains("maxprecision")) {
+                        maxprecision = true;
                 }
 
                 if(args.length - arguments.size() < 1 && !replMode) {
@@ -772,26 +776,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_24() {
-    if (jj_scan_token(BOOLEAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_scan_token(REGEX_STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_21() {
-    if (jj_3R_40()) return true;
-    return false;
-  }
-
   private boolean jj_3R_40() {
     if (jj_scan_token(MATCH)) return true;
     if (jj_3R_10()) return true;
@@ -1190,6 +1174,26 @@ public class ForteLang implements ForteLangConstants {
     }
     xsp = jj_scanpos;
     if (jj_3_4()) jj_scanpos = xsp;
+    return false;
+  }
+
+  private boolean jj_3R_24() {
+    if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_scan_token(REGEX_STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_22() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_21() {
+    if (jj_3R_40()) return true;
     return false;
   }
 

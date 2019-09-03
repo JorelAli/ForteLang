@@ -51,7 +51,8 @@ public class ForteLang implements ForteLangConstants {
         static String prettifyOutput(Object result) {
                 if(result instanceof String) {
                         return "\u005c"" + result + "\u005c"";
-                } else if(result instanceof BigDecimal && !maxprecision) {
+                }
+                if(result instanceof BigDecimal && !maxprecision) {
                         BigDecimal d = (BigDecimal) result;
                         if(d.stripTrailingZeros().scale() > 0) {
                                 result = d.doubleValue();
@@ -776,23 +777,6 @@ public class ForteLang implements ForteLangConstants {
     finally { jj_save(8, xla); }
   }
 
-  private boolean jj_3R_40() {
-    if (jj_scan_token(MATCH)) return true;
-    if (jj_3R_10()) return true;
-    Token xsp;
-    if (jj_3_9()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_9()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_20() {
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
   private boolean jj_3R_19() {
     if (jj_3R_38()) return true;
     return false;
@@ -1194,6 +1178,23 @@ public class ForteLang implements ForteLangConstants {
 
   private boolean jj_3R_21() {
     if (jj_3R_40()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_40() {
+    if (jj_scan_token(MATCH)) return true;
+    if (jj_3R_10()) return true;
+    Token xsp;
+    if (jj_3_9()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3_9()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_20() {
+    if (jj_3R_39()) return true;
     return false;
   }
 

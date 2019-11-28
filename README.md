@@ -1,6 +1,6 @@
 # ForteLang
 
-ForteLang is a functionally pure dynamically typed programming language. It's based off of the Nix programming language, with inspirations from Haskell's guards and pattern matching capabilities. You can read about its creation in my [blog post](https://www.jorelsblog.co.uk/Making-A-Programming-Language/).
+ForteLang is a functionally pure dynamically typed programming language. It's based off of the Nix programming language, with inspirations from Haskell's guards and pattern matching capabilities. You can read about its creation in my [blog post](https://www.jorel.dev/blog/Making-A-Programming-Language/).
 
 ## Etymology
 
